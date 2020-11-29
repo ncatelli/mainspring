@@ -41,4 +41,8 @@ impl<T> Memory<T> {
         self.buffer[addr as usize] = value;
         value
     }
+
+    pub fn dump(&self) -> Vec<u8> {
+        self.buffer.iter().copied().collect()
+    }
 }

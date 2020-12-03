@@ -3,6 +3,20 @@ use std::marker::PhantomData;
 #[cfg(test)]
 mod tests;
 
+// Represents an error that happens in interactions with memory.
+#[derive(Debug, Clone, Copy)]
+pub enum MemoryErr {
+    Load,
+}
+
+impl std::fmt::Display for MemoryErr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Load => write!(f, "failed to load rom"),
+        }
+    }
+}
+
 /// Represents a ReadOnly type of memory. This is entirely used for
 /// typechecking and has no other practical uses.
 pub struct ReadOnly {}
@@ -42,7 +56,19 @@ impl<T> Memory<T> {
         value
     }
 
+    /// Dump memory to a Vector
     pub fn dump(&self) -> Vec<u8> {
         self.buffer.iter().copied().collect()
+    }
+
+    /// Load data into memory takes a rom and returns an instance of Memory
+    /// with the newly loaded dataset.
+    pub fn load(self, data: [u8; std::u16::MAX as usize]) -> Self {
+        Memory {
+            mem_type: self.mem_type,
+            start_address: self.start_address,
+            stop_address: self.stop_address,
+            buffer: data,
+        }
     }
 }

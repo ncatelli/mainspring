@@ -1,4 +1,5 @@
 use crate::addressable::{Memory, ReadOnly, ReadWrite};
+use std::convert::TryFrom;
 
 #[test]
 fn should_initialize_memory_to_zeroes() {
@@ -23,6 +24,19 @@ fn should_dump_entire_state_of_memory() {
 
     let mut mem: Memory<ReadWrite> = Memory::new(0, std::u16::MAX);
     mem.write(0xff, 0x8000);
+
+    let matches = expected == mem.dump();
+    assert!(matches)
+}
+
+#[test]
+fn should_load_memory_of_correct_size() {
+    let mut expected: Vec<u8> = Vec::new();
+    expected.resize(std::u16::MAX as usize, 0);
+    expected[0x8000 as usize] = 0xff;
+    let rom = <[u8; std::u16::MAX as usize]>::try_from(expected.clone()).unwrap();
+
+    let mem: Memory<ReadWrite> = Memory::new(0, std::u16::MAX).load(rom);
 
     let matches = expected == mem.dump();
     assert!(matches)

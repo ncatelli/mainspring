@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use std::ops::Range;
+use std::{cmp::Eq, fmt::Debug, ops::Range};
 
 pub mod memory;
 
@@ -17,16 +16,24 @@ pub trait Addressable<O: Into<usize>> {
 
 /// AddressMap
 pub struct AddressMap<O: Into<usize>> {
-    map: HashMap<Range<O>, Box<dyn Addressable<O>>>,
+    map: Vec<(Range<O>, Box<dyn Addressable<O>>)>,
 }
 
 impl<O> AddressMap<O>
 where
-    O: Into<usize>,
+    O: Into<usize> + Eq + Debug,
 {
     pub fn new() -> Self {
-        AddressMap {
-            map: HashMap::new(),
-        }
+        AddressMap { map: Vec::new() }
+    }
+
+    /// register adds a new range and addressable to the memory map.
+    pub fn register(
+        mut self,
+        range: Range<O>,
+        addr_space: Box<dyn Addressable<O>>,
+    ) -> AddressMap<O> {
+        self.map.push((range, addr_space));
+        self
     }
 }

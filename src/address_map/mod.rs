@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::ops::Range;
 
-#[cfg(tests)]
+pub mod memory;
+
+#[cfg(test)]
 mod tests;
 
 type WriteError = String;

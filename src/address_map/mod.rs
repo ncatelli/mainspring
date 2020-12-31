@@ -1,0 +1,2 @@
+#[cfg(tests)]
+mod tests;

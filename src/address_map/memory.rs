@@ -1,3 +1,4 @@
+use crate::address_map::Addressable;
 use std::marker::PhantomData;
 
 // Represents an error that happens in interactions with memory.
@@ -42,17 +43,6 @@ impl<T> Memory<T> {
         }
     }
 
-    /// Reads a single byte at the specified address
-    pub fn read(&self, addr: u16) -> u8 {
-        self.buffer[addr as usize]
-    }
-
-    /// Write assigns a single value to an address in memory
-    pub fn write(&mut self, value: u8, addr: u16) -> u8 {
-        self.buffer[addr as usize] = value;
-        value
-    }
-
     /// Dump memory to a Vector
     pub fn dump(&self) -> Vec<u8> {
         self.buffer.iter().copied().collect()
@@ -67,5 +57,18 @@ impl<T> Memory<T> {
             stop_address: self.stop_address,
             buffer: data,
         }
+    }
+}
+
+impl<T> Addressable<u16> for Memory<T> {
+    /// Reads a single byte at the specified address
+    fn read(&self, addr: u16) -> u8 {
+        self.buffer[usize::from(addr)]
+    }
+
+    /// Write assigns a single value to an address in memory
+    fn write(&mut self, addr: u16, value: u8) -> Result<u8, String> {
+        self.buffer[usize::from(addr)] = value;
+        Ok(value)
     }
 }

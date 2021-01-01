@@ -82,6 +82,6 @@ impl Addressable<u16> for Memory<ReadOnly> {
     /// write returns an error signifying that the memory is
     /// read-only.
     fn write(&mut self, _: u16, _: u8) -> Result<u8, String> {
-        Err("memory is read-only.".to_string())
+        Err("memory is read-only".to_string())
     }
 }

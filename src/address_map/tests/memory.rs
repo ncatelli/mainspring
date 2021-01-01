@@ -52,3 +52,15 @@ fn should_load_memory_of_correct_size() {
     let matches = expected == mem.dump();
     assert!(matches)
 }
+
+#[test]
+fn should_correctly_calculate_offsets() {
+    let mut mem: Memory<ReadWrite> = Memory::new(0x8000, std::u16::MAX);
+    mem.write(0x8000, 0xff).unwrap();
+
+    let data = mem.dump();
+    let first_value = data[0];
+
+    assert_eq!(0xff, first_value);
+    assert_eq!(0x8000 - 1, data.len());
+}

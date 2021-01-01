@@ -19,7 +19,10 @@ where
     fn write(&mut self, offset: O, data: u8) -> Result<u8, WriteError>;
 }
 
-/// AddressMap
+/// AddressMap contains a mapping of address spaces to corresponding addressable
+/// IO with the purpose of acting as an address map. This time is, additionally,
+/// an implementation Addressable allowing all other components to interact with
+/// it as if it were a bus.
 #[derive(Default)]
 pub struct AddressMap<O: Into<usize>> {
     inner: HashMap<Range<O>, Box<dyn Addressable<O>>>,
@@ -35,7 +38,8 @@ where
         }
     }
 
-    /// register attempts to match a new range
+    /// register attempts takes a range, representing a range of addresses and
+    /// an addressable type for receiving read/write requests.
     pub fn register(
         mut self,
         range: Range<O>,

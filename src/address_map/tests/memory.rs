@@ -20,6 +20,15 @@ fn should_persist_values_in_memory_when_written() {
 }
 
 #[test]
+fn should_throw_error_when_write_is_attempted_on_readonly_memory() {
+    let mut mem: Memory<ReadOnly> = Memory::new(0, std::u16::MAX);
+    assert_eq!(
+        Err("memory is read-only".to_string()),
+        mem.write(0x8000, 0xff)
+    );
+}
+
+#[test]
 fn should_dump_entire_state_of_memory() {
     let mut expected: Vec<u8> = Vec::new();
     expected.resize(std::u16::MAX as usize, 0);

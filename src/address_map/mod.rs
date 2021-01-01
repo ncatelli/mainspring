@@ -20,6 +20,7 @@ where
 }
 
 /// AddressMap
+#[derive(Default)]
 pub struct AddressMap<O: Into<usize>> {
     inner: HashMap<Range<O>, Box<dyn Addressable<O>>>,
 }
@@ -30,7 +31,7 @@ where
 {
     pub fn new() -> Self {
         AddressMap {
-            inner: HashMap::new(),
+            inner: HashMap::default(),
         }
     }
 
@@ -81,9 +82,8 @@ where
         let range = self
             .inner
             .keys()
-            .map(|k| k.clone())
-            .filter(|key| key.contains(&addr))
-            .next()
+            .cloned()
+            .find(|key| key.contains(&addr))
             .ok_or(format!("address space {:?} unallocated", addr))?;
         let am = self
             .inner

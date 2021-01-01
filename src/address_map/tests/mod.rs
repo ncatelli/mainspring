@@ -29,6 +29,14 @@ fn should_register_valid_memory() {
 }
 
 #[test]
+fn should_fail_when_registering_overlapping_address_space() {
+    let am = u16_address_map!(0..0x8000, Memory::<ReadOnly>::new(0, 0x8000)).unwrap();
+    assert!(am
+        .register(0..0x8000, Box::new(Memory::<ReadOnly>::new(0, 0x8000)))
+        .is_err());
+}
+
+#[test]
 fn should_read_valid_memory() {
     let am = u16_address_map!().unwrap();
     assert_eq!(0x00, am.read(0xffff));

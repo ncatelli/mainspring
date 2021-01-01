@@ -33,7 +33,8 @@ pub struct Memory<T> {
 }
 
 impl<T> Memory<T> {
-    /// Allocates a new addressable memory module
+    /// Allocates a new addressable memory module taking both a start and stop
+    /// address.
     pub fn new(start_address: u16, stop_address: u16) -> Self {
         Memory {
             mem_type: PhantomData,
@@ -43,7 +44,7 @@ impl<T> Memory<T> {
         }
     }
 
-    /// Dump memory to a Vector
+    /// Dump converts the current state of memroy into a correspnding Vec<u8>.
     pub fn dump(&self) -> Vec<u8> {
         self.buffer.iter().copied().collect()
     }
@@ -61,12 +62,14 @@ impl<T> Memory<T> {
 }
 
 impl Addressable<u16> for Memory<ReadWrite> {
-    /// Reads a single byte at the specified address
+    /// Reads a single byte at the specified address returning the u8
+    /// representation of the value.
     fn read(&self, addr: u16) -> u8 {
         self.buffer[usize::from(addr)]
     }
 
-    /// Write assigns a single value to an address in memory
+    /// Assigns a single value to an address in memory returning a result if the
+    /// write was in range.
     fn write(&mut self, addr: u16, value: u8) -> Result<u8, String> {
         self.buffer[usize::from(addr)] = value;
         Ok(value)

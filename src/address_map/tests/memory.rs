@@ -1,4 +1,7 @@
-use crate::addressable::{Memory, ReadOnly, ReadWrite};
+use crate::address_map::{
+    memory::{Memory, ReadOnly, ReadWrite},
+    Addressable,
+};
 use std::convert::TryFrom;
 
 #[test]
@@ -11,7 +14,7 @@ fn should_initialize_memory_to_zeroes() {
 #[test]
 fn should_persist_values_in_memory_when_written() {
     let mut mem: Memory<ReadWrite> = Memory::new(0, std::u16::MAX);
-    mem.write(0xff, 0x8000);
+    mem.write(0x8000, 0xff).unwrap();
 
     assert_eq!(0xff, mem.read(0x8000))
 }
@@ -23,7 +26,7 @@ fn should_dump_entire_state_of_memory() {
     expected[0x8000 as usize] = 0xff;
 
     let mut mem: Memory<ReadWrite> = Memory::new(0, std::u16::MAX);
-    mem.write(0xff, 0x8000);
+    mem.write(0x8000, 0xff).unwrap();
 
     let matches = expected == mem.dump();
     assert!(matches)

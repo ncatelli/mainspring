@@ -1,4 +1,4 @@
 #[cfg(test)]
 mod tests;
 
-pub mod addressable;
+pub mod address_map;

@@ -10,7 +10,7 @@ macro_rules! u16_address_map {
         $crate::address_map::AddressMap::<u16>::new().register(
             0..std::u16::MAX,
             Box::new($crate::address_map::memory::Memory::<
-                $crate::address_map::memory::ReadOnly,
+                $crate::address_map::memory::ReadWrite,
             >::new(0, std::u16::MAX)),
         )
     };

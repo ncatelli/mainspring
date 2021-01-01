@@ -60,7 +60,7 @@ impl<T> Memory<T> {
     }
 }
 
-impl<T> Addressable<u16> for Memory<T> {
+impl Addressable<u16> for Memory<ReadWrite> {
     /// Reads a single byte at the specified address
     fn read(&self, addr: u16) -> u8 {
         self.buffer[usize::from(addr)]
@@ -70,5 +70,18 @@ impl<T> Addressable<u16> for Memory<T> {
     fn write(&mut self, addr: u16, value: u8) -> Result<u8, String> {
         self.buffer[usize::from(addr)] = value;
         Ok(value)
+    }
+}
+
+impl Addressable<u16> for Memory<ReadOnly> {
+    /// Reads a single byte at the specified address
+    fn read(&self, addr: u16) -> u8 {
+        self.buffer[usize::from(addr)]
+    }
+
+    /// write returns an error signifying that the memory is
+    /// read-only.
+    fn write(&mut self, _: u16, _: u8) -> Result<u8, String> {
+        Err("memory is read-only.".to_string())
     }
 }

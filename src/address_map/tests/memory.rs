@@ -2,7 +2,6 @@ use crate::address_map::{
     memory::{Memory, ReadOnly, ReadWrite},
     Addressable,
 };
-use std::convert::TryFrom;
 
 #[test]
 fn should_initialize_memory_to_zeroes() {
@@ -46,10 +45,22 @@ fn should_load_memory_of_correct_size() {
     let mut expected: Vec<u8> = Vec::new();
     expected.resize(std::u16::MAX as usize, 0);
     expected[0x8000 as usize] = 0xff;
-    let rom = <[u8; std::u16::MAX as usize]>::try_from(expected.clone()).unwrap();
+    let rom = expected.clone();
 
     let mem: Memory<ReadWrite> = Memory::new(0, std::u16::MAX).load(rom);
 
     let matches = expected == mem.dump();
     assert!(matches)
+}
+
+#[test]
+fn should_correctly_calculate_offsets() {
+    let mut mem: Memory<ReadWrite> = Memory::new(0x8000, std::u16::MAX);
+    mem.write(0x8000, 0xff).unwrap();
+
+    let data = mem.dump();
+    let first_value = data[0];
+
+    assert_eq!(0xff, first_value);
+    assert_eq!(0x8000 - 1, data.len());
 }

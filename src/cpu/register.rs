@@ -3,6 +3,31 @@ pub struct GeneralPurpose {
     inner: u8,
 }
 
+impl GeneralPurpose {
+    /// instantiates a new GeneralPurpose register with a value.
+    pub fn with_value(inner: u8) -> Self {
+        GeneralPurpose { inner }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct StackPointer {
+    inner: u8,
+}
+
+impl StackPointer {
+    /// instantiates a new stack pointer register with a value.
+    pub fn with_value(inner: u8) -> Self {
+        StackPointer { inner }
+    }
+}
+
+impl Default for StackPointer {
+    fn default() -> Self {
+        Self { inner: 0xff }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct ProcessorStatus {
     carry: bool,
@@ -15,6 +40,7 @@ pub struct ProcessorStatus {
 }
 
 impl ProcessorStatus {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self::default()
     }

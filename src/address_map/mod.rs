@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 use std::{cmp::Eq, fmt::Debug, hash::Hash, ops::Range};
 
 pub mod memory;
@@ -13,7 +14,7 @@ type RegistrationError = String;
 /// this can represent IO, RAM, ROM, etc...
 pub trait Addressable<O>
 where
-    O: Into<usize> + Debug,
+    O: Into<usize> + Debug + Clone + Copy,
 {
     fn read(&self, offset: O) -> u8;
     fn write(&mut self, offset: O, data: u8) -> Result<u8, WriteError>;
@@ -24,13 +25,26 @@ where
 /// an implementation Addressable allowing all other components to interact with
 /// it as if it were a bus.
 #[derive(Default)]
-pub struct AddressMap<O: Into<usize>> {
+pub struct AddressMap<O: Into<usize>>
+where
+    O: Into<usize> + Debug + Clone + Copy,
+{
     inner: HashMap<Range<O>, Box<dyn Addressable<O>>>,
+}
+
+impl<O> fmt::Debug for AddressMap<O>
+where
+    O: Into<usize> + Debug + Clone + Copy,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let keys: Vec<&Range<O>> = self.inner.keys().collect();
+        write!(f, "AddressMap {:?}", keys)
+    }
 }
 
 impl<O> AddressMap<O>
 where
-    O: Into<usize> + Hash + PartialOrd + Eq + Debug,
+    O: Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
 {
     pub fn new() -> Self {
         AddressMap {
@@ -68,7 +82,7 @@ where
 
 impl<T> Addressable<T> for AddressMap<T>
 where
-    T: Into<usize> + Hash + PartialOrd + Eq + Debug + Copy,
+    T: Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
 {
     /// Reads a single byte at the specified address
     fn read(&self, addr: T) -> u8 {

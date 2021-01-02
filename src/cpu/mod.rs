@@ -22,6 +22,12 @@ impl CPU {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub fn with_addressmap(am: AddressMap<u16>) -> Self {
+        let mut cpu = Self::default();
+        cpu.address_map = am;
+        cpu
+    }
 }
 
 impl Default for CPU {

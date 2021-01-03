@@ -53,6 +53,7 @@ pub struct ProcessorStatus {
     interrupt_disable: bool,
     decimal: bool,
     brk: bool,
+    unused: bool,
     overflow: bool,
     negative: bool,
 }
@@ -72,6 +73,7 @@ impl Default for ProcessorStatus {
             interrupt_disable: false,
             decimal: false,
             brk: false,
+            unused: true,
             overflow: false,
             negative: false,
         }
@@ -80,9 +82,24 @@ impl Default for ProcessorStatus {
 
 impl Register<u8> for ProcessorStatus {
     fn read(&self) -> u8 {
-        todo!()
+        self.clone().into()
     }
     fn write(self, _value: u8) -> Self {
         todo!()
+    }
+}
+
+impl Into<u8> for ProcessorStatus {
+    fn into(self) -> u8 {
+        let mut ps: u8 = 0;
+        ps |= (self.negative as u8) << 7;
+        ps |= (self.overflow as u8) << 6;
+        ps |= (self.unused as u8) << 5;
+        ps |= (self.brk as u8) << 4;
+        ps |= (self.decimal as u8) << 3;
+        ps |= (self.interrupt_disable as u8) << 2;
+        ps |= (self.zero as u8) << 1;
+        ps |= (self.carry as u8) << 0;
+        ps
     }
 }

@@ -1,24 +1,42 @@
+pub trait Register<O> {
+    fn read(&self) -> O;
+    fn write(self, value: u8) -> Self;
+}
+
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct GeneralPurpose {
     inner: u8,
 }
 
-impl GeneralPurpose {
-    /// instantiates a new GeneralPurpose register with a value.
-    pub fn with_value(inner: u8) -> Self {
-        GeneralPurpose { inner }
+impl Register<u8> for GeneralPurpose {
+    fn read(&self) -> u8 {
+        self.inner
+    }
+    fn write(self, value: u8) -> Self {
+        Self { inner: value }
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct StackPointer {
-    inner: u8,
+    inner: u16,
 }
 
 impl StackPointer {
     /// instantiates a new stack pointer register with a value.
     pub fn with_value(inner: u8) -> Self {
-        StackPointer { inner }
+        Self::default().write(inner)
+    }
+}
+
+impl Register<u16> for StackPointer {
+    fn read(&self) -> u16 {
+        self.inner
+    }
+    fn write(self, value: u8) -> Self {
+        let bp: u16 = 0x0100;
+        let sp: u16 = bp + value as u16;
+        Self { inner: sp }
     }
 }
 
@@ -57,5 +75,14 @@ impl Default for ProcessorStatus {
             overflow: false,
             negative: false,
         }
+    }
+}
+
+impl Register<u8> for ProcessorStatus {
+    fn read(&self) -> u8 {
+        todo!()
+    }
+    fn write(self, _value: u8) -> Self {
+        todo!()
     }
 }

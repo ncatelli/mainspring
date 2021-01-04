@@ -49,6 +49,11 @@ impl Default for CPU {
         Self {
             address_map: AddressMap::new()
                 .register(
+                    0x0000..0x00FF,
+                    Box::new(Memory::<ReadWrite>::new(0x0000, 0x00FF)),
+                )
+                .unwrap()
+                .register(
                     0x0100..0x01FF,
                     Box::new(Memory::<ReadWrite>::new(0x0100, 0x01FF)),
                 )

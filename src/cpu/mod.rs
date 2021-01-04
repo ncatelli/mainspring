@@ -13,12 +13,12 @@ use register::{GeneralPurpose, ProcessorStatus, StackPointer};
 #[derive(Debug)]
 pub struct CPU {
     address_map: AddressMap<u16>,
-    acc: GeneralPurpose,
-    x: GeneralPurpose,
-    y: GeneralPurpose,
-    sp: StackPointer,
-    pc: GeneralPurpose,
-    ps: ProcessorStatus,
+    pub acc: GeneralPurpose,
+    pub x: GeneralPurpose,
+    pub y: GeneralPurpose,
+    pub sp: StackPointer,
+    pub pc: GeneralPurpose,
+    pub ps: ProcessorStatus,
 }
 
 impl CPU {

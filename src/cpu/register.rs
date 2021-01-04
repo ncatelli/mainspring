@@ -48,14 +48,14 @@ impl Default for StackPointer {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct ProcessorStatus {
-    carry: bool,
-    zero: bool,
-    interrupt_disable: bool,
-    decimal: bool,
-    brk: bool,
+    pub carry: bool,
+    pub zero: bool,
+    pub interrupt_disable: bool,
+    pub decimal: bool,
+    pub brk: bool,
     unused: bool,
-    overflow: bool,
-    negative: bool,
+    pub overflow: bool,
+    pub negative: bool,
 }
 
 impl ProcessorStatus {

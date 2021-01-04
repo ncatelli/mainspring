@@ -1,13 +1,13 @@
 use crate::address_map::{
     memory::{Memory, ReadWrite},
-    AddressMap,
+    AddressMap, Addressable,
 };
 
 #[cfg(test)]
 mod tests;
 
 mod register;
-use register::{GeneralPurpose, ProcessorStatus, StackPointer};
+use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, Register, StackPointer};
 
 /// CPU represents the 6502 CPU
 #[derive(Debug)]
@@ -17,7 +17,7 @@ pub struct CPU {
     pub x: GeneralPurpose,
     pub y: GeneralPurpose,
     pub sp: StackPointer,
-    pub pc: GeneralPurpose,
+    pub pc: ProgramCounter,
     pub ps: ProcessorStatus,
 }
 
@@ -35,7 +35,12 @@ impl CPU {
 
     /// emulates the reset process of the CPU.
     pub fn reset(self) -> Self {
-        CPU::with_addressmap(self.address_map)
+        let mut cpu = CPU::with_addressmap(self.address_map);
+        let lsb: u8 = cpu.address_map.read(0x7ffc);
+        let msb: u8 = cpu.address_map.read(0x7ffd);
+
+        cpu.pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
+        cpu
     }
 }
 
@@ -52,7 +57,7 @@ impl Default for CPU {
             x: GeneralPurpose::default(),
             y: GeneralPurpose::default(),
             sp: StackPointer::default(),
-            pc: GeneralPurpose::default(),
+            pc: ProgramCounter::default(),
             ps: ProcessorStatus::default(),
         }
     }

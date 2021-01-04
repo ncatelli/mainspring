@@ -1,6 +1,6 @@
-pub trait Register<O> {
-    fn read(&self) -> O;
-    fn write(self, value: u8) -> Self;
+pub trait Register<R, W> {
+    fn read(&self) -> R;
+    fn write(self, value: W) -> Self;
 }
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
@@ -8,7 +8,7 @@ pub struct GeneralPurpose {
     inner: u8,
 }
 
-impl Register<u8> for GeneralPurpose {
+impl Register<u8, u8> for GeneralPurpose {
     fn read(&self) -> u8 {
         self.inner
     }
@@ -17,9 +17,24 @@ impl Register<u8> for GeneralPurpose {
     }
 }
 
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
+pub struct ProgramCounter {
+    inner: u16,
+}
+
+impl Register<u16, u16> for ProgramCounter {
+    fn read(&self) -> u16 {
+        self.inner
+    }
+
+    fn write(self, value: u16) -> Self {
+        Self { inner: value }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct StackPointer {
-    inner: u16,
+    inner: u8,
 }
 
 impl StackPointer {
@@ -29,14 +44,14 @@ impl StackPointer {
     }
 }
 
-impl Register<u16> for StackPointer {
+impl Register<u16, u8> for StackPointer {
     fn read(&self) -> u16 {
-        self.inner
-    }
-    fn write(self, value: u8) -> Self {
         let bp: u16 = 0x0100;
-        let sp: u16 = bp + value as u16;
-        Self { inner: sp }
+        bp + self.inner as u16
+    }
+
+    fn write(self, value: u8) -> Self {
+        Self { inner: value }
     }
 }
 
@@ -80,7 +95,7 @@ impl Default for ProcessorStatus {
     }
 }
 
-impl Register<u8> for ProcessorStatus {
+impl Register<u8, u8> for ProcessorStatus {
     fn read(&self) -> u8 {
         self.clone().into()
     }

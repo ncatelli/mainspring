@@ -71,3 +71,9 @@ impl Default for MOS6502 {
         }
     }
 }
+
+impl<MOS6502> CPU<MOS6502> for MOS6502 {
+    fn step(cpu: MOS6502) -> MOS6502 {
+        cpu
+    }
+}

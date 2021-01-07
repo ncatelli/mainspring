@@ -6,12 +6,16 @@ use crate::address_map::{
 #[cfg(test)]
 mod tests;
 
+pub trait CPU<T> {
+    fn step(cpu: T) -> T;
+}
+
 mod register;
 use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, Register, StackPointer};
 
-/// CPU represents the 6502 CPU
+/// MOS6502 represents the 6502 CPU
 #[derive(Debug)]
-pub struct CPU {
+pub struct MOS6502 {
     address_map: AddressMap<u16>,
     pub acc: GeneralPurpose,
     pub x: GeneralPurpose,
@@ -21,12 +25,12 @@ pub struct CPU {
     pub ps: ProcessorStatus,
 }
 
-impl CPU {
+impl MOS6502 {
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// instantiates a new cpu with a provided address_map.
+    /// instantiates a new MOS6502 with a provided address_map.
     pub fn with_addressmap(am: AddressMap<u16>) -> Self {
         let mut cpu = Self::default();
         cpu.address_map = am;
@@ -35,7 +39,7 @@ impl CPU {
 
     /// emulates the reset process of the CPU.
     pub fn reset(self) -> Self {
-        let mut cpu = CPU::with_addressmap(self.address_map);
+        let mut cpu = MOS6502::with_addressmap(self.address_map);
         let lsb: u8 = cpu.address_map.read(0x7ffc);
         let msb: u8 = cpu.address_map.read(0x7ffd);
 
@@ -44,7 +48,7 @@ impl CPU {
     }
 }
 
-impl Default for CPU {
+impl Default for MOS6502 {
     fn default() -> Self {
         Self {
             address_map: AddressMap::new()

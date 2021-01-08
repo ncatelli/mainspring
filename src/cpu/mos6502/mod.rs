@@ -9,6 +9,8 @@ use crate::{
     },
 };
 
+pub mod operations;
+
 /// MOS6502 represents the 6502 CPU
 #[derive(Debug)]
 pub struct MOS6502 {
@@ -72,102 +74,4 @@ impl<MOS6502> CPU<MOS6502> for MOS6502 {
     fn step(cpu: MOS6502) -> MOS6502 {
         cpu
     }
-}
-
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum Mnemonic {
-    // Load-Store
-    LDA,
-    LDX,
-    LDY,
-    STA,
-    STX,
-    STY,
-
-    // Arithmetic
-    ADC,
-    SBC,
-    INC,
-    INX,
-    INY,
-    DEC,
-    DEX,
-    DEY,
-
-    // Shift and Rotate
-    ASL,
-    LSR,
-    ROL,
-    ROR,
-    AND,
-    ORA,
-    EOR,
-
-    // Compare and Test Bit
-    CMP,
-    CPX,
-    CPY,
-    BIT,
-
-    // Branch
-    BCC,
-    BCS,
-    BNE,
-    BEQ,
-    BPL,
-    BMI,
-    BVC,
-    BVS,
-
-    // Transfer
-    TAX,
-    TXA,
-    TAY,
-    TYA,
-    TSX,
-    TXS,
-
-    // Stack
-    PHA,
-    PLA,
-    PHP,
-    PLP,
-
-    // Subroutines and Jump
-    JMP,
-    JSR,
-    RTS,
-    RTI,
-
-    // Set and Clear
-    CLC,
-    SEC,
-    CLD,
-    SED,
-    CLI,
-    SEI,
-    CLV,
-
-    // Misc
-    BRK,
-    NOP,
-}
-
-/// AddressMode captures the Address mode type with a corresponding
-/// operand of the appropriate bit length.
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum AddressMode {
-    Accumulator,
-    Implied,
-    Immediate(u8),
-    Absolute(u16),
-    ZeroPage(u8),
-    Relative(i8),
-    Indirect(u16),
-    AbsoluteIndexedWithX(u16),
-    AbsoluteIndexedWithY(u16),
-    ZeroPageIndexedWithX(u8),
-    ZeroPageIndexedWithY(u8),
-    IndexedIndirect(u8),
-    IndirectIndexed(u8),
 }

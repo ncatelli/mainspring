@@ -1,6 +1,22 @@
-/// Address modes
+extern crate parcel;
+use crate::cpu::Cyclable;
+use parcel::{MatchStatus, ParseResult, Parser};
+
 pub struct Accumulator;
+
+/// Implied address address mode. This is signified by no address mode
+/// arguments. An example instruction with an implied address mode would be.
+/// `nop`
 pub struct Implied;
+
+impl Cyclable for Implied {}
+
+impl<'a> Parser<'a, &'a [u8], Implied> for Implied {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Implied> {
+        Ok(MatchStatus::Match((input, Implied)))
+    }
+}
+
 pub struct Immediate(u8);
 pub struct Absolute(u16);
 pub struct ZeroPage(u8);

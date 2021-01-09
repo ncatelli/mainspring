@@ -1,4 +1,5 @@
 extern crate parcel;
+use crate::cpu::Cyclable;
 use parcel::{ParseResult, Parser};
 
 // Load-Store
@@ -75,7 +76,12 @@ pub struct CLV;
 
 // Misc
 pub struct BRK;
+
+/// Represents a `nop` instruction, only implemented for the implied address
+/// mode and functions as a "No Operation".
 pub struct NOP;
+
+impl Cyclable for NOP {}
 
 impl From<NOP> for u8 {
     fn from(_: NOP) -> Self {

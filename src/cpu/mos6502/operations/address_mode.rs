@@ -1,0 +1,14 @@
+/// Address modes
+pub struct Accumulator;
+pub struct Implied;
+pub struct Immediate(u8);
+pub struct Absolute(u16);
+pub struct ZeroPage(u8);
+pub struct Relative(i8);
+pub struct Indirect(u16);
+pub struct AbsoluteIndexedWithX(u16);
+pub struct AbsoluteIndexedWithY(u16);
+pub struct ZeroPageIndexedWithX(u8);
+pub struct ZeroPageIndexedWithY(u8);
+pub struct IndexedIndirect(u8);
+pub struct IndirectIndexed(u8);

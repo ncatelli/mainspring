@@ -5,7 +5,7 @@ use crate::{
     },
     cpu::{
         register::{GeneralPurpose, ProcessorStatus, ProgramCounter, Register, StackPointer},
-        CPU,
+        StepState, CPU,
     },
 };
 
@@ -70,8 +70,8 @@ impl Default for MOS6502 {
     }
 }
 
-impl<MOS6502> CPU<MOS6502> for MOS6502 {
-    fn step(cpu: MOS6502) -> MOS6502 {
-        cpu
+impl CPU<MOS6502> for MOS6502 {
+    fn step(cpu: StepState<MOS6502>) -> StepState<MOS6502> {
+        StepState::new(0, cpu.unwrap())
     }
 }

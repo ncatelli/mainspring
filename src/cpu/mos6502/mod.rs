@@ -1,5 +1,5 @@
 extern crate parcel;
-use parcel::Parser;
+use std::convert::TryFrom;
 
 use crate::{
     address_map::{
@@ -141,12 +141,7 @@ impl CPU<MOS6502> for StepState<MOS6502> {
             ];
 
             // Parse correct operation
-            let oper = match opcodes[0] {
-                0xEA => Operation::new(mnemonic::NOP, address_mode::Implied).parse(&opcodes),
-                _ => Err(format!("unimplemented opcode: {}", opcodes[0])),
-            }
-            .unwrap()
-            .unwrap();
+            let oper: Operation<_, _> = TryFrom::try_from(&opcodes).unwrap();
 
             // set pc offsets and cycles as defined by operation.
             let offset = oper.offset() as u16;

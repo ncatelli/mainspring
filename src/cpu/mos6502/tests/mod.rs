@@ -1,5 +1,5 @@
 use crate::address_map::memory::{Memory, ReadOnly};
-use crate::cpu::{mos6502::MOS6502, register::Register, CPU};
+use crate::cpu::{mos6502::MOS6502, register, register::Register, CPU};
 
 #[test]
 fn should_cycle_on_nop_operation() {
@@ -8,7 +8,10 @@ fn should_cycle_on_nop_operation() {
     let mut nop_sled = Vec::<u8>::new();
     nop_sled.resize((nop_sled_end - nop_sled_start) as usize, 0xea);
 
-    let mut cpu = MOS6502::default().reset().unwrap();
+    let mut cpu = MOS6502::default()
+        .reset()
+        .unwrap()
+        .with_pc_register(register::ProgramCounter::with_value(0x6000));
     cpu.address_map = cpu
         .address_map
         .register(
@@ -16,8 +19,6 @@ fn should_cycle_on_nop_operation() {
             Box::new(Memory::<ReadOnly>::new(nop_sled_start, nop_sled_end).load(nop_sled)),
         )
         .unwrap();
-
-    cpu.pc = cpu.pc.write(0x6000);
 
     // validate first step execs
     let state = cpu.step();

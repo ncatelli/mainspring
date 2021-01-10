@@ -1,6 +1,7 @@
 pub trait Register<R, W> {
     fn read(&self) -> R;
     fn write(self, value: W) -> Self;
+    fn with_value(value: W) -> Self;
 }
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
@@ -13,6 +14,10 @@ impl Register<u8, u8> for GeneralPurpose {
         self.inner
     }
     fn write(self, value: u8) -> Self {
+        Self::with_value(value)
+    }
+
+    fn with_value(value: u8) -> Self {
         Self { inner: value }
     }
 }
@@ -26,8 +31,11 @@ impl Register<u16, u16> for ProgramCounter {
     fn read(&self) -> u16 {
         self.inner
     }
-
     fn write(self, value: u16) -> Self {
+        Self::with_value(value)
+    }
+
+    fn with_value(value: u16) -> Self {
         Self { inner: value }
     }
 }
@@ -51,6 +59,10 @@ impl Register<u16, u8> for StackPointer {
     }
 
     fn write(self, value: u8) -> Self {
+        Self::with_value(value)
+    }
+
+    fn with_value(value: u8) -> Self {
         Self { inner: value }
     }
 }
@@ -99,7 +111,12 @@ impl Register<u8, u8> for ProcessorStatus {
     fn read(&self) -> u8 {
         self.clone().into()
     }
+
     fn write(self, _value: u8) -> Self {
+        todo!()
+    }
+
+    fn with_value(_value: u8) -> Self {
         todo!()
     }
 }

@@ -22,6 +22,14 @@ trait Execute<T> {
     fn execute(self, operation: T) -> Self;
 }
 
+/// Represets each type of general purpose register available in the mos6502.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum GPRegister {
+    ACC,
+    X,
+    Y,
+}
+
 /// MOS6502 represents the 6502 CPU
 #[derive(Debug)]
 pub struct MOS6502 {
@@ -54,6 +62,38 @@ impl MOS6502 {
 
         cpu.pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
         StepState::new(6, cpu)
+    }
+
+    /// Provides a wrapper to update a general-purpose register in a way that
+    /// returns the entire cpu after modification.
+    pub fn with_gp_register(mut self, reg_type: GPRegister, reg: GeneralPurpose) -> Self {
+        match reg_type {
+            GPRegister::ACC => self.acc = reg,
+            GPRegister::X => self.x = reg,
+            GPRegister::Y => self.y = reg,
+        };
+        self
+    }
+
+    /// Provides a wrapper to update the stack-pointer register in a way that
+    /// returns the entire cpu after modification.
+    pub fn with_sp_register(mut self, reg: StackPointer) -> Self {
+        self.sp = reg;
+        self
+    }
+
+    /// Provides a wrapper to update the program-counter register in a way that
+    /// returns the entire cpu after modification.
+    pub fn with_pc_register(mut self, reg: ProgramCounter) -> Self {
+        self.pc = reg;
+        self
+    }
+
+    /// Provides a wrapper to update the processor-status register in a way that
+    /// returns the entire cpu after modification.
+    pub fn with_ps_register(mut self, reg: ProcessorStatus) -> Self {
+        self.ps = reg;
+        self
     }
 }
 
@@ -108,13 +148,13 @@ impl CPU<MOS6502> for StepState<MOS6502> {
             .unwrap()
             .unwrap();
 
-            // run the operation to transform the cpu state
-            let mut mos = mos.execute(oper);
-
             // set pc offsets and cycles as defined by operation.
             let offset = oper.offset() as u16;
-            mos.pc = mos.pc.write(pc + offset);
-            StepState::new(oper.cycles(), mos)
+            StepState::new(
+                oper.cycles(),
+                mos.execute(oper)
+                    .with_pc_register(ProgramCounter::with_value(pc + offset)),
+            )
         }
     }
 }

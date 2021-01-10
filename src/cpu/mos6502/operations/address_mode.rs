@@ -1,5 +1,5 @@
 extern crate parcel;
-use crate::cpu::Cyclable;
+use crate::cpu::{Cyclable, Offset};
 use parcel::{MatchStatus, ParseResult, Parser};
 
 pub struct Accumulator;
@@ -10,6 +10,12 @@ pub struct Accumulator;
 pub struct Implied;
 
 impl Cyclable for Implied {}
+
+impl Offset for Implied {
+    fn offset(&self) -> usize {
+        0
+    }
+}
 
 impl<'a> Parser<'a, &'a [u8], Implied> for Implied {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Implied> {

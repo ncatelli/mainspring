@@ -1,5 +1,5 @@
 extern crate parcel;
-use crate::cpu::Cyclable;
+use crate::cpu::{Cyclable, Offset};
 use parcel::{ParseResult, Parser};
 
 // Load-Store
@@ -82,6 +82,7 @@ pub struct BRK;
 pub struct NOP;
 
 impl Cyclable for NOP {}
+impl Offset for NOP {}
 
 impl From<NOP> for u8 {
     fn from(_: NOP) -> Self {

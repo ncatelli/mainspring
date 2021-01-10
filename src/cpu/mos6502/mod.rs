@@ -148,13 +148,13 @@ impl CPU<MOS6502> for StepState<MOS6502> {
             .unwrap()
             .unwrap();
 
-            // run the operation to transform the cpu state
-            let mut mos = mos.execute(oper);
-
             // set pc offsets and cycles as defined by operation.
             let offset = oper.offset() as u16;
-            mos.pc = mos.pc.write(pc + offset);
-            StepState::new(oper.cycles(), mos)
+            StepState::new(
+                oper.cycles(),
+                mos.execute(oper)
+                    .with_pc_register(ProgramCounter::with_value(pc + offset)),
+            )
         }
     }
 }

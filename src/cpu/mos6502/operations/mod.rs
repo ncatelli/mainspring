@@ -5,11 +5,13 @@ use parcel::{ParseResult, Parser};
 pub mod address_mode;
 pub mod mnemonic;
 
-/// Operation takes a mnemonic
+/// Operation takes a mnemonic and address mode as arguments for sizing
+/// and operations.
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Operation<M, A>
 where
-    M: Cyclable + Offset,
-    A: Cyclable + Offset,
+    M: Cyclable + Offset + Copy,
+    A: Cyclable + Offset + Copy,
 {
     mnemonic: M,
     address_mode: A,
@@ -17,8 +19,8 @@ where
 
 impl<M, A> Operation<M, A>
 where
-    M: Cyclable + Offset,
-    A: Cyclable + Offset,
+    M: Cyclable + Offset + Copy,
+    A: Cyclable + Offset + Copy,
 {
     pub fn new(mnemonic: M, address_mode: A) -> Self {
         Operation {
@@ -30,11 +32,21 @@ where
 
 impl<M, A> Cyclable for Operation<M, A>
 where
-    M: Cyclable + Offset,
-    A: Cyclable + Offset,
+    M: Cyclable + Offset + Copy,
+    A: Cyclable + Offset + Copy,
 {
     fn cycles(&self) -> usize {
         self.mnemonic.cycles() + self.address_mode.cycles()
+    }
+}
+
+impl<M, A> Offset for Operation<M, A>
+where
+    M: Cyclable + Offset + Copy,
+    A: Cyclable + Offset + Copy,
+{
+    fn offset(&self) -> usize {
+        self.mnemonic.offset() + self.address_mode.offset()
     }
 }
 

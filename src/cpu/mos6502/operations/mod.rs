@@ -28,6 +28,16 @@ where
     }
 }
 
+impl<M, A> Cyclable for Operation<M, A>
+where
+    M: Cyclable + Offset,
+    A: Cyclable + Offset,
+{
+    fn cycles(&self) -> usize {
+        self.mnemonic.cycles() + self.address_mode.cycles()
+    }
+}
+
 impl<'a> Parser<'a, &'a [u8], Operation<mnemonic::NOP, address_mode::Implied>>
     for Operation<mnemonic::NOP, address_mode::Implied>
 {

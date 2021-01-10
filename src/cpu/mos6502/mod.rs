@@ -91,7 +91,7 @@ impl MOS6502 {
 
     /// Provides a wrapper to update the processor-status register in a way that
     /// returns the entire cpu after modification.
-    pub fn update_ps_register(mut self, reg: ProcessorStatus) -> Self {
+    pub fn with_ps_register(mut self, reg: ProcessorStatus) -> Self {
         self.ps = reg;
         self
     }

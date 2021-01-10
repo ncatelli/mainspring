@@ -114,7 +114,7 @@ impl Into<u8> for ProcessorStatus {
         ps |= (self.decimal as u8) << 3;
         ps |= (self.interrupt_disable as u8) << 2;
         ps |= (self.zero as u8) << 1;
-        ps |= (self.carry as u8) << 0;
+        ps |= self.carry as u8;
         ps
     }
 }

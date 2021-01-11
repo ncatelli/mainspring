@@ -25,8 +25,8 @@ impl<'a> Parser<'a, &'a [u8], Implied> for Implied {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Immediate(u8);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Immediate(pub u8);
 
 impl Cyclable for Immediate {}
 impl Offset for Immediate {}

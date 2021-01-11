@@ -11,7 +11,11 @@ pub struct Accumulator;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Implied;
 
-impl Cyclable for Implied {}
+impl Cyclable for Implied {
+    fn cycles(&self) -> usize {
+        0
+    }
+}
 
 impl Offset for Implied {
     fn offset(&self) -> usize {
@@ -37,8 +41,27 @@ impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Absolute(u16);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Absolute(pub u16);
+
+impl Cyclable for Absolute {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+impl Offset for Absolute {
+    fn offset(&self) -> usize {
+        2
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Absolute> for Absolute {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Absolute> {
+        parcel::take_n(any_byte(), 2)
+            .map(|b| Absolute(u16::from_le_bytes([b[0], b[1]])))
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ZeroPage(u8);

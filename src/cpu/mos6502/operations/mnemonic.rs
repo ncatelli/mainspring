@@ -6,7 +6,12 @@ use parcel::{ParseResult, Parser};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LDA;
 
-impl Cyclable for LDA {}
+impl Cyclable for LDA {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+
 impl Offset for LDA {}
 
 impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
@@ -25,6 +30,22 @@ pub struct LDY;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct STA;
+
+impl Cyclable for STA {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+
+impl Offset for STA {}
+
+impl<'a> Parser<'a, &'a [u8], STA> for STA {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], STA> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x8d)])
+            .map(|_| STA)
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct STX;
@@ -193,7 +214,12 @@ pub struct BRK;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NOP;
 
-impl Cyclable for NOP {}
+impl Cyclable for NOP {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+
 impl Offset for NOP {}
 
 impl From<NOP> for u8 {

@@ -6,6 +6,17 @@ use parcel::{ParseResult, Parser};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LDA;
 
+impl Cyclable for LDA {}
+impl Offset for LDA {}
+
+impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDA> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xa9)])
+            .map(|_| LDA)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LDX;
 

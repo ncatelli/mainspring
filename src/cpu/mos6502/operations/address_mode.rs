@@ -42,7 +42,7 @@ impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Absolute(u16);
+pub struct Absolute(pub u16);
 
 impl Cyclable for Absolute {
     fn cycles(&self) -> usize {

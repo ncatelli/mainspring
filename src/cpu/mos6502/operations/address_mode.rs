@@ -1,6 +1,6 @@
 extern crate parcel;
 use crate::cpu::{Cyclable, Offset};
-use parcel::{MatchStatus, ParseResult, Parser};
+use parcel::{parsers::byte::any_byte, MatchStatus, ParseResult, Parser};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Accumulator;
@@ -27,6 +27,15 @@ impl<'a> Parser<'a, &'a [u8], Implied> for Implied {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Immediate(u8);
+
+impl Cyclable for Immediate {}
+impl Offset for Immediate {}
+
+impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Immediate> {
+        any_byte().map(|b| Immediate(b)).parse(input)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Absolute(u16);

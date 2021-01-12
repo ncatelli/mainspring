@@ -171,8 +171,30 @@ pub struct PHP;
 pub struct PLP;
 
 // Subroutines and Jump
+
+/// Represents a `jmp` instruction, only implemented for the absolute address
+/// and indirect modes and functions as jump to a location in memory.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct JMP;
+
+impl Cyclable for JMP {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+
+impl Offset for JMP {}
+
+impl<'a> Parser<'a, &'a [u8], JMP> for JMP {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], JMP> {
+        parcel::one_of(vec![
+            parcel::parsers::byte::expect_byte(0x4c),
+            //parcel::parsers::byte::expect_byte(0x6c), // TODO: implemente indirect
+        ])
+        .map(|_| JMP)
+        .parse(input)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct JSR;

@@ -37,3 +37,17 @@ fn should_parse_absolute_address_mode_sta_instruction() {
         operation
     );
 }
+
+#[test]
+fn should_parse_absolute_address_mode_jmp_instruction() {
+    let bytecode = [0x4c, 0x34, 0x12];
+    let operation = TryFrom::try_from(&bytecode);
+
+    assert_eq!(
+        Ok(Operation::new(
+            mnemonic::JMP,
+            address_mode::Absolute(0x1234)
+        )),
+        operation
+    );
+}

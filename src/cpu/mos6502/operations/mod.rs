@@ -131,3 +131,29 @@ impl<'a> Parser<'a, &'a [u8], Operation<mnemonic::NOP, address_mode::Implied>>
             .parse(input)
     }
 }
+
+// JMP
+
+impl std::convert::TryFrom<&[u8; 3]> for Operation<mnemonic::JMP, address_mode::Absolute> {
+    type Error = String;
+    fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
+        match Operation::new(mnemonic::JMP, address_mode::Absolute::default()).parse(values) {
+            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
+            _ => Err(format!("No match found for {}", values[0])),
+        }
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Operation<mnemonic::JMP, address_mode::Absolute>>
+    for Operation<mnemonic::JMP, address_mode::Absolute>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Operation<mnemonic::JMP, address_mode::Absolute>> {
+        expect_byte(0x4c)
+            .and_then(|_| address_mode::Absolute::default())
+            .map(|am| Operation::new(mnemonic::JMP, am))
+            .parse(input)
+    }
+}

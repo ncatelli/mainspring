@@ -12,6 +12,8 @@ pub mod mnemonic;
 #[cfg(test)]
 mod tests;
 
+/// Operation functions as a concrete wrapper arround all executable components
+/// of a 6502 operation.
 pub struct Operation {
     offset: usize,
     cycles: usize,
@@ -49,18 +51,17 @@ impl Execute<MOS6502> for Operation {
 impl std::convert::TryFrom<&[u8; 3]> for Operation {
     type Error = String;
     fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
-        match OpParser.parse(values) {
+        match OperationParser.parse(values) {
             Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
             _ => Err(format!("No match found for {}", values[0])),
         }
     }
 }
 
-/// Provides a
-#[derive(Clone, Copy, Default)]
-pub struct OpParser;
+/// Provides a wrapper type for parsing byte slices into Operations.
+struct OperationParser;
 
-impl<'a> Parser<'a, &'a [u8], Operation> for OpParser {
+impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
             Instruction::new(mnemonic::NOP, address_mode::Implied).map(|i| {

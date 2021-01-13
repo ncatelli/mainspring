@@ -41,7 +41,6 @@ impl Offset for Operation {
 }
 
 impl Execute<MOS6502> for Operation {
-    #[allow(unconditional_recursion)]
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         (self.callback)(cpu)
     }

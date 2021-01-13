@@ -6,14 +6,14 @@ use crate::{
         memory::{Memory, ReadWrite},
         AddressMap, Addressable,
     },
-    cpu::{
-        register::{GeneralPurpose, ProcessorStatus, ProgramCounter, Register, StackPointer},
-        Cyclable, Offset, StepState, CPU,
-    },
+    cpu::{register::Register, Cyclable, Offset, StepState, CPU},
 };
 
 #[cfg(test)]
 mod tests;
+
+pub mod register;
+use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
 
 pub mod operations;
 use operations::Operation;

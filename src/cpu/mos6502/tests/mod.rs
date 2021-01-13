@@ -1,5 +1,9 @@
 use crate::address_map::memory::{Memory, ReadOnly};
-use crate::cpu::{mos6502::MOS6502, register, register::Register, CPU};
+use crate::cpu::{
+    mos6502::{register, MOS6502},
+    register::Register,
+    CPU,
+};
 
 #[test]
 fn should_cycle_on_nop_operation() {

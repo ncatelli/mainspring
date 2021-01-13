@@ -59,24 +59,27 @@ impl std::convert::TryFrom<&[u8; 3]> for Operation {
     }
 }
 
+/// Macros to simplify definition of instruction set parsers. by hiding the
+/// process of converting an instruction parser to its corresponding operation
+macro_rules! inst_to_operation {
+    ($inst:expr) => {
+        $inst.map(Into::into)
+    };
+    ($mnemonic:expr, $addrmode:expr) => {
+        Instruction::new($mnemonic, $addrmode).map(Into::into)
+    };
+}
+
 /// Provides a wrapper type for parsing byte slices into Operations.
 struct OperationParser;
 
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
-            Instruction::new(mnemonic::NOP, address_mode::Implied).map(|i| {
-                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
-            }),
-            Instruction::new(mnemonic::LDA, address_mode::Immediate::default()).map(|i| {
-                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
-            }),
-            Instruction::new(mnemonic::STA, address_mode::Absolute::default()).map(|i| {
-                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
-            }),
-            Instruction::new(mnemonic::JMP, address_mode::Absolute::default()).map(|i| {
-                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
-            }),
+            inst_to_operation!(mnemonic::NOP, address_mode::Implied),
+            inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
         ])
         .parse(input)
     }
@@ -124,6 +127,21 @@ where
 {
     fn offset(&self) -> usize {
         self.mnemonic.offset() + self.address_mode.offset()
+    }
+}
+
+impl<M, A> Into<Operation> for Instruction<M, A>
+where
+    M: Cyclable + Offset + Copy + Debug + PartialEq + 'static,
+    A: Cyclable + Offset + Copy + Debug + PartialEq + 'static,
+    Self: Execute<MOS6502>,
+{
+    fn into(self) -> Operation {
+        Operation::new(
+            self.offset(),
+            self.cycles(),
+            Box::new(move |cpu| self.execute(cpu)),
+        )
     }
 }
 

@@ -18,7 +18,7 @@ use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
 pub mod operations;
 use operations::Operation;
 
-trait Execute<T> {
+pub trait Execute<T> {
     fn execute(self, cpu: T) -> T;
 }
 

@@ -63,9 +63,21 @@ pub struct OpParser;
 
 impl<'a> Parser<'a, &'a [u8], Operation> for OpParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
-        parcel::one_of(vec![Instruction::new(mnemonic::NOP, address_mode::Implied)])
-            .map(|i| Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu))))
-            .parse(input)
+        parcel::one_of(vec![
+            Instruction::new(mnemonic::NOP, address_mode::Implied).map(|i| {
+                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
+            }),
+            Instruction::new(mnemonic::LDA, address_mode::Immediate::default()).map(|i| {
+                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
+            }),
+            Instruction::new(mnemonic::STA, address_mode::Absolute::default()).map(|i| {
+                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
+            }),
+            Instruction::new(mnemonic::JMP, address_mode::Absolute::default()).map(|i| {
+                Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu)))
+            }),
+        ])
+        .parse(input)
     }
 }
 
@@ -116,16 +128,6 @@ where
 
 /// LDA
 
-impl std::convert::TryFrom<&[u8; 3]> for Instruction<mnemonic::LDA, address_mode::Immediate> {
-    type Error = String;
-    fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
-        match Instruction::new(mnemonic::LDA, address_mode::Immediate::default()).parse(values) {
-            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
-            _ => Err(format!("No match found for {}", values[0])),
-        }
-    }
-}
-
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate>>
     for Instruction<mnemonic::LDA, address_mode::Immediate>
 {
@@ -137,6 +139,12 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate
             .and_then(|_| address_mode::Immediate::default())
             .map(|am| Instruction::new(mnemonic::LDA, am))
             .parse(input)
+    }
+}
+
+impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Immediate> {
+    fn execute(self, _cpu: MOS6502) -> MOS6502 {
+        todo!()
     }
 }
 
@@ -166,17 +174,13 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>
     }
 }
 
-/// NOP
-
-impl std::convert::TryFrom<&[u8; 3]> for Instruction<mnemonic::NOP, address_mode::Implied> {
-    type Error = String;
-    fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
-        match Instruction::new(mnemonic::NOP, address_mode::Implied).parse(values) {
-            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
-            _ => Err(format!("No match found for {}", values[0])),
-        }
+impl Execute<MOS6502> for Instruction<mnemonic::STA, address_mode::Absolute> {
+    fn execute(self, _cpu: MOS6502) -> MOS6502 {
+        todo!()
     }
 }
+
+/// NOP
 
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::NOP, address_mode::Implied>>
     for Instruction<mnemonic::NOP, address_mode::Implied>
@@ -221,5 +225,11 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>
             .and_then(|_| address_mode::Absolute::default())
             .map(|am| Instruction::new(mnemonic::JMP, am))
             .parse(input)
+    }
+}
+
+impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Absolute> {
+    fn execute(self, _cpu: MOS6502) -> MOS6502 {
+        todo!()
     }
 }

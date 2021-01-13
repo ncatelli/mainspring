@@ -16,7 +16,7 @@ use crate::{
 mod tests;
 
 pub mod operations;
-use operations::Instruction;
+use operations::Operation;
 
 trait Execute<T> {
     fn execute(self, cpu: T) -> T;
@@ -141,7 +141,7 @@ impl CPU<MOS6502> for StepState<MOS6502> {
             ];
 
             // Parse correct operation
-            let oper: Instruction<_, _> = TryFrom::try_from(&opcodes).unwrap();
+            let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
 
             // set pc offsets and cycles as defined by operation.
             let offset = oper.offset() as u16;

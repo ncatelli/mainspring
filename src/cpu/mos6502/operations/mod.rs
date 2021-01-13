@@ -12,7 +12,62 @@ pub mod mnemonic;
 #[cfg(test)]
 mod tests;
 
-pub struct Operation();
+pub struct Operation {
+    offset: usize,
+    cycles: usize,
+    callback: Box<dyn Fn(MOS6502) -> MOS6502>,
+}
+
+impl Operation {
+    pub fn new(offset: usize, cycles: usize, callback: Box<dyn Fn(MOS6502) -> MOS6502>) -> Self {
+        Self {
+            offset,
+            cycles,
+            callback,
+        }
+    }
+}
+
+impl Cyclable for Operation {
+    fn cycles(&self) -> usize {
+        self.cycles
+    }
+}
+
+impl Offset for Operation {
+    fn offset(&self) -> usize {
+        self.offset
+    }
+}
+
+impl Execute<MOS6502> for Operation {
+    #[allow(unconditional_recursion)]
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        (self.callback)(cpu)
+    }
+}
+
+impl std::convert::TryFrom<&[u8; 3]> for Operation {
+    type Error = String;
+    fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
+        match OpParser.parse(values) {
+            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
+            _ => Err(format!("No match found for {}", values[0])),
+        }
+    }
+}
+
+/// Provides a
+#[derive(Clone, Copy, Default)]
+pub struct OpParser;
+
+impl<'a> Parser<'a, &'a [u8], Operation> for OpParser {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
+        parcel::one_of(vec![Instruction::new(mnemonic::NOP, address_mode::Implied)])
+            .map(|i| Operation::new(i.offset(), i.cycles(), Box::new(move |cpu| i.execute(cpu))))
+            .parse(input)
+    }
+}
 
 /// Instruction takes a mnemonic and address mode as arguments for sizing
 /// and operations.

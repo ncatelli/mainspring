@@ -157,7 +157,7 @@ pub struct TSX;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TXS;
 
-// Stack Instructions
+// Stack Operations
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PHA;
 

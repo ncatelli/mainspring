@@ -1,6 +1,7 @@
 extern crate parcel;
 use crate::cpu::{
-    mos6502::{Execute, MOS6502},
+    mos6502::{register::ProgramCounter, Execute, MOS6502},
+    register::Register,
     Cyclable, Offset,
 };
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
@@ -209,7 +210,8 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>
 }
 
 impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Absolute> {
-    fn execute(self, _cpu: MOS6502) -> MOS6502 {
-        todo!()
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let address_mode::Absolute(addr) = self.address_mode;
+        cpu.with_pc_register(ProgramCounter::with_value(addr - self.offset() as u16))
     }
 }

@@ -179,7 +179,7 @@ pub struct JMP;
 
 impl Cyclable for JMP {
     fn cycles(&self) -> usize {
-        2
+        1
     }
 }
 

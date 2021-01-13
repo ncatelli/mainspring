@@ -145,10 +145,12 @@ impl CPU<MOS6502> for StepState<MOS6502> {
 
             // set pc offsets and cycles as defined by operation.
             let offset = oper.offset() as u16;
+            let cycles = oper.cycles();
+            let executed_state = oper.execute(mos);
+            let espc = executed_state.pc.read();
             StepState::new(
-                oper.cycles(),
-                oper.execute(mos)
-                    .with_pc_register(ProgramCounter::with_value(pc + offset)),
+                cycles,
+                executed_state.with_pc_register(ProgramCounter::with_value(espc + offset)),
             )
         }
     }

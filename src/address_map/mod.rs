@@ -12,7 +12,7 @@ type RegistrationError = String;
 
 /// Addressable implements the trait for addressable memory in an address map.
 /// this can represent IO, RAM, ROM, etc...
-pub trait Addressable<O>
+pub trait Addressable<O>: AddressableClone<O>
 where
     O: Into<usize> + Debug + Clone + Copy,
 {
@@ -20,11 +20,34 @@ where
     fn write(&mut self, offset: O, data: u8) -> Result<u8, WriteError>;
 }
 
+impl<O> Clone for Box<dyn Addressable<O>>
+where
+    O: Into<usize> + Debug + Clone + Copy,
+{
+    fn clone(&self) -> Box<dyn Addressable<O>> {
+        self.clone_box()
+    }
+}
+
+pub trait AddressableClone<O> {
+    fn clone_box(&self) -> Box<dyn Addressable<O>>;
+}
+
+impl<T, O> AddressableClone<O> for T
+where
+    T: 'static + Addressable<O> + Clone,
+    O: Into<usize> + Debug + Clone + Copy,
+{
+    fn clone_box(&self) -> Box<dyn Addressable<O>> {
+        Box::new(self.clone())
+    }
+}
+
 /// AddressMap contains a mapping of address spaces to corresponding addressable
 /// IO with the purpose of acting as an address map. This time is, additionally,
 /// an implementation Addressable allowing all other components to interact with
 /// it as if it were a bus.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AddressMap<O: Into<usize>>
 where
     O: Into<usize> + Debug + Clone + Copy,
@@ -82,7 +105,7 @@ where
 
 impl<T> Addressable<T> for AddressMap<T>
 where
-    T: Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
+    T: 'static + Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
 {
     /// Reads a single byte at the specified address
     fn read(&self, addr: T) -> u8 {

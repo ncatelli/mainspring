@@ -18,6 +18,7 @@ pub trait CPU<T> {
 }
 
 /// Stores state between cycles.
+#[derive(Clone)]
 pub struct StepState<T> {
     remaining: usize, // Remaining cycles in operation
     cpu: T,

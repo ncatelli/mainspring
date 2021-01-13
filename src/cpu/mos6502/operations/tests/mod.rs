@@ -8,7 +8,7 @@ fn should_parse_implied_address_mode_nop_instruction() {
     let operation = TryFrom::try_from(&bytecode);
 
     assert_eq!(
-        Ok(Operation::new(mnemonic::NOP, address_mode::Implied)),
+        Ok(Instruction::new(mnemonic::NOP, address_mode::Implied)),
         operation
     );
 }
@@ -19,7 +19,10 @@ fn should_parse_immediate_address_mode_lda_instruction() {
     let operation = TryFrom::try_from(&bytecode);
 
     assert_eq!(
-        Ok(Operation::new(mnemonic::LDA, address_mode::Immediate(0x12))),
+        Ok(Instruction::new(
+            mnemonic::LDA,
+            address_mode::Immediate(0x12)
+        )),
         operation
     );
 }
@@ -30,7 +33,7 @@ fn should_parse_absolute_address_mode_sta_instruction() {
     let operation = TryFrom::try_from(&bytecode);
 
     assert_eq!(
-        Ok(Operation::new(
+        Ok(Instruction::new(
             mnemonic::STA,
             address_mode::Absolute(0x1234)
         )),
@@ -44,7 +47,7 @@ fn should_parse_absolute_address_mode_jmp_instruction() {
     let operation = TryFrom::try_from(&bytecode);
 
     assert_eq!(
-        Ok(Operation::new(
+        Ok(Instruction::new(
             mnemonic::JMP,
             address_mode::Absolute(0x1234)
         )),

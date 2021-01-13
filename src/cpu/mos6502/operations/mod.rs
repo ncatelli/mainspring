@@ -150,16 +150,6 @@ impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Immediate> {
 
 /// STA
 
-impl std::convert::TryFrom<&[u8; 3]> for Instruction<mnemonic::STA, address_mode::Absolute> {
-    type Error = String;
-    fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
-        match Instruction::new(mnemonic::STA, address_mode::Absolute::default()).parse(values) {
-            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
-            _ => Err(format!("No match found for {}", values[0])),
-        }
-    }
-}
-
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>>
     for Instruction<mnemonic::STA, address_mode::Absolute>
 {
@@ -203,16 +193,6 @@ impl Execute<MOS6502> for Instruction<mnemonic::NOP, address_mode::Implied> {
 }
 
 // JMP
-
-impl std::convert::TryFrom<&[u8; 3]> for Instruction<mnemonic::JMP, address_mode::Absolute> {
-    type Error = String;
-    fn try_from(values: &[u8; 3]) -> std::result::Result<Self, Self::Error> {
-        match Instruction::new(mnemonic::JMP, address_mode::Absolute::default()).parse(values) {
-            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
-            _ => Err(format!("No match found for {}", values[0])),
-        }
-    }
-}
 
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>>
     for Instruction<mnemonic::JMP, address_mode::Absolute>

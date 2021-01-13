@@ -2,7 +2,7 @@ use crate::address_map::memory::{Memory, ReadOnly};
 use crate::cpu::{
     mos6502::{register, MOS6502},
     register::Register,
-    CPU,
+    StepState,
 };
 
 #[test]
@@ -25,14 +25,17 @@ fn should_cycle_on_nop_operation() {
         .unwrap();
 
     // validate first step execs
-    let state = cpu.step();
-    assert_eq!(1, state.remaining);
-    assert_eq!(0x6001, state.cpu.pc.read());
+
+    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+        .into_iter()
+        .take(3)
+        .collect();
+    assert_eq!(1, states.first().unwrap().remaining);
+    assert_eq!(0x6001, states.first().unwrap().cpu.pc.read());
 
     // run 2 more cycles and validate next nop is picked up
-    let state = state.step().step();
-    assert_eq!(1, state.remaining);
-    assert_eq!(0x6002, state.cpu.pc.read());
+    assert_eq!(1, states.last().unwrap().remaining);
+    assert_eq!(0x6002, states.last().unwrap().cpu.pc.read());
 }
 
 #[test]
@@ -57,13 +60,15 @@ fn should_cycle_on_jmp_operation() {
         )
         .unwrap();
 
-    // validate first step execs
-    let state = cpu.step();
-    assert_eq!(1, state.remaining);
-    assert_eq!(0x6001, state.cpu.pc.read());
-
     // run 2 more cycles and validate next op, a jmp, is picked up
-    let state = state.step().step().step().step();
-    assert_eq!(0, state.remaining);
-    assert_eq!(0x6000, state.cpu.pc.read());
+    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+        .into_iter()
+        .take(5)
+        .collect();
+
+    assert_eq!(1, states.first().unwrap().remaining);
+    assert_eq!(0x6001, states.first().unwrap().cpu.pc.read());
+
+    assert_eq!(0, states.last().unwrap().remaining);
+    assert_eq!(0x6000, states.last().unwrap().cpu.pc.read());
 }

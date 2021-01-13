@@ -49,6 +49,12 @@ impl<T> StepState<T> {
     }
 }
 
+impl<T> From<T> for StepState<T> {
+    fn from(src: T) -> Self {
+        StepState::new(1, src)
+    }
+}
+
 impl<T> From<StepState<T>> for (usize, T) {
     fn from(stepstate: StepState<T>) -> Self {
         (stepstate.remaining, stepstate.cpu)

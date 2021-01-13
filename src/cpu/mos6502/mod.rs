@@ -163,21 +163,32 @@ impl IntoIterator for MOS6502 {
     fn into_iter(self) -> Self::IntoIter {
         let cpu_state = StepState::new(1, self);
 
-        CPUIntoIterator { cpu_state }
+        CPUIntoIterator { state: cpu_state }
+    }
+}
+
+impl IntoIterator for StepState<MOS6502> {
+    type Item = StepState<MOS6502>;
+    type IntoIter = CPUIntoIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let cpu_state = self;
+
+        CPUIntoIterator { state: cpu_state }
     }
 }
 
 pub struct CPUIntoIterator {
-    cpu_state: StepState<MOS6502>,
+    state: StepState<MOS6502>,
 }
 
 impl Iterator for CPUIntoIterator {
     type Item = StepState<MOS6502>;
 
     fn next(&mut self) -> Option<StepState<MOS6502>> {
-        let cpu = self.cpu_state.clone();
+        let cpu = self.state.clone();
         let new_state = cpu.step();
-        self.cpu_state = new_state.clone();
+        self.state = new_state.clone();
 
         Some(new_state)
     }

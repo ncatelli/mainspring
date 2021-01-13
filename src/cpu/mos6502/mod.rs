@@ -6,20 +6,20 @@ use crate::{
         memory::{Memory, ReadWrite},
         AddressMap, Addressable,
     },
-    cpu::{
-        register::{GeneralPurpose, ProcessorStatus, ProgramCounter, Register, StackPointer},
-        Cyclable, Offset, StepState, CPU,
-    },
+    cpu::{register::Register, Cyclable, Offset, StepState, CPU},
 };
 
 #[cfg(test)]
 mod tests;
 
+pub mod register;
+use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
+
 pub mod operations;
-use operations::{address_mode, mnemonic, Operation};
+use operations::Operation;
 
 trait Execute<T> {
-    fn execute(self, operation: T) -> Self;
+    fn execute(self, cpu: T) -> T;
 }
 
 /// Represets each type of general purpose register available in the mos6502.
@@ -141,21 +141,17 @@ impl CPU<MOS6502> for StepState<MOS6502> {
             ];
 
             // Parse correct operation
-            let oper: Operation<_, _> = TryFrom::try_from(&opcodes).unwrap();
+            let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
 
             // set pc offsets and cycles as defined by operation.
             let offset = oper.offset() as u16;
+            let cycles = oper.cycles();
+            let executed_state = oper.execute(mos);
+            let espc = executed_state.pc.read();
             StepState::new(
-                oper.cycles(),
-                mos.execute(oper)
-                    .with_pc_register(ProgramCounter::with_value(pc + offset)),
+                cycles,
+                executed_state.with_pc_register(ProgramCounter::with_value(espc + offset)),
             )
         }
-    }
-}
-
-impl Execute<Operation<mnemonic::NOP, address_mode::Implied>> for MOS6502 {
-    fn execute(self, _: Operation<mnemonic::NOP, address_mode::Implied>) -> Self {
-        self
     }
 }

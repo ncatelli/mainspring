@@ -179,7 +179,7 @@ pub struct JMP;
 
 impl Cyclable for JMP {
     fn cycles(&self) -> usize {
-        2
+        1
     }
 }
 
@@ -232,7 +232,7 @@ pub struct CLV;
 pub struct BRK;
 
 /// Represents a `nop` instruction, only implemented for the implied address
-/// mode and functions as a "No Operation".
+/// mode and functions as a "No Instruction".
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NOP;
 

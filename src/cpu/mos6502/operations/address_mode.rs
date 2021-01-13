@@ -37,7 +37,7 @@ impl Offset for Immediate {}
 
 impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Immediate> {
-        any_byte().map(|b| Immediate(b)).parse(input)
+        any_byte().map(Immediate).parse(input)
     }
 }
 

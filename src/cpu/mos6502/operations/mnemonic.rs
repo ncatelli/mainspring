@@ -6,12 +6,7 @@ use parcel::{ParseResult, Parser};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LDA;
 
-impl Cyclable for LDA {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
-
+impl Cyclable for LDA {}
 impl Offset for LDA {}
 
 impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
@@ -36,7 +31,6 @@ impl Cyclable for STA {
         2
     }
 }
-
 impl Offset for STA {}
 
 impl<'a> Parser<'a, &'a [u8], STA> for STA {

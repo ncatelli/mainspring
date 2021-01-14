@@ -17,14 +17,17 @@ impl std::fmt::Display for MemoryErr {
 
 /// Represents a ReadOnly type of memory. This is entirely used for
 /// typechecking and has no other practical uses.
-pub struct ReadOnly {}
+#[derive(Clone, Copy)]
+pub struct ReadOnly;
 
 /// Represents a ReadWrite type of memory. This is entirely used for
 /// typechecking and has no other practical uses.
-pub struct ReadWrite {}
+#[derive(Clone, Copy)]
+pub struct ReadWrite;
 
 /// Represents an addressable segment of memory, be it RAM or ROM.
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct Memory<T> {
     mem_type: PhantomData<T>,
     start_address: u16,

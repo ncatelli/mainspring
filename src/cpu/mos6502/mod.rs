@@ -31,7 +31,7 @@ pub enum GPRegister {
 }
 
 /// MOS6502 represents the 6502 CPU
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MOS6502 {
     address_map: AddressMap<u16>,
     pub acc: GeneralPurpose,
@@ -153,5 +153,43 @@ impl CPU<MOS6502> for StepState<MOS6502> {
                 executed_state.with_pc_register(ProgramCounter::with_value(espc + offset)),
             )
         }
+    }
+}
+
+impl IntoIterator for MOS6502 {
+    type Item = StepState<MOS6502>;
+    type IntoIter = CPUIntoIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let cpu_state = StepState::new(1, self);
+
+        CPUIntoIterator { state: cpu_state }
+    }
+}
+
+impl IntoIterator for StepState<MOS6502> {
+    type Item = StepState<MOS6502>;
+    type IntoIter = CPUIntoIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let cpu_state = self;
+
+        CPUIntoIterator { state: cpu_state }
+    }
+}
+
+pub struct CPUIntoIterator {
+    state: StepState<MOS6502>,
+}
+
+impl Iterator for CPUIntoIterator {
+    type Item = StepState<MOS6502>;
+
+    fn next(&mut self) -> Option<StepState<MOS6502>> {
+        let cpu = self.state.clone();
+        let new_state = cpu.step();
+        self.state = new_state.clone();
+
+        Some(new_state)
     }
 }

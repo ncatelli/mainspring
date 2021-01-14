@@ -18,6 +18,7 @@ pub trait CPU<T> {
 }
 
 /// Stores state between cycles.
+#[derive(Clone)]
 pub struct StepState<T> {
     remaining: usize, // Remaining cycles in operation
     cpu: T,
@@ -45,6 +46,12 @@ impl<T> StepState<T> {
 
     pub fn unwrap(self) -> T {
         self.cpu
+    }
+}
+
+impl<T> From<T> for StepState<T> {
+    fn from(src: T) -> Self {
+        StepState::new(1, src)
     }
 }
 

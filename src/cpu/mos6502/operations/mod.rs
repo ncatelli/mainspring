@@ -1,6 +1,7 @@
 extern crate parcel;
+use crate::address_map::Addressable;
 use crate::cpu::{
-    mos6502::{register::ProgramCounter, Execute, MOS6502},
+    mos6502::{register::*, Execute, GPRegister, MOS6502},
     register::Register,
     Cyclable, Offset,
 };
@@ -162,8 +163,9 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate
 }
 
 impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Immediate> {
-    fn execute(self, _cpu: MOS6502) -> MOS6502 {
-        todo!()
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let address_mode::Immediate(value) = self.address_mode;
+        cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
     }
 }
 
@@ -184,8 +186,13 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>
 }
 
 impl Execute<MOS6502> for Instruction<mnemonic::STA, address_mode::Absolute> {
-    fn execute(self, _cpu: MOS6502) -> MOS6502 {
-        todo!()
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let address_mode::Absolute(addr) = self.address_mode;
+        let acc_val = cpu.acc.read();
+
+        let mut cpu = cpu;
+        cpu.address_map.write(addr, acc_val).unwrap();
+        cpu
     }
 }
 

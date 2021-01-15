@@ -72,6 +72,25 @@ pub struct Relative(i8);
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Indirect(u16);
 
+impl Cyclable for Indirect {
+    fn cycles(&self) -> usize {
+        4
+    }
+}
+impl Offset for Indirect {
+    fn offset(&self) -> usize {
+        2
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Indirect> for Indirect {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Indirect> {
+        parcel::take_n(any_byte(), 2)
+            .map(|b| Indirect(u16::from_le_bytes([b[0], b[1]])))
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AbsoluteIndexedWithX(u16);
 

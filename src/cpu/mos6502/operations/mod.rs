@@ -79,6 +79,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
         parcel::one_of(vec![
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Indirect::default()),
@@ -167,6 +168,28 @@ impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Immediate> {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         let address_mode::Immediate(value) = self.address_mode;
         cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Absolute>>
+    for Instruction<mnemonic::LDA, address_mode::Absolute>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::Absolute>> {
+        expect_byte(0xad)
+            .and_then(|_| address_mode::Absolute::default())
+            .map(|am| Instruction::new(mnemonic::LDA, am))
+            .parse(input)
+    }
+}
+
+impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Absolute> {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let address_mode::Absolute(addr) = self.address_mode;
+        let val = cpu.address_map.read(addr);
+        cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(val))
     }
 }
 

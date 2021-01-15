@@ -56,6 +56,29 @@ fn should_cycle_on_lda_immediate_operation() {
 }
 
 #[test]
+fn should_cycle_on_lda_absolute_operation() {
+    let (ram_start, ram_end) = (0x0200, 0x5fff);
+    let cpu = generate_test_cpu_with_instructions(vec![0xad, 0x00, 0x02])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .register_address_space(
+            ram_start..ram_end,
+            Memory::<ReadWrite>::new(ram_start, ram_end),
+        )
+        .unwrap();
+
+    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+        .into_iter()
+        .take(3)
+        .collect();
+
+    assert_eq!(0, states.last().unwrap().remaining);
+
+    // val in mem should be null
+    assert_eq!(0x00, states.last().unwrap().cpu.acc.read());
+    assert_eq!(0x00, states.last().unwrap().cpu.address_map.read(0x0200));
+}
+
+#[test]
 fn should_cycle_on_sta_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8d, 0x00, 0x02])

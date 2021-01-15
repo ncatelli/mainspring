@@ -78,15 +78,24 @@ fn should_cycle_on_sta_absolute_operation() {
 
 #[test]
 fn should_cycle_on_jmp_absolute_operation() {
-    let cpu = generate_test_cpu_with_instructions(vec![0xea, 0x4c, 0x50, 0x60]);
+    let cpu = generate_test_cpu_with_instructions(vec![0x4c, 0x50, 0x60]);
+    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+        .into_iter()
+        .take(3)
+        .collect();
+
+    assert_eq!(0, states.last().unwrap().remaining);
+    assert_eq!(0x6050, states.last().unwrap().cpu.pc.read());
+}
+
+#[test]
+fn should_cycle_on_jmp_indirect_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x6c, 0x50, 0x60]);
     let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
         .take(5)
         .collect();
 
-    assert_eq!(1, states.first().unwrap().remaining);
-    assert_eq!(0x6001, states.first().unwrap().cpu.pc.read());
-
     assert_eq!(0, states.last().unwrap().remaining);
-    assert_eq!(0x6050, states.last().unwrap().cpu.pc.read());
+    assert_eq!(0xeaea, states.last().unwrap().cpu.pc.read());
 }

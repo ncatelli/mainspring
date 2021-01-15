@@ -81,6 +81,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::JMP, address_mode::Indirect::default()),
         ])
         .parse(input)
     }
@@ -237,6 +238,30 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>
 impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Absolute> {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         let address_mode::Absolute(addr) = self.address_mode;
+        cpu.with_pc_register(ProgramCounter::with_value(addr - self.offset() as u16))
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Indirect>>
+    for Instruction<mnemonic::JMP, address_mode::Indirect>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Instruction<mnemonic::JMP, address_mode::Indirect>> {
+        expect_byte(0x6c)
+            .and_then(|_| address_mode::Indirect::default())
+            .map(|am| Instruction::new(mnemonic::JMP, am))
+            .parse(input)
+    }
+}
+
+impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Indirect> {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let address_mode::Indirect(indirect_addr) = self.address_mode;
+        let lsb = cpu.address_map.read(indirect_addr);
+        let msb = cpu.address_map.read(indirect_addr + 1);
+        let addr = u16::from_le_bytes([lsb, msb]);
         cpu.with_pc_register(ProgramCounter::with_value(addr - self.offset() as u16))
     }
 }

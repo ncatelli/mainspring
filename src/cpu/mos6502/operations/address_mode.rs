@@ -69,8 +69,8 @@ pub struct ZeroPage(u8);
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Relative(i8);
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Indirect(u16);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Indirect(pub u16);
 
 impl Cyclable for Indirect {
     fn cycles(&self) -> usize {

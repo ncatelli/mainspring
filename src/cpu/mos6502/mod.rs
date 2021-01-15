@@ -1,5 +1,6 @@
 extern crate parcel;
 use std::convert::TryFrom;
+use std::ops::Range;
 
 use crate::{
     address_map::{
@@ -52,6 +53,18 @@ impl MOS6502 {
         let mut cpu = Self::default();
         cpu.address_map = am;
         cpu
+    }
+
+    /// attempts to wrap address space registration for the sake of chainability.
+    pub fn register_address_space(
+        mut self,
+        space: Range<u16>,
+        addr_space: impl Addressable<u16> + 'static,
+    ) -> Result<Self, String> {
+        let am = self.address_map;
+        self.address_map = am.register(space, Box::new(addr_space))?;
+
+        Ok(self)
     }
 
     /// emulates the reset process of the CPU.

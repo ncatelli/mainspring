@@ -55,7 +55,32 @@ impl MOS6502 {
         cpu
     }
 
-    /// attempts to wrap address space registration for the sake of chainability.
+    /// Functions as a wrapper around the `with_addressmap` and `register`
+    /// methods in a way that conforms to the builder pattern and facilitates
+    /// chainability of the registration. As such this method _can_ fail and
+    /// will forward the errors from the above methods in any case that it
+    /// fails.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mos6502_emulator::address_map::{
+    ///     memory::{Memory, ReadOnly},
+    ///     Addressable,
+    /// };
+    /// use mos6502_emulator::cpu::mos6502::MOS6502;
+    ///
+    /// let (start_addr, stop_addr) = (0x6000, 0x7000);
+    /// let nop_sled = [0xea; 0x7000 - 0x6000].to_vec();
+    ///
+    /// assert!(
+    ///     MOS6502::default()
+    ///         .register_address_space(
+    ///             start_addr..stop_addr,
+    ///             Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
+    ///         ).is_ok()
+    ///     )
+    /// ```
     pub fn register_address_space(
         mut self,
         space: Range<u16>,

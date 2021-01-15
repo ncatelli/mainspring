@@ -9,9 +9,8 @@ use crate::cpu::{
 };
 
 fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
-    let (nop_sled_start, nop_sled_end) = (0x6000, 0x7000);
-    let mut nop_sled = Vec::<u8>::new();
-    nop_sled.resize((nop_sled_end - nop_sled_start) as usize, 0xea);
+    let (start_addr, stop_addr) = (0x6000, 0x7000);
+    let mut nop_sled = [0xea; 0x7000 - 0x6000].to_vec();
     for (index, val) in opcodes.into_iter().enumerate() {
         nop_sled[index] = val;
     }
@@ -19,10 +18,10 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
     let cpu = MOS6502::default()
         .reset()
         .unwrap()
-        .with_pc_register(register::ProgramCounter::with_value(0x6000))
+        .with_pc_register(register::ProgramCounter::with_value(start_addr))
         .register_address_space(
-            nop_sled_start..nop_sled_end,
-            Memory::<ReadOnly>::new(nop_sled_start, nop_sled_end).load(nop_sled),
+            start_addr..stop_addr,
+            Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
         )
         .unwrap();
     cpu

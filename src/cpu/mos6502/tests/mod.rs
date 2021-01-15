@@ -15,7 +15,7 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
         nop_sled[index] = val;
     }
 
-    let cpu = MOS6502::default()
+    MOS6502::default()
         .reset()
         .unwrap()
         .with_pc_register(register::ProgramCounter::with_value(start_addr))
@@ -23,19 +23,17 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
             start_addr..stop_addr,
             Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
         )
-        .unwrap();
-    cpu
+        .unwrap()
 }
 
 #[test]
 fn should_cycle_on_nop_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![]);
-
-    // validate first step execs
     let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
         .take(3)
         .collect();
+
     assert_eq!(1, states.first().unwrap().remaining);
     assert_eq!(0x6001, states.first().unwrap().cpu.pc.read());
 
@@ -47,7 +45,6 @@ fn should_cycle_on_nop_implied_operation() {
 #[test]
 fn should_cycle_on_lda_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa9, 0xff]);
-
     let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
         .take(2)
@@ -82,7 +79,6 @@ fn should_cycle_on_sta_absolute_operation() {
 #[test]
 fn should_cycle_on_jmp_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xea, 0x4c, 0x50, 0x60]);
-
     let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
         .take(5)

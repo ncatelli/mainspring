@@ -183,7 +183,7 @@ impl<'a> Parser<'a, &'a [u8], JMP> for JMP {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], JMP> {
         parcel::one_of(vec![
             parcel::parsers::byte::expect_byte(0x4c),
-            //parcel::parsers::byte::expect_byte(0x6c), // TODO: implemente indirect
+            parcel::parsers::byte::expect_byte(0x6c),
         ])
         .map(|_| JMP)
         .parse(input)

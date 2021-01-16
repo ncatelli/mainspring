@@ -33,29 +33,29 @@ impl WriteMemory {
 
 /// Represents a write of the specified 8-bit value to the A register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteAccRegister(u8);
+pub struct WriteAccRegister(pub u8);
 
 /// Represents a write of the specified 8-bit value to the X register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteXRegister(u8);
+pub struct WriteXRegister(pub u8);
 
 /// Represents a write of the specified 8-bit value to the Y register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteYRegister(u8);
+pub struct WriteYRegister(pub u8);
 
 /// Represents a write of the specified 8-bit value to the ProgramStatus
 /// register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WritePSRegister(u8);
+pub struct WritePSRegister(pub u8);
 
 /// Represents a write of the specified 8-bit value to the StackPointer
 /// register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteSPRegister(u8);
+pub struct WriteSPRegister(pub u8);
 
 // 16-bit registers
 
 /// Represents a write of the specified 16-bit value to the ProgramCounter
 /// register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WritePCRegister(u16);
+pub struct WritePCRegister(pub u16);

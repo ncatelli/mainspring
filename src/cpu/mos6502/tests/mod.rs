@@ -45,14 +45,14 @@ fn should_cycle_on_nop_implied_operation() {
 #[test]
 fn should_cycle_on_lda_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa9, 0xff]);
-    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+    let state = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
-        .take(2)
-        .collect();
+        .nth(0)
+        .unwrap();
 
-    assert_eq!(1, states.first().unwrap().remaining);
-    assert_eq!(0x6002, states.first().unwrap().cpu.pc.read());
-    assert_eq!(0xff, states.first().unwrap().cpu.acc.read());
+    assert_eq!(1, state.remaining);
+    assert_eq!(0x6002, state.cpu.pc.read());
+    assert_eq!(0xff, state.cpu.acc.read());
 }
 
 #[test]
@@ -66,16 +66,16 @@ fn should_cycle_on_lda_absolute_operation() {
         )
         .unwrap();
 
-    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+    let state = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
-        .take(3)
-        .collect();
+        .nth(2)
+        .unwrap();
 
-    assert_eq!(0, states.last().unwrap().remaining);
+    assert_eq!(0, state.remaining);
 
     // val in mem should be null
-    assert_eq!(0x00, states.last().unwrap().cpu.acc.read());
-    assert_eq!(0x00, states.last().unwrap().cpu.address_map.read(0x0200));
+    assert_eq!(0x00, state.cpu.acc.read());
+    assert_eq!(0x00, state.cpu.address_map.read(0x0200));
 }
 
 #[test]
@@ -89,36 +89,36 @@ fn should_cycle_on_sta_absolute_operation() {
         )
         .unwrap();
 
-    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+    let state = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
-        .take(4)
-        .collect();
+        .nth(3)
+        .unwrap();
 
-    assert_eq!(0, states.last().unwrap().remaining);
-    assert_eq!(0xff, states.last().unwrap().cpu.acc.read());
-    assert_eq!(0xff, states.last().unwrap().cpu.address_map.read(0x0200));
+    assert_eq!(0, state.remaining);
+    assert_eq!(0xff, state.cpu.acc.read());
+    assert_eq!(0xff, state.cpu.address_map.read(0x0200));
 }
 
 #[test]
 fn should_cycle_on_jmp_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x4c, 0x50, 0x60]);
-    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+    let state = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
-        .take(3)
-        .collect();
+        .nth(2)
+        .unwrap();
 
-    assert_eq!(0, states.last().unwrap().remaining);
-    assert_eq!(0x6050, states.last().unwrap().cpu.pc.read());
+    assert_eq!(0, state.remaining);
+    assert_eq!(0x6050, state.cpu.pc.read());
 }
 
 #[test]
 fn should_cycle_on_jmp_indirect_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x6c, 0x50, 0x60]);
-    let states: Vec<StepState<MOS6502>> = Into::<StepState<MOS6502>>::into(cpu)
+    let state = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
-        .take(5)
-        .collect();
+        .nth(4)
+        .unwrap();
 
-    assert_eq!(0, states.last().unwrap().remaining);
-    assert_eq!(0xeaea, states.last().unwrap().cpu.pc.read());
+    assert_eq!(0, state.remaining);
+    assert_eq!(0xeaea, state.cpu.pc.read());
 }

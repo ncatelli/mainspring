@@ -1,5 +1,24 @@
 use crate::cpu::register::Register;
 
+/// Represets each type of register available in the mos6502.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Registers {
+    PC,
+    ACC,
+    X,
+    Y,
+    PS,
+    SP,
+}
+
+/// Represets each type of general purpose register available in the mos6502.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum GPRegister {
+    ACC,
+    X,
+    Y,
+}
+
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct GeneralPurpose {
     inner: u8,

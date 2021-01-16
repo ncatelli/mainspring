@@ -14,21 +14,15 @@ use crate::{
 mod tests;
 
 pub mod register;
-use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
+use register::{GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
 
 pub mod operations;
 use operations::Operation;
 
+pub mod microcode;
+
 pub trait Execute<T> {
     fn execute(self, cpu: T) -> T;
-}
-
-/// Represets each type of general purpose register available in the mos6502.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum GPRegister {
-    ACC,
-    X,
-    Y,
 }
 
 /// MOS6502 represents the 6502 CPU

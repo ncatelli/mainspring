@@ -165,7 +165,7 @@ impl CPU<MOS6502> for MOS6502 {
         let state = self
             .clone()
             .into_iter()
-            .map(|mop| Into::<Vec<Vec<microcode::Microcode>>>::into(mop))
+            .map(Into::<Vec<Vec<microcode::Microcode>>>::into)
             .flatten() // flatten instructions to cycles
             .take(cycles)
             .flatten()

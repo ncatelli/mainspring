@@ -14,7 +14,7 @@ pub trait Offset {
 }
 
 pub trait CPU<T> {
-    fn step(self) -> T;
+    fn run(self, cycles: usize) -> StepState<T>;
 }
 
 /// Stores state between cycles.

@@ -160,6 +160,27 @@ impl Default for MOS6502 {
     }
 }
 
+impl CPU<MOS6502> for MOS6502 {
+    fn run(self, cycles: usize) -> StepState<MOS6502> {
+        let state = self
+            .clone()
+            .into_iter()
+            .map(|mop| Into::<Vec<Vec<microcode::Microcode>>>::into(mop))
+            .flatten() // flatten instructions to cycles
+            .take(cycles)
+            .flatten()
+            .fold(self, |c, mc| mc.execute(c));
+        StepState::from(state)
+    }
+}
+
+impl CPU<MOS6502> for StepState<MOS6502> {
+    fn run(self, cycles: usize) -> StepState<MOS6502> {
+        let remaining = self.remaining;
+        self.cpu.run(cycles - remaining)
+    }
+}
+
 impl IntoIterator for MOS6502 {
     type Item = operations::MOps;
     type IntoIter = MOS6502IntoIterator;
@@ -208,13 +229,6 @@ impl Iterator for MOS6502IntoIterator {
             .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
 
         Some(mops)
-    }
-}
-
-impl CPU<MOS6502> for &mut MOS6502IntoIterator {
-    fn step(self) -> MOS6502 {
-        self.next().unwrap();
-        self.state.clone()
     }
 }
 

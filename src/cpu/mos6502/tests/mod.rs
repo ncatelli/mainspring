@@ -3,21 +3,10 @@ use crate::address_map::{
     Addressable,
 };
 use crate::cpu::{
-    mos6502::{microcode, register, Execute, GPRegister, MOS6502},
+    mos6502::{register, GPRegister, MOS6502},
     register::Register,
+    CPU,
 };
-
-macro_rules! run_cpu_cycles {
-    ($cpu:expr, $cycles:literal) => {
-        $cpu.clone()
-            .into_iter()
-            .map(|mop| Into::<Vec<Vec<microcode::Microcode>>>::into(mop))
-            .flatten() // flatten instructions to cycles
-            .take($cycles)
-            .flatten()
-            .fold($cpu, |c, mc| mc.execute(c));
-    };
-}
 
 fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
     let (start_addr, stop_addr) = (0x6000, 0x7000);
@@ -40,11 +29,11 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
 #[test]
 fn should_cycle_on_nop_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![]);
-    let state = run_cpu_cycles!(cpu, 3);
+    let state = cpu.run(3).unwrap();
     assert_eq!(0x6001, state.pc.read());
 
     // take 2 more cycles to validate ea has incremented again.
-    let next_state = run_cpu_cycles!(state, 2);
+    let next_state = state.run(2).unwrap();
     assert_eq!(0x6002, next_state.pc.read());
 }
 
@@ -52,7 +41,7 @@ fn should_cycle_on_nop_implied_operation() {
 fn should_cycle_on_lda_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa9, 0xff, 0xa9, 0x0f]);
 
-    let state = run_cpu_cycles!(cpu, 4);
+    let state = cpu.run(4).unwrap();
     assert_eq!(0x6004, state.pc.read());
     assert_eq!(0x0f, state.acc.read());
 }
@@ -68,7 +57,7 @@ fn should_cycle_on_lda_absolute_operation() {
         )
         .unwrap();
 
-    let state = run_cpu_cycles!(cpu, 4);
+    let state = cpu.run(4).unwrap();
 
     // val in mem should be null
     assert_eq!(0x00, state.acc.read());
@@ -86,7 +75,7 @@ fn should_cycle_on_sta_absolute_operation() {
         )
         .unwrap();
 
-    let state = run_cpu_cycles!(cpu, 4);
+    let state = cpu.run(4).unwrap();
 
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x0200));
@@ -96,14 +85,14 @@ fn should_cycle_on_sta_absolute_operation() {
 fn should_cycle_on_jmp_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x4c, 0x50, 0x60]);
 
-    let state = run_cpu_cycles!(cpu, 3);
+    let state = cpu.run(3).unwrap();
     assert_eq!(0x6050, state.pc.read());
 }
 
 #[test]
 fn should_cycle_on_jmp_indirect_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x6c, 0x50, 0x60]);
-    let state = run_cpu_cycles!(cpu, 5);
+    let state = cpu.run(5).unwrap();
 
     assert_eq!(0xeaea, state.pc.read());
 }

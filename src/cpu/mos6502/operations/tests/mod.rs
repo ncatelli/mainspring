@@ -1,6 +1,9 @@
 extern crate parcel;
 use std::convert::TryFrom;
 
+#[cfg(test)]
+mod code_generation;
+
 macro_rules! gen_op_parse_assertion {
     ($bytecode:expr) => {
         assert!($crate::cpu::mos6502::operations::Operation::try_from($bytecode).is_ok())

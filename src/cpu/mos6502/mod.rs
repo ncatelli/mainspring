@@ -7,28 +7,28 @@ use crate::{
         memory::{Memory, ReadWrite},
         AddressMap, Addressable,
     },
-    cpu::{register::Register, Cyclable, Offset, StepState, CPU},
+    cpu::{register::Register, StepState, CPU},
 };
 
 #[cfg(test)]
 mod tests;
 
 pub mod register;
-use register::{GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
+use register::{
+    ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer,
+};
 
 pub mod operations;
 use operations::Operation;
 
-pub trait Execute<T> {
-    fn execute(self, cpu: T) -> T;
+pub mod microcode;
+
+pub trait Generate<T, U> {
+    fn generate(self, cpu: &T) -> U;
 }
 
-/// Represets each type of general purpose register available in the mos6502.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum GPRegister {
-    ACC,
-    X,
-    Y,
+pub trait Execute<T> {
+    fn execute(self, cpu: T) -> T;
 }
 
 /// MOS6502 represents the 6502 CPU
@@ -49,6 +49,7 @@ impl MOS6502 {
     }
 
     /// instantiates a new MOS6502 with a provided address_map.
+    #[allow(clippy::field_reassign_with_default)]
     pub fn with_addressmap(am: AddressMap<u16>) -> Self {
         let mut cpu = Self::default();
         cpu.address_map = am;
@@ -160,74 +161,196 @@ impl Default for MOS6502 {
 }
 
 impl CPU<MOS6502> for MOS6502 {
-    fn step(self) -> StepState<MOS6502> {
-        StepState::new(1, self).step()
+    fn run(self, cycles: usize) -> StepState<MOS6502> {
+        let state = self
+            .clone()
+            .into_iter()
+            .map(Into::<Vec<Vec<microcode::Microcode>>>::into)
+            .flatten() // flatten instructions to cycles
+            .take(cycles)
+            .flatten()
+            .fold(self, |c, mc| mc.execute(c));
+        StepState::from(state)
     }
 }
 
 impl CPU<MOS6502> for StepState<MOS6502> {
-    fn step(self) -> StepState<MOS6502> {
-        if !self.ready() {
-            self.decrement()
-        } else {
-            let mos = self.unwrap();
-            let pc = mos.pc.read();
-            let opcodes: [u8; 3] = [
-                mos.address_map.read(pc),
-                mos.address_map.read(pc + 1),
-                mos.address_map.read(pc + 2),
-            ];
-
-            // Parse correct operation
-            let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
-
-            // set pc offsets and cycles as defined by operation.
-            let offset = oper.offset() as u16;
-            let cycles = oper.cycles();
-            let executed_state = oper.execute(mos);
-            let espc = executed_state.pc.read();
-            StepState::new(
-                cycles,
-                executed_state.with_pc_register(ProgramCounter::with_value(espc + offset)),
-            )
-        }
+    fn run(self, cycles: usize) -> StepState<MOS6502> {
+        let remaining = self.remaining;
+        self.cpu.run(cycles - remaining)
     }
 }
 
 impl IntoIterator for MOS6502 {
-    type Item = StepState<MOS6502>;
-    type IntoIter = CPUIntoIterator;
+    type Item = operations::MOps;
+    type IntoIter = MOS6502IntoIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-        let cpu_state = StepState::new(1, self);
-
-        CPUIntoIterator { state: cpu_state }
+        MOS6502IntoIterator::new(self)
     }
 }
 
-impl IntoIterator for StepState<MOS6502> {
-    type Item = StepState<MOS6502>;
-    type IntoIter = CPUIntoIterator;
+pub struct MOS6502IntoIterator {
+    state: MOS6502,
+}
 
-    fn into_iter(self) -> Self::IntoIter {
-        let cpu_state = self;
-
-        CPUIntoIterator { state: cpu_state }
+impl From<MOS6502IntoIterator> for MOS6502 {
+    fn from(src: MOS6502IntoIterator) -> Self {
+        src.state
     }
 }
 
-pub struct CPUIntoIterator {
-    state: StepState<MOS6502>,
+impl MOS6502IntoIterator {
+    fn new(state: MOS6502) -> Self {
+        MOS6502IntoIterator { state }
+    }
 }
 
-impl Iterator for CPUIntoIterator {
-    type Item = StepState<MOS6502>;
+impl Iterator for MOS6502IntoIterator {
+    type Item = operations::MOps;
 
-    fn next(&mut self) -> Option<StepState<MOS6502>> {
-        let cpu = self.state.clone();
-        let new_state = cpu.step();
-        self.state = new_state.clone();
+    fn next(&mut self) -> Option<operations::MOps> {
+        let pc = self.state.pc.read();
+        let opcodes: [u8; 3] = [
+            self.state.address_map.read(pc),
+            self.state.address_map.read(pc + 1),
+            self.state.address_map.read(pc + 2),
+        ];
 
-        Some(new_state)
+        // Parse correct operation
+        let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
+        let mops = oper.generate(&self.state);
+
+        // rectify state
+        let microcode_steps: Vec<Vec<microcode::Microcode>> = mops.clone().into();
+        self.state = microcode_steps
+            .into_iter()
+            .flatten()
+            .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
+
+        Some(mops)
+    }
+}
+
+// microcode execution
+
+impl Execute<MOS6502> for microcode::Microcode {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        match self {
+            Self::WriteMemory(mc) => mc.execute(cpu),
+            Self::Write8bitRegister(mc) => mc.execute(cpu),
+            Self::Inc8bitRegister(mc) => mc.execute(cpu),
+            Self::Dec8bitRegister(mc) => mc.execute(cpu),
+            Self::Write16bitRegister(mc) => mc.execute(cpu),
+            Self::Inc16bitRegister(mc) => mc.execute(cpu),
+            Self::Dec16bitRegister(mc) => mc.execute(cpu),
+        }
+    }
+}
+
+impl Execute<MOS6502> for microcode::WriteMemory {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let mut cpu = cpu;
+        cpu.address_map.write(self.address, self.value).unwrap();
+        cpu
+    }
+}
+
+impl Execute<MOS6502> for microcode::Write8bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let register = self.register;
+        let value = self.value;
+
+        match register {
+            ByteRegisters::ACC => {
+                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
+            }
+            ByteRegisters::X => {
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
+            }
+            ByteRegisters::Y => {
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
+            }
+            ByteRegisters::SP => cpu.with_sp_register(StackPointer::with_value(value)),
+            ByteRegisters::PS => cpu.with_ps_register(ProcessorStatus::with_value(value)),
+        }
+    }
+}
+
+impl Execute<MOS6502> for microcode::Inc8bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let register = self.register;
+        let value = self.value;
+
+        match register {
+            ByteRegisters::ACC => {
+                let old_val = cpu.acc.read();
+                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(old_val + value))
+            }
+            ByteRegisters::X => {
+                let old_val = cpu.x.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val + value))
+            }
+            ByteRegisters::Y => {
+                let old_val = cpu.y.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val + value))
+            }
+            ByteRegisters::SP => {
+                let old_val = cpu.sp.read();
+                cpu.with_sp_register(StackPointer::with_value(old_val as u8 + value))
+            }
+            ByteRegisters::PS => {
+                let old_val = cpu.ps.read();
+                cpu.with_ps_register(ProcessorStatus::with_value(old_val + value))
+            }
+        }
+    }
+}
+impl Execute<MOS6502> for microcode::Dec8bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let register = self.register;
+        let value = self.value;
+
+        match register {
+            ByteRegisters::ACC => {
+                let old_val = cpu.acc.read();
+                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(old_val - value))
+            }
+            ByteRegisters::X => {
+                let old_val = cpu.x.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val - value))
+            }
+            ByteRegisters::Y => {
+                let old_val = cpu.y.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val - value))
+            }
+            ByteRegisters::SP => {
+                let old_val = cpu.sp.read();
+                cpu.with_sp_register(StackPointer::with_value(old_val as u8 - value))
+            }
+            ByteRegisters::PS => {
+                let old_val = cpu.ps.read();
+                cpu.with_ps_register(ProcessorStatus::with_value(old_val - value))
+            }
+        }
+    }
+}
+impl Execute<MOS6502> for microcode::Write16bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        cpu.with_pc_register(ProgramCounter::with_value(self.value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::Inc16bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let pc = cpu.pc.read() + self.value;
+        cpu.with_pc_register(ProgramCounter::with_value(pc))
+    }
+}
+
+impl Execute<MOS6502> for microcode::Dec16bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let pc = cpu.pc.read() - self.value;
+        cpu.with_pc_register(ProgramCounter::with_value(pc))
     }
 }

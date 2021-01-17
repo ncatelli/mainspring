@@ -14,10 +14,12 @@ pub trait Offset {
 }
 
 pub trait CPU<T> {
-    fn step(self) -> StepState<T>;
+    fn run(self, cycles: usize) -> StepState<T>;
 }
 
-/// Stores state between cycles.
+/// Stores state between run invocations. The remaining field signifies noop cycles
+/// between instructions. This is to function as a placeholder when a run
+/// invocation returns while inbetween multi-cycle instructions.
 #[derive(Clone)]
 pub struct StepState<T> {
     remaining: usize, // Remaining cycles in operation
@@ -32,6 +34,7 @@ impl<T> StepState<T> {
         }
     }
 
+    /// Decrements the cycle count left on StepState by 1.
     pub fn decrement(self) -> Self {
         let remaining = self.remaining - 1;
         Self {

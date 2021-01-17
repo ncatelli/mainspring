@@ -11,12 +11,6 @@ pub struct Accumulator;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Implied;
 
-impl Cyclable for Implied {
-    fn cycles(&self) -> usize {
-        0
-    }
-}
-
 impl Offset for Implied {
     fn offset(&self) -> usize {
         0
@@ -44,11 +38,6 @@ impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Absolute(pub u16);
 
-impl Cyclable for Absolute {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
 impl Offset for Absolute {
     fn offset(&self) -> usize {
         2
@@ -72,11 +61,6 @@ pub struct Relative(i8);
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Indirect(pub u16);
 
-impl Cyclable for Indirect {
-    fn cycles(&self) -> usize {
-        4
-    }
-}
 impl Offset for Indirect {
     fn offset(&self) -> usize {
         2

@@ -232,6 +232,36 @@ impl Iterator for CPUIntoIterator {
     }
 }
 
+pub struct MicrocodeIntoIterator {
+    state: MOS6502,
+}
+
+impl Iterator for MicrocodeIntoIterator {
+    type Item = operations::MOps;
+
+    fn next(&mut self) -> Option<operations::MOps> {
+        let pc = self.state.pc.read();
+        let opcodes: [u8; 3] = [
+            self.state.address_map.read(pc),
+            self.state.address_map.read(pc + 1),
+            self.state.address_map.read(pc + 2),
+        ];
+
+        // Parse correct operation
+        let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
+        let mops = oper.generate(&self.state);
+
+        // rectify state
+        let microcode_steps: Vec<Vec<microcode::Microcode>> = mops.clone().into();
+        self.state = microcode_steps
+            .into_iter()
+            .flatten()
+            .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
+
+        Some(mops)
+    }
+}
+
 // microcode execution
 
 impl Execute<MOS6502> for microcode::Microcode {

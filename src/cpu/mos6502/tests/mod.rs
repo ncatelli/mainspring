@@ -3,7 +3,9 @@ use crate::address_map::{
     Addressable,
 };
 use crate::cpu::{
-    mos6502::{register, GPRegister, MOS6502},
+    mos6502::{
+        microcode, operations, register, Execute, GPRegister, MicrocodeIntoIterator, MOS6502,
+    },
     register::Register,
     StepState,
 };
@@ -53,6 +55,21 @@ fn should_cycle_on_lda_immediate_operation() {
     assert_eq!(1, state.remaining);
     assert_eq!(0x6002, state.cpu.pc.read());
     assert_eq!(0xff, state.cpu.acc.read());
+}
+
+#[test]
+fn should_cycle_on_lda_immediate_mops() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xa9, 0xff]);
+    let state = MicrocodeIntoIterator { state: cpu.clone() }
+        .into_iter()
+        .take(1)
+        .map(|mop| Into::<Vec<Vec<microcode::Microcode>>>::into(mop))
+        .flatten()
+        .flatten()
+        .fold(cpu, |c, mc| mc.execute(c));
+
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
 }
 
 #[test]

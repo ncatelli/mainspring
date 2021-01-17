@@ -13,6 +13,7 @@ pub enum Microcode {
     WritePSRegister(WritePSRegister),
     WriteSPRegister(WriteSPRegister),
     WritePCRegister(WritePCRegister),
+    IncPCRegister(IncPCRegister),
 }
 
 /// Represents a write of the value to the memory location specified by the
@@ -59,3 +60,8 @@ pub struct WriteSPRegister(pub u8);
 /// register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct WritePCRegister(pub u16);
+
+/// Represents an increment of the ProgramCounter register by the value
+/// specified in the instruction.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct IncPCRegister(pub u16);

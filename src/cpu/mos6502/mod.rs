@@ -21,6 +21,10 @@ use operations::Operation;
 
 pub mod microcode;
 
+pub trait Generate<T, U> {
+    fn generate<'a>(self, cpu: &'a T) -> U;
+}
+
 pub trait Execute<T> {
     fn execute(self, cpu: T) -> T;
 }

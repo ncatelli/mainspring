@@ -11,7 +11,7 @@ pub enum Microcode {
     WriteMemory(WriteMemory),
     Write8bitRegister(Write8bitRegister),
     Write16bitRegister(Write16bitRegister),
-    IncPCRegister(IncPCRegister),
+    Inc16bitRegister(Inc16bitRegister),
 }
 
 /// Represents a write of the value to the memory location specified by the
@@ -60,7 +60,16 @@ impl Write16bitRegister {
     }
 }
 
-/// Represents an increment of the ProgramCounter register by the value
-/// specified in the instruction.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct IncPCRegister(pub u16);
+/// Represents an increment of the specified 16-bit value to one of the 16-bit
+/// registers as defined by the ByteRegisters value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Inc16bitRegister {
+    pub register: WordRegisters,
+    pub value: u16,
+}
+
+impl Inc16bitRegister {
+    pub fn new(register: WordRegisters, value: u16) -> Self {
+        Self { register, value }
+    }
+}

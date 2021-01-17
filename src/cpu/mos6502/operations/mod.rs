@@ -51,7 +51,10 @@ impl From<MOps> for Vec<Vec<Microcode>> {
         let offset = src.offset() as u16;
         let mut mcs = vec![vec![]; cycles - 1];
         let mut microcode = src.microcode;
-        microcode.push(Microcode::IncPCRegister(IncPCRegister(offset)));
+        microcode.push(Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            WordRegisters::PC,
+            offset,
+        )));
 
         mcs.push(microcode);
         mcs

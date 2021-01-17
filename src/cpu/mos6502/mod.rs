@@ -240,7 +240,7 @@ impl Execute<MOS6502> for microcode::Microcode {
             Self::WriteMemory(mc) => mc.execute(cpu),
             Self::Write8bitRegister(_) => todo!(),
             Self::Write16bitRegister(mc) => mc.execute(cpu),
-            Self::IncPCRegister(mc) => mc.execute(cpu),
+            Self::Inc16bitRegister(mc) => mc.execute(cpu),
         }
     }
 }
@@ -276,15 +276,13 @@ impl Execute<MOS6502> for microcode::Write8bitRegister {
 
 impl Execute<MOS6502> for microcode::Write16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.value;
-        cpu.with_pc_register(ProgramCounter::with_value(value))
+        cpu.with_pc_register(ProgramCounter::with_value(self.value))
     }
 }
 
-impl Execute<MOS6502> for microcode::IncPCRegister {
+impl Execute<MOS6502> for microcode::Inc16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.0;
-        let pc = cpu.pc.read() + value;
+        let pc = cpu.pc.read() + self.value;
         cpu.with_pc_register(ProgramCounter::with_value(pc))
     }
 }

@@ -18,7 +18,13 @@ fn should_generate_implied_address_mode_nop_machine_code() {
 
     // validate mops -> vector looks correct
     assert_eq!(
-        vec![vec![], vec![Microcode::IncPCRegister(IncPCRegister(1))]],
+        vec![
+            vec![],
+            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                WordRegisters::PC,
+                1
+            ))]
+        ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
     )
 }
@@ -50,7 +56,7 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
             vec![],
             vec![
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff)),
-                Microcode::IncPCRegister(IncPCRegister(2))
+                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -84,7 +90,7 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
             vec![],
             vec![
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00)),
-                Microcode::IncPCRegister(IncPCRegister(3))
+                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -117,7 +123,7 @@ fn should_generate_absolute_address_mode_sta_machine_code() {
             vec![],
             vec![
                 Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00)),
-                Microcode::IncPCRegister(IncPCRegister(3))
+                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -150,7 +156,7 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
             vec![],
             vec![
                 Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, 0x0100)),
-                Microcode::IncPCRegister(IncPCRegister(3))
+                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -185,7 +191,7 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
             vec![],
             vec![
                 Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, 0x0000)),
-                Microcode::IncPCRegister(IncPCRegister(3))
+                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)

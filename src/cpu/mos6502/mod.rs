@@ -229,3 +229,78 @@ impl Iterator for CPUIntoIterator {
         Some(new_state)
     }
 }
+
+// microcode execution
+
+impl Execute<MOS6502> for microcode::Microcode {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        match self {
+            Self::WriteMemory(mc) => mc.execute(cpu),
+            Self::WriteAccRegister(mc) => mc.execute(cpu),
+            Self::WriteXRegister(mc) => mc.execute(cpu),
+            Self::WriteYRegister(mc) => mc.execute(cpu),
+            Self::WriteSPRegister(mc) => mc.execute(cpu),
+            Self::WritePSRegister(mc) => mc.execute(cpu),
+            Self::WritePCRegister(mc) => mc.execute(cpu),
+            Self::IncPCRegister(mc) => mc.execute(cpu),
+        }
+    }
+}
+
+impl Execute<MOS6502> for microcode::WriteMemory {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let mut cpu = cpu;
+        cpu.address_map.write(self.address, self.value).unwrap();
+        cpu
+    }
+}
+
+impl Execute<MOS6502> for microcode::WriteAccRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::WriteXRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::WriteYRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::WriteSPRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        cpu.with_sp_register(StackPointer::with_value(value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::WritePSRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        cpu.with_ps_register(ProcessorStatus::with_value(value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::WritePCRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        cpu.with_pc_register(ProgramCounter::with_value(value))
+    }
+}
+
+impl Execute<MOS6502> for microcode::IncPCRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let value = self.0;
+        let pc = cpu.pc.read() + value;
+        cpu.with_pc_register(ProgramCounter::with_value(pc))
+    }
+}

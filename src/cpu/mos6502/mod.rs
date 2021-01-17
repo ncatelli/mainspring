@@ -7,7 +7,7 @@ use crate::{
         memory::{Memory, ReadWrite},
         AddressMap, Addressable,
     },
-    cpu::{register::Register, Cyclable, Offset, StepState, CPU},
+    cpu::{register::Register, StepState, CPU},
 };
 
 #[cfg(test)]
@@ -160,41 +160,6 @@ impl Default for MOS6502 {
     }
 }
 
-impl CPU<MOS6502> for MOS6502 {
-    fn step(self) -> StepState<MOS6502> {
-        StepState::new(1, self).step()
-    }
-}
-
-impl CPU<MOS6502> for StepState<MOS6502> {
-    fn step(self) -> StepState<MOS6502> {
-        if !self.ready() {
-            self.decrement()
-        } else {
-            let mos = self.unwrap();
-            let pc = mos.pc.read();
-            let opcodes: [u8; 3] = [
-                mos.address_map.read(pc),
-                mos.address_map.read(pc + 1),
-                mos.address_map.read(pc + 2),
-            ];
-
-            // Parse correct operation
-            let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
-
-            // set pc offsets and cycles as defined by operation.
-            let offset = oper.offset() as u16;
-            let cycles = oper.cycles();
-            let executed_state = oper.execute(mos);
-            let espc = executed_state.pc.read();
-            StepState::new(
-                cycles,
-                executed_state.with_pc_register(ProgramCounter::with_value(espc + offset)),
-            )
-        }
-    }
-}
-
 impl IntoIterator for MOS6502 {
     type Item = operations::MOps;
     type IntoIter = MOS6502IntoIterator;
@@ -206,6 +171,12 @@ impl IntoIterator for MOS6502 {
 
 pub struct MOS6502IntoIterator {
     state: MOS6502,
+}
+
+impl From<MOS6502IntoIterator> for MOS6502 {
+    fn from(src: MOS6502IntoIterator) -> Self {
+        src.state
+    }
 }
 
 impl MOS6502IntoIterator {
@@ -237,6 +208,13 @@ impl Iterator for MOS6502IntoIterator {
             .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
 
         Some(mops)
+    }
+}
+
+impl CPU<MOS6502> for &mut MOS6502IntoIterator {
+    fn step(self) -> MOS6502 {
+        self.next().unwrap();
+        self.state.clone()
     }
 }
 

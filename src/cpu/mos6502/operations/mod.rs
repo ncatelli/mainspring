@@ -1,7 +1,7 @@
 extern crate parcel;
 use crate::address_map::Addressable;
 use crate::cpu::{
-    mos6502::{microcode::*, register::*, Execute, Generate, MOS6502},
+    mos6502::{microcode::*, register::*, Generate, MOS6502},
     register::Register,
     Cyclable, Offset,
 };
@@ -66,21 +66,14 @@ impl From<MOps> for Vec<Vec<Microcode>> {
 pub struct Operation {
     offset: usize,
     cycles: usize,
-    callback: Box<dyn Fn(MOS6502) -> MOS6502>,
     mc_generator: Box<dyn Fn(&MOS6502) -> MOps>,
 }
 
 impl Operation {
-    pub fn new(
-        offset: usize,
-        cycles: usize,
-        callback: Box<dyn Fn(MOS6502) -> MOS6502>,
-        mc_generator: Box<dyn Fn(&MOS6502) -> MOps>,
-    ) -> Self {
+    pub fn new(offset: usize, cycles: usize, mc_generator: Box<dyn Fn(&MOS6502) -> MOps>) -> Self {
         Self {
             offset,
             cycles,
-            callback,
             mc_generator,
         }
     }
@@ -95,12 +88,6 @@ impl Cyclable for Operation {
 impl Offset for Operation {
     fn offset(&self) -> usize {
         self.offset
-    }
-}
-
-impl Execute<MOS6502> for Operation {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        (self.callback)(cpu)
     }
 }
 
@@ -187,13 +174,12 @@ impl<M, A> Into<Operation> for Instruction<M, A>
 where
     M: Offset + Copy + Debug + PartialEq + 'static,
     A: Offset + Copy + Debug + PartialEq + 'static,
-    Self: Execute<MOS6502> + Generate<MOS6502, MOps> + Cyclable + 'static,
+    Self: Generate<MOS6502, MOps> + Cyclable + 'static,
 {
     fn into(self) -> Operation {
         Operation::new(
             self.offset(),
             self.cycles(),
-            Box::new(move |cpu| self.execute(cpu)),
             Box::new(move |cpu| self.generate(cpu)),
         )
     }
@@ -218,13 +204,6 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate
             .and_then(|_| address_mode::Immediate::default())
             .map(|am| Instruction::new(mnemonic::LDA, am))
             .parse(input)
-    }
-}
-
-impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Immediate> {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let address_mode::Immediate(value) = self.address_mode;
-        cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
     }
 }
 
@@ -259,14 +238,6 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Absolute>
             .and_then(|_| address_mode::Absolute::default())
             .map(|am| Instruction::new(mnemonic::LDA, am))
             .parse(input)
-    }
-}
-
-impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Absolute> {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let address_mode::Absolute(addr) = self.address_mode;
-        let val = cpu.address_map.read(addr);
-        cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(val))
     }
 }
 
@@ -307,17 +278,6 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>
     }
 }
 
-impl Execute<MOS6502> for Instruction<mnemonic::STA, address_mode::Absolute> {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let address_mode::Absolute(addr) = self.address_mode;
-        let acc_val = cpu.acc.read();
-
-        let mut cpu = cpu;
-        cpu.address_map.write(addr, acc_val).unwrap();
-        cpu
-    }
-}
-
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Absolute(addr) = self.address_mode;
@@ -352,12 +312,6 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::NOP, address_mode::Implied>>
     }
 }
 
-impl Execute<MOS6502> for Instruction<mnemonic::NOP, address_mode::Implied> {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        cpu
-    }
-}
-
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implied> {
     fn generate(self, _: &MOS6502) -> MOps {
         MOps::new(self.offset(), self.cycles(), vec![])
@@ -383,13 +337,6 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>
             .and_then(|_| address_mode::Absolute::default())
             .map(|am| Instruction::new(mnemonic::JMP, am))
             .parse(input)
-    }
-}
-
-impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Absolute> {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let address_mode::Absolute(addr) = self.address_mode;
-        cpu.with_pc_register(ProgramCounter::with_value(addr - self.offset() as u16))
     }
 }
 
@@ -424,16 +371,6 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Indirect>
             .and_then(|_| address_mode::Indirect::default())
             .map(|am| Instruction::new(mnemonic::JMP, am))
             .parse(input)
-    }
-}
-
-impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Indirect> {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let address_mode::Indirect(indirect_addr) = self.address_mode;
-        let lsb = cpu.address_map.read(indirect_addr);
-        let msb = cpu.address_map.read(indirect_addr + 1);
-        let addr = u16::from_le_bytes([lsb, msb]);
-        cpu.with_pc_register(ProgramCounter::with_value(addr - self.offset() as u16))
     }
 }
 

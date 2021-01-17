@@ -196,13 +196,11 @@ impl CPU<MOS6502> for StepState<MOS6502> {
 }
 
 impl IntoIterator for MOS6502 {
-    type Item = StepState<MOS6502>;
-    type IntoIter = CPUIntoIterator;
+    type Item = operations::MOps;
+    type IntoIter = MicrocodeIntoIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-        let cpu_state = StepState::new(1, self);
-
-        CPUIntoIterator { state: cpu_state }
+        MicrocodeIntoIterator { state: self }
     }
 }
 

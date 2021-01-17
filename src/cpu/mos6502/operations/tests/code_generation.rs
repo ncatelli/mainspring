@@ -1,3 +1,4 @@
+use crate::address_map::Addressable;
 use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
@@ -133,7 +134,8 @@ fn should_generate_absolute_address_mode_sta_machine_code() {
 #[test]
 fn should_generate_absolute_address_mode_jmp_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::JMP, address_mode::Absolute(0x0100)).into();
+    let addr = 0x0100;
+    let op: Operation = Instruction::new(mnemonic::JMP, address_mode::Absolute(addr)).into();
     let mc = op.generate(&cpu);
 
     // check Mops value is correct
@@ -143,7 +145,7 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
             3,
             vec![Microcode::Write16bitRegister(Write16bitRegister::new(
                 WordRegisters::PC,
-                0x0100
+                addr - 3
             ))]
         ),
         mc
@@ -155,7 +157,7 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
             vec![],
             vec![],
             vec![
-                Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, 0x0100)),
+                Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, addr - 3)),
                 Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]
         ],
@@ -165,8 +167,12 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
 
 #[test]
 fn should_generate_indirect_address_mode_jmp_machine_code() {
-    let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::JMP, address_mode::Indirect(0x0100)).into();
+    let mut cpu = MOS6502::default();
+    let base_addr = 0x0100;
+    let indirect_addr = 0x0150;
+    cpu.address_map.write(base_addr, 0x50).unwrap();
+    cpu.address_map.write(base_addr + 1, 0x01).unwrap();
+    let op: Operation = Instruction::new(mnemonic::JMP, address_mode::Indirect(base_addr)).into();
     let mc = op.generate(&cpu);
 
     // check Mops value is correct
@@ -176,7 +182,7 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
             5,
             vec![Microcode::Write16bitRegister(Write16bitRegister::new(
                 WordRegisters::PC,
-                0x0000
+                indirect_addr - 3
             )),]
         ),
         mc
@@ -190,7 +196,10 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
             vec![],
             vec![],
             vec![
-                Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, 0x0000)),
+                Microcode::Write16bitRegister(Write16bitRegister::new(
+                    WordRegisters::PC,
+                    indirect_addr - 3
+                )),
                 Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]
         ],

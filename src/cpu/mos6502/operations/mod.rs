@@ -15,7 +15,8 @@ pub mod mnemonic;
 mod tests;
 
 /// MOps functions as a concrete wrapper around a microcode operation with
-/// metadata around sizing and cycles.
+/// metadata around sizing and cycles. This trait does NOT represent a cycle
+/// but rather the microcode equivalent of a CPU instruction.
 #[derive(Debug, Clone, PartialEq)]
 pub struct MOps {
     offset: usize,
@@ -66,15 +67,15 @@ impl From<MOps> for Vec<Vec<Microcode>> {
 pub struct Operation {
     offset: usize,
     cycles: usize,
-    mc_generator: Box<dyn Fn(&MOS6502) -> MOps>,
+    generator: Box<dyn Fn(&MOS6502) -> MOps>,
 }
 
 impl Operation {
-    pub fn new(offset: usize, cycles: usize, mc_generator: Box<dyn Fn(&MOS6502) -> MOps>) -> Self {
+    pub fn new(offset: usize, cycles: usize, generator: Box<dyn Fn(&MOS6502) -> MOps>) -> Self {
         Self {
             offset,
             cycles,
-            mc_generator,
+            generator,
         }
     }
 }
@@ -93,7 +94,7 @@ impl Offset for Operation {
 
 impl Generate<MOS6502, MOps> for Operation {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        (self.mc_generator)(cpu)
+        (self.generator)(cpu)
     }
 }
 

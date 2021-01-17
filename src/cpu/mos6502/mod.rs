@@ -197,45 +197,24 @@ impl CPU<MOS6502> for StepState<MOS6502> {
 
 impl IntoIterator for MOS6502 {
     type Item = operations::MOps;
-    type IntoIter = MicrocodeIntoIterator;
+    type IntoIter = MOS6502IntoIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-        MicrocodeIntoIterator { state: self }
+        MOS6502IntoIterator::new(self)
     }
 }
 
-impl IntoIterator for StepState<MOS6502> {
-    type Item = StepState<MOS6502>;
-    type IntoIter = CPUIntoIterator;
-
-    fn into_iter(self) -> Self::IntoIter {
-        let cpu_state = self;
-
-        CPUIntoIterator { state: cpu_state }
-    }
-}
-
-pub struct CPUIntoIterator {
-    state: StepState<MOS6502>,
-}
-
-impl Iterator for CPUIntoIterator {
-    type Item = StepState<MOS6502>;
-
-    fn next(&mut self) -> Option<StepState<MOS6502>> {
-        let cpu = self.state.clone();
-        let new_state = cpu.step();
-        self.state = new_state.clone();
-
-        Some(new_state)
-    }
-}
-
-pub struct MicrocodeIntoIterator {
+pub struct MOS6502IntoIterator {
     state: MOS6502,
 }
 
-impl Iterator for MicrocodeIntoIterator {
+impl MOS6502IntoIterator {
+    fn new(state: MOS6502) -> Self {
+        MOS6502IntoIterator { state }
+    }
+}
+
+impl Iterator for MOS6502IntoIterator {
     type Item = operations::MOps;
 
     fn next(&mut self) -> Option<operations::MOps> {

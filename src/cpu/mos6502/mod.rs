@@ -238,9 +238,12 @@ impl Execute<MOS6502> for microcode::Microcode {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         match self {
             Self::WriteMemory(mc) => mc.execute(cpu),
-            Self::Write8bitRegister(_) => todo!(),
+            Self::Write8bitRegister(mc) => mc.execute(cpu),
+            Self::Inc8bitRegister(mc) => mc.execute(cpu),
+            Self::Dec8bitRegister(mc) => mc.execute(cpu),
             Self::Write16bitRegister(mc) => mc.execute(cpu),
             Self::Inc16bitRegister(mc) => mc.execute(cpu),
+            Self::Dec16bitRegister(mc) => mc.execute(cpu),
         }
     }
 }
@@ -274,6 +277,64 @@ impl Execute<MOS6502> for microcode::Write8bitRegister {
     }
 }
 
+impl Execute<MOS6502> for microcode::Inc8bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let register = self.register;
+        let value = self.value;
+
+        match register {
+            ByteRegisters::ACC => {
+                let old_val = cpu.acc.read();
+                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(old_val + value))
+            }
+            ByteRegisters::X => {
+                let old_val = cpu.x.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val + value))
+            }
+            ByteRegisters::Y => {
+                let old_val = cpu.y.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val + value))
+            }
+            ByteRegisters::SP => {
+                let old_val = cpu.sp.read();
+                cpu.with_sp_register(StackPointer::with_value(old_val as u8 + value))
+            }
+            ByteRegisters::PS => {
+                let old_val = cpu.ps.read();
+                cpu.with_ps_register(ProcessorStatus::with_value(old_val + value))
+            }
+        }
+    }
+}
+impl Execute<MOS6502> for microcode::Dec8bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let register = self.register;
+        let value = self.value;
+
+        match register {
+            ByteRegisters::ACC => {
+                let old_val = cpu.acc.read();
+                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(old_val - value))
+            }
+            ByteRegisters::X => {
+                let old_val = cpu.x.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val - value))
+            }
+            ByteRegisters::Y => {
+                let old_val = cpu.y.read();
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val - value))
+            }
+            ByteRegisters::SP => {
+                let old_val = cpu.sp.read();
+                cpu.with_sp_register(StackPointer::with_value(old_val as u8 - value))
+            }
+            ByteRegisters::PS => {
+                let old_val = cpu.ps.read();
+                cpu.with_ps_register(ProcessorStatus::with_value(old_val - value))
+            }
+        }
+    }
+}
 impl Execute<MOS6502> for microcode::Write16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         cpu.with_pc_register(ProgramCounter::with_value(self.value))
@@ -283,6 +344,13 @@ impl Execute<MOS6502> for microcode::Write16bitRegister {
 impl Execute<MOS6502> for microcode::Inc16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         let pc = cpu.pc.read() + self.value;
+        cpu.with_pc_register(ProgramCounter::with_value(pc))
+    }
+}
+
+impl Execute<MOS6502> for microcode::Dec16bitRegister {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let pc = cpu.pc.read() - self.value;
         cpu.with_pc_register(ProgramCounter::with_value(pc))
     }
 }

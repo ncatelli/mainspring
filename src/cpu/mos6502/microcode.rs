@@ -10,8 +10,11 @@ use crate::cpu::mos6502::register::{ByteRegisters, WordRegisters};
 pub enum Microcode {
     WriteMemory(WriteMemory),
     Write8bitRegister(Write8bitRegister),
+    Inc8bitRegister(Inc8bitRegister),
+    Dec8bitRegister(Dec8bitRegister),
     Write16bitRegister(Write16bitRegister),
     Inc16bitRegister(Inc16bitRegister),
+    Dec16bitRegister(Dec16bitRegister),
 }
 
 /// Represents a write of the value to the memory location specified by the
@@ -44,6 +47,34 @@ impl Write8bitRegister {
     }
 }
 
+/// Represents an increment of the specified 8-bit value to one of the 8-bit
+/// registers as defined by the ByteRegisters value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Inc8bitRegister {
+    pub register: ByteRegisters,
+    pub value: u8,
+}
+
+impl Inc8bitRegister {
+    pub fn new(register: ByteRegisters, value: u8) -> Self {
+        Self { register, value }
+    }
+}
+
+/// Represents an decrement of the specified 8-bit value to one of the 8-bit
+/// registers as defined by the ByteRegisters value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Dec8bitRegister {
+    pub register: ByteRegisters,
+    pub value: u8,
+}
+
+impl Dec8bitRegister {
+    pub fn new(register: ByteRegisters, value: u8) -> Self {
+        Self { register, value }
+    }
+}
+
 // 16-bit registers
 
 /// Represents a write of the specified 16-bit value to one of the 16-bit
@@ -69,6 +100,20 @@ pub struct Inc16bitRegister {
 }
 
 impl Inc16bitRegister {
+    pub fn new(register: WordRegisters, value: u16) -> Self {
+        Self { register, value }
+    }
+}
+
+/// Represents an decrement of the specified 16-bit value to one of the 16-bit
+/// registers as defined by the ByteRegisters value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Dec16bitRegister {
+    pub register: WordRegisters,
+    pub value: u16,
+}
+
+impl Dec16bitRegister {
     pub fn new(register: WordRegisters, value: u16) -> Self {
         Self { register, value }
     }

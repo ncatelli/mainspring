@@ -1,7 +1,7 @@
 extern crate parcel;
 use crate::address_map::Addressable;
 use crate::cpu::{
-    mos6502::{microcode::*, register::*, Execute, GPRegister, Generate, MOS6502},
+    mos6502::{microcode::*, register::*, Execute, Generate, MOS6502},
     register::Register,
     Cyclable, Offset,
 };
@@ -231,7 +231,10 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immedi
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::WriteAccRegister(WriteAccRegister(value))],
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                value,
+            ))],
         )
     }
 }
@@ -271,7 +274,10 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolu
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::WriteAccRegister(WriteAccRegister(val))],
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                val,
+            ))],
         )
     }
 }

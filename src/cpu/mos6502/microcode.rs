@@ -2,16 +2,14 @@
 //! include write operations to memory or registers and are the basic building
 //! blocks for an instruction implementation
 
+use crate::cpu::mos6502::register::ByteRegisters;
+
 /// An Enumerable type to store each microcode operation possible on the
 /// 6502 emulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
     WriteMemory(WriteMemory),
-    WriteAccRegister(WriteAccRegister),
-    WriteXRegister(WriteXRegister),
-    WriteYRegister(WriteYRegister),
-    WritePSRegister(WritePSRegister),
-    WriteSPRegister(WriteSPRegister),
+    Write8bitRegister(Write8bitRegister),
     WritePCRegister(WritePCRegister),
     IncPCRegister(IncPCRegister),
 }
@@ -32,27 +30,19 @@ impl WriteMemory {
 
 // 8-bit registers
 
-/// Represents a write of the specified 8-bit value to the A register.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteAccRegister(pub u8);
+/// Represents a write of the specified 8-bit value to one of the 8-bit
+/// registers as defined by the ByteRegisters value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Write8bitRegister {
+    pub register: ByteRegisters,
+    pub value: u8,
+}
 
-/// Represents a write of the specified 8-bit value to the X register.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteXRegister(pub u8);
-
-/// Represents a write of the specified 8-bit value to the Y register.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteYRegister(pub u8);
-
-/// Represents a write of the specified 8-bit value to the ProgramStatus
-/// register.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WritePSRegister(pub u8);
-
-/// Represents a write of the specified 8-bit value to the StackPointer
-/// register.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteSPRegister(pub u8);
+impl Write8bitRegister {
+    pub fn new(register: ByteRegisters, value: u8) -> Self {
+        Self { register, value }
+    }
+}
 
 // 16-bit registers
 

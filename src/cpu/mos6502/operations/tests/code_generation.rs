@@ -1,6 +1,7 @@
 use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
+    register::ByteRegisters,
     Generate, MOS6502,
 };
 
@@ -35,7 +36,10 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
         MOps::new(
             2,
             2,
-            vec![Microcode::WriteAccRegister(WriteAccRegister(0xff))]
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                0xff
+            ))]
         ),
         mc
     );
@@ -45,7 +49,7 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
         vec![
             vec![],
             vec![
-                Microcode::WriteAccRegister(WriteAccRegister(0xff)),
+                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff)),
                 Microcode::IncPCRegister(IncPCRegister(2))
             ]
         ],
@@ -64,7 +68,10 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
         MOps::new(
             3,
             4,
-            vec![Microcode::WriteAccRegister(WriteAccRegister(0x00))]
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                0x00
+            ))]
         ),
         mc
     );
@@ -76,7 +83,7 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
             vec![],
             vec![],
             vec![
-                Microcode::WriteAccRegister(WriteAccRegister(0x00)),
+                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00)),
                 Microcode::IncPCRegister(IncPCRegister(3))
             ]
         ],

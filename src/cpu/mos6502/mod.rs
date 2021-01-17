@@ -14,7 +14,9 @@ use crate::{
 mod tests;
 
 pub mod register;
-use register::{GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer};
+use register::{
+    ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer,
+};
 
 pub mod operations;
 use operations::Operation;
@@ -236,11 +238,7 @@ impl Execute<MOS6502> for microcode::Microcode {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         match self {
             Self::WriteMemory(mc) => mc.execute(cpu),
-            Self::WriteAccRegister(mc) => mc.execute(cpu),
-            Self::WriteXRegister(mc) => mc.execute(cpu),
-            Self::WriteYRegister(mc) => mc.execute(cpu),
-            Self::WriteSPRegister(mc) => mc.execute(cpu),
-            Self::WritePSRegister(mc) => mc.execute(cpu),
+            Self::Write8bitRegister(_) => todo!(),
             Self::WritePCRegister(mc) => mc.execute(cpu),
             Self::IncPCRegister(mc) => mc.execute(cpu),
         }
@@ -255,38 +253,24 @@ impl Execute<MOS6502> for microcode::WriteMemory {
     }
 }
 
-impl Execute<MOS6502> for microcode::WriteAccRegister {
+impl Execute<MOS6502> for microcode::Write8bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.0;
-        cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
-    }
-}
+        let register = self.register;
+        let value = self.value;
 
-impl Execute<MOS6502> for microcode::WriteXRegister {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.0;
-        cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
-    }
-}
-
-impl Execute<MOS6502> for microcode::WriteYRegister {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.0;
-        cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(value))
-    }
-}
-
-impl Execute<MOS6502> for microcode::WriteSPRegister {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.0;
-        cpu.with_sp_register(StackPointer::with_value(value))
-    }
-}
-
-impl Execute<MOS6502> for microcode::WritePSRegister {
-    fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let value = self.0;
-        cpu.with_ps_register(ProcessorStatus::with_value(value))
+        match register {
+            ByteRegisters::ACC => {
+                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(value))
+            }
+            ByteRegisters::X => {
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
+            }
+            ByteRegisters::Y => {
+                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
+            }
+            ByteRegisters::SP => cpu.with_sp_register(StackPointer::with_value(value)),
+            ByteRegisters::PS => cpu.with_ps_register(ProcessorStatus::with_value(value)),
+        }
     }
 }
 

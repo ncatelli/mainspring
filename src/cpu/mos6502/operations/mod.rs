@@ -105,7 +105,7 @@ impl Execute<MOS6502> for Operation {
 }
 
 impl Generate<MOS6502, MOps> for Operation {
-    fn generate<'a>(self, cpu: &'a MOS6502) -> MOps {
+    fn generate(self, cpu: &MOS6502) -> MOps {
         (self.mc_generator)(cpu)
     }
 }
@@ -229,7 +229,7 @@ impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Immediate> {
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immediate> {
-    fn generate<'a>(self, _: &'a MOS6502) -> MOps {
+    fn generate(self, _: &MOS6502) -> MOps {
         let address_mode::Immediate(value) = self.address_mode;
         MOps::new(
             self.offset(),
@@ -271,7 +271,7 @@ impl Execute<MOS6502> for Instruction<mnemonic::LDA, address_mode::Absolute> {
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolute> {
-    fn generate<'a>(self, cpu: &'a MOS6502) -> MOps {
+    fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Absolute(addr) = self.address_mode;
         let val = cpu.address_map.read(addr);
         MOps::new(
@@ -319,7 +319,7 @@ impl Execute<MOS6502> for Instruction<mnemonic::STA, address_mode::Absolute> {
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolute> {
-    fn generate<'a>(self, cpu: &'a MOS6502) -> MOps {
+    fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Absolute(addr) = self.address_mode;
         let acc_val = cpu.acc.read();
         MOps::new(
@@ -359,7 +359,7 @@ impl Execute<MOS6502> for Instruction<mnemonic::NOP, address_mode::Implied> {
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implied> {
-    fn generate<'a>(self, _: &'a MOS6502) -> MOps {
+    fn generate(self, _: &MOS6502) -> MOps {
         MOps::new(self.offset(), self.cycles(), vec![])
     }
 }
@@ -394,7 +394,7 @@ impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Absolute> {
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Absolute> {
-    fn generate<'a>(self, _: &'a MOS6502) -> MOps {
+    fn generate(self, _: &MOS6502) -> MOps {
         let address_mode::Absolute(addr) = self.address_mode;
         MOps::new(
             self.offset(),
@@ -438,7 +438,7 @@ impl Execute<MOS6502> for Instruction<mnemonic::JMP, address_mode::Indirect> {
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Indirect> {
-    fn generate<'a>(self, cpu: &'a MOS6502) -> MOps {
+    fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Indirect(indirect_addr) = self.address_mode;
         let lsb = cpu.address_map.read(indirect_addr);
         let msb = cpu.address_map.read(indirect_addr + 1);

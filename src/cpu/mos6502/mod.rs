@@ -24,7 +24,7 @@ use operations::Operation;
 pub mod microcode;
 
 pub trait Generate<T, U> {
-    fn generate<'a>(self, cpu: &'a T) -> U;
+    fn generate(self, cpu: &T) -> U;
 }
 
 pub trait Execute<T> {
@@ -49,6 +49,7 @@ impl MOS6502 {
     }
 
     /// instantiates a new MOS6502 with a provided address_map.
+    #[allow(clippy::field_reassign_with_default)]
     pub fn with_addressmap(am: AddressMap<u16>) -> Self {
         let mut cpu = Self::default();
         cpu.address_map = am;

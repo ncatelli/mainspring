@@ -4,6 +4,8 @@ use crate::cpu::mos6502::{
     Generate, MOS6502,
 };
 
+// NOP
+
 #[test]
 fn should_generate_implied_address_mode_nop_machine_code() {
     let cpu = MOS6502::default();
@@ -19,6 +21,8 @@ fn should_generate_implied_address_mode_nop_machine_code() {
         Into::<Vec<Vec<Microcode>>>::into(mc)
     )
 }
+
+// LDA
 
 #[test]
 fn should_generate_immediate_address_mode_lda_machine_code() {
@@ -43,6 +47,70 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
             vec![
                 Microcode::WriteAccRegister(WriteAccRegister(0xff)),
                 Microcode::IncPCRegister(IncPCRegister(2))
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+#[test]
+fn should_generate_absolute_address_mode_lda_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::LDA, address_mode::Absolute(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![Microcode::WriteAccRegister(WriteAccRegister(0x00))]
+        ),
+        mc
+    );
+
+    // validate mops -> vector looks correct
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                Microcode::WriteAccRegister(WriteAccRegister(0x00)),
+                Microcode::IncPCRegister(IncPCRegister(3))
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+// STA
+
+#[test]
+fn should_generate_absolute_address_mode_sta_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::STA, address_mode::Absolute(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00))]
+        ),
+        mc
+    );
+
+    // validate mops -> vector looks correct
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00)),
+                Microcode::IncPCRegister(IncPCRegister(3))
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)

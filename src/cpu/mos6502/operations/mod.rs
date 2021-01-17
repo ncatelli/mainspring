@@ -150,8 +150,8 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Instruction<M, A>
 where
-    M: Cyclable + Offset + Copy + Debug + PartialEq,
-    A: Cyclable + Offset + Copy + Debug + PartialEq,
+    M: Offset + Copy + Debug + PartialEq,
+    A: Offset + Copy + Debug + PartialEq,
 {
     mnemonic: M,
     address_mode: A,
@@ -159,8 +159,8 @@ where
 
 impl<M, A> Instruction<M, A>
 where
-    M: Cyclable + Offset + Copy + Debug + PartialEq,
-    A: Cyclable + Offset + Copy + Debug + PartialEq,
+    M: Offset + Copy + Debug + PartialEq,
+    A: Offset + Copy + Debug + PartialEq,
 {
     pub fn new(mnemonic: M, address_mode: A) -> Self {
         Instruction {
@@ -170,20 +170,10 @@ where
     }
 }
 
-impl<M, A> Cyclable for Instruction<M, A>
-where
-    M: Cyclable + Offset + Copy + Debug + PartialEq,
-    A: Cyclable + Offset + Copy + Debug + PartialEq,
-{
-    fn cycles(&self) -> usize {
-        self.mnemonic.cycles() + self.address_mode.cycles()
-    }
-}
-
 impl<M, A> Offset for Instruction<M, A>
 where
-    M: Cyclable + Offset + Copy + Debug + PartialEq,
-    A: Cyclable + Offset + Copy + Debug + PartialEq,
+    M: Offset + Copy + Debug + PartialEq,
+    A: Offset + Copy + Debug + PartialEq,
 {
     fn offset(&self) -> usize {
         self.mnemonic.offset() + self.address_mode.offset()
@@ -192,9 +182,9 @@ where
 
 impl<M, A> Into<Operation> for Instruction<M, A>
 where
-    M: Cyclable + Offset + Copy + Debug + PartialEq + 'static,
-    A: Cyclable + Offset + Copy + Debug + PartialEq + 'static,
-    Self: Execute<MOS6502> + Generate<MOS6502, MOps> + 'static,
+    M: Offset + Copy + Debug + PartialEq + 'static,
+    A: Offset + Copy + Debug + PartialEq + 'static,
+    Self: Execute<MOS6502> + Generate<MOS6502, MOps> + Cyclable + 'static,
 {
     fn into(self) -> Operation {
         Operation::new(
@@ -207,6 +197,12 @@ where
 }
 
 /// LDA
+
+impl Cyclable for Instruction<mnemonic::LDA, address_mode::Immediate> {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
 
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate>>
     for Instruction<mnemonic::LDA, address_mode::Immediate>
@@ -237,6 +233,12 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immedi
             self.cycles(),
             vec![Microcode::WriteAccRegister(WriteAccRegister(value))],
         )
+    }
+}
+
+impl Cyclable for Instruction<mnemonic::LDA, address_mode::Absolute> {
+    fn cycles(&self) -> usize {
+        4
     }
 }
 
@@ -276,6 +278,12 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolu
 
 /// STA
 
+impl Cyclable for Instruction<mnemonic::STA, address_mode::Absolute> {
+    fn cycles(&self) -> usize {
+        4
+    }
+}
+
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>>
     for Instruction<mnemonic::STA, address_mode::Absolute>
 {
@@ -313,7 +321,13 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolu
     }
 }
 
-/// NOP
+// NOP
+
+impl Cyclable for Instruction<mnemonic::NOP, address_mode::Implied> {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
 
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::NOP, address_mode::Implied>>
     for Instruction<mnemonic::NOP, address_mode::Implied>
@@ -342,6 +356,12 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implie
 }
 
 // JMP
+
+impl Cyclable for Instruction<mnemonic::JMP, address_mode::Absolute> {
+    fn cycles(&self) -> usize {
+        3
+    }
+}
 
 impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>>
     for Instruction<mnemonic::JMP, address_mode::Absolute>
@@ -372,6 +392,12 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Absolu
             self.cycles(),
             vec![Microcode::WritePCRegister(WritePCRegister(addr))],
         )
+    }
+}
+
+impl Cyclable for Instruction<mnemonic::JMP, address_mode::Indirect> {
+    fn cycles(&self) -> usize {
+        5
     }
 }
 

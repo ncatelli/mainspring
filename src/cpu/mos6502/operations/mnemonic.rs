@@ -26,11 +26,6 @@ pub struct LDY;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct STA;
 
-impl Cyclable for STA {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
 impl Offset for STA {}
 
 impl<'a> Parser<'a, &'a [u8], STA> for STA {
@@ -171,12 +166,6 @@ pub struct PLP;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct JMP;
 
-impl Cyclable for JMP {
-    fn cycles(&self) -> usize {
-        1
-    }
-}
-
 impl Offset for JMP {}
 
 impl<'a> Parser<'a, &'a [u8], JMP> for JMP {
@@ -229,12 +218,6 @@ pub struct BRK;
 /// mode and functions as a "No Instruction".
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NOP;
-
-impl Cyclable for NOP {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
 
 impl Offset for NOP {}
 

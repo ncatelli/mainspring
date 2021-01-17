@@ -68,7 +68,7 @@ fn should_cycle_on_lda_absolute_operation() {
 
     let state = Into::<StepState<MOS6502>>::into(cpu)
         .into_iter()
-        .nth(2)
+        .nth(3)
         .unwrap();
 
     assert_eq!(0, state.remaining);

@@ -1,7 +1,7 @@
 use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
-    register::ByteRegisters,
+    register::{ByteRegisters, WordRegisters},
     Generate, MOS6502,
 };
 
@@ -135,7 +135,10 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
         MOps::new(
             3,
             3,
-            vec![Microcode::WritePCRegister(WritePCRegister(0x0100))]
+            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+                WordRegisters::PC,
+                0x0100
+            ))]
         ),
         mc
     );
@@ -146,7 +149,7 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
             vec![],
             vec![],
             vec![
-                Microcode::WritePCRegister(WritePCRegister(0x0100)),
+                Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, 0x0100)),
                 Microcode::IncPCRegister(IncPCRegister(3))
             ]
         ],
@@ -165,7 +168,10 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
         MOps::new(
             3,
             5,
-            vec![Microcode::WritePCRegister(WritePCRegister(0x0000))]
+            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+                WordRegisters::PC,
+                0x0000
+            )),]
         ),
         mc
     );
@@ -178,7 +184,7 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
             vec![],
             vec![],
             vec![
-                Microcode::WritePCRegister(WritePCRegister(0x0000)),
+                Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, 0x0000)),
                 Microcode::IncPCRegister(IncPCRegister(3))
             ]
         ],

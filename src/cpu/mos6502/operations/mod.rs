@@ -396,7 +396,10 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Absolu
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::WritePCRegister(WritePCRegister(addr))],
+            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+                WordRegisters::PC,
+                addr,
+            ))],
         )
     }
 }
@@ -440,7 +443,10 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Indire
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::WritePCRegister(WritePCRegister(addr))],
+            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+                WordRegisters::PC,
+                addr,
+            ))],
         )
     }
 }

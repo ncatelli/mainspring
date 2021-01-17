@@ -2,7 +2,7 @@
 //! include write operations to memory or registers and are the basic building
 //! blocks for an instruction implementation
 
-use crate::cpu::mos6502::register::ByteRegisters;
+use crate::cpu::mos6502::register::{ByteRegisters, WordRegisters};
 
 /// An Enumerable type to store each microcode operation possible on the
 /// 6502 emulator.
@@ -10,7 +10,7 @@ use crate::cpu::mos6502::register::ByteRegisters;
 pub enum Microcode {
     WriteMemory(WriteMemory),
     Write8bitRegister(Write8bitRegister),
-    WritePCRegister(WritePCRegister),
+    Write16bitRegister(Write16bitRegister),
     IncPCRegister(IncPCRegister),
 }
 
@@ -46,10 +46,19 @@ impl Write8bitRegister {
 
 // 16-bit registers
 
-/// Represents a write of the specified 16-bit value to the ProgramCounter
-/// register.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WritePCRegister(pub u16);
+/// Represents a write of the specified 16-bit value to one of the 16-bit
+/// registers as defined by the ByteRegisters value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Write16bitRegister {
+    pub register: WordRegisters,
+    pub value: u16,
+}
+
+impl Write16bitRegister {
+    pub fn new(register: WordRegisters, value: u16) -> Self {
+        Self { register, value }
+    }
+}
 
 /// Represents an increment of the ProgramCounter register by the value
 /// specified in the instruction.

@@ -2,7 +2,8 @@ use crate::cpu::register::Register;
 
 /// Represets each type of register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum ByteRegisters {
+pub enum Registers {
+    PC,
     ACC,
     X,
     Y,
@@ -10,10 +11,15 @@ pub enum ByteRegisters {
     SP,
 }
 
-/// Represets each type of register available in the mos6502.
+/// Represets each type of word-sized register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Registers {
+pub enum WordRegisters {
     PC,
+}
+
+/// Represets each type of byte-sized register available in the mos6502.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ByteRegisters {
     ACC,
     X,
     Y,

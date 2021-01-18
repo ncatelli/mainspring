@@ -29,6 +29,12 @@ fn should_parse_zeropage_address_mode_lda_instruction() {
 }
 
 #[test]
+fn should_parse_zeropage_with_x_index_address_mode_lda_instruction() {
+    let bytecode = [0xb5, 0x12, 0x34];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_sta_instruction() {
     let bytecode = [0x8d, 0x34, 0x12];
     gen_op_parse_assertion!(&bytecode);

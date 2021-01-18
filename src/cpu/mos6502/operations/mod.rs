@@ -128,6 +128,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::ZeroPage::default()),
+            inst_to_operation!(mnemonic::LDA, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
@@ -247,6 +248,42 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPa
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::ZeroPage(addr) = self.address_mode;
         let value = cpu.address_map.read(addr as u16);
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                value,
+            ))],
+        )
+    }
+}
+
+impl Cyclable for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX> {
+    fn cycles(&self) -> usize {
+        4
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX>>
+    for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX>> {
+        expect_byte(0xb5)
+            .and_then(|_| address_mode::ZeroPageIndexedWithX::default())
+            .map(|am| Instruction::new(mnemonic::LDA, am))
+            .parse(input)
+    }
+}
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::ZeroPageIndexedWithX(addr) = self.address_mode;
+        let x = cpu.x.read();
+        let value = cpu.address_map.read((addr + x) as u16);
         MOps::new(
             self.offset(),
             self.cycles(),

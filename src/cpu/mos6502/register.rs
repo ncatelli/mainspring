@@ -27,6 +27,18 @@ pub enum ByteRegisters {
     SP,
 }
 
+/// Represets each flag represented in the ProgramStatus Register.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ProgramStatusFlags {
+    Negative,
+    Overflow,
+    Break,
+    Decimal,
+    Interrupt,
+    Zero,
+    Carry,
+}
+
 /// Represets each type of general purpose register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum GPRegister {

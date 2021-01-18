@@ -15,7 +15,8 @@ mod tests;
 
 pub mod register;
 use register::{
-    ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, StackPointer,
+    ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, ProgramStatusFlags,
+    StackPointer,
 };
 
 pub mod operations;
@@ -238,6 +239,7 @@ impl Execute<MOS6502> for microcode::Microcode {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         match self {
             Self::WriteMemory(mc) => mc.execute(cpu),
+            Self::SetProgramStatusFlagState(mc) => mc.execute(cpu),
             Self::Write8bitRegister(mc) => mc.execute(cpu),
             Self::Inc8bitRegister(mc) => mc.execute(cpu),
             Self::Dec8bitRegister(mc) => mc.execute(cpu),
@@ -253,6 +255,24 @@ impl Execute<MOS6502> for microcode::WriteMemory {
         let mut cpu = cpu;
         cpu.address_map.write(self.address, self.value).unwrap();
         cpu
+    }
+}
+
+impl Execute<MOS6502> for microcode::SetProgramStatusFlagState {
+    fn execute(self, cpu: MOS6502) -> MOS6502 {
+        let mut status = cpu.ps;
+
+        match self.flag {
+            ProgramStatusFlags::Negative => status.negative = self.value,
+            ProgramStatusFlags::Overflow => status.overflow = self.value,
+            ProgramStatusFlags::Break => status.brk = self.value,
+            ProgramStatusFlags::Decimal => status.decimal = self.value,
+            ProgramStatusFlags::Interrupt => status.interrupt_disable = self.value,
+            ProgramStatusFlags::Zero => status.zero = self.value,
+            ProgramStatusFlags::Carry => status.carry = self.value,
+        };
+
+        cpu.with_ps_register(status)
     }
 }
 

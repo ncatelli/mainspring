@@ -17,6 +17,7 @@ pub mod mnemonic;
 mod tests;
 
 /// Represents a response that will yield a result that might or might not set a carry bit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum Carryable<T> {
     Set(T),
     Unset(T),
@@ -267,16 +268,13 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate
 }
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immediate> {
-    fn generate(self, _: &MOS6502) -> MOps {
-        let address_mode::Immediate(value) = self.address_mode;
-        MOps::new(
-            self.offset(),
-            self.cycles(),
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                value,
-            ))],
-        )
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::Immediate(am_value) = self.address_mode;
+        let rhs = Carryable::new(am_value);
+        let lhs = Carryable::new(cpu.acc.read());
+        let _diff = lhs - rhs;
+
+        MOps::new(self.offset(), self.cycles(), vec![])
     }
 }
 

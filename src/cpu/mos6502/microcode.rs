@@ -2,13 +2,14 @@
 //! include write operations to memory or registers and are the basic building
 //! blocks for an instruction implementation
 
-use crate::cpu::mos6502::register::{ByteRegisters, WordRegisters};
+use crate::cpu::mos6502::register::{ByteRegisters, ProgramStatusFlags, WordRegisters};
 
 /// An Enumerable type to store each microcode operation possible on the
 /// 6502 emulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
     WriteMemory(WriteMemory),
+    SetProgramStatusFlagState(SetProgramStatusFlagState),
     Write8bitRegister(Write8bitRegister),
     Inc8bitRegister(Inc8bitRegister),
     Dec8bitRegister(Dec8bitRegister),
@@ -28,6 +29,20 @@ pub struct WriteMemory {
 impl WriteMemory {
     pub fn new(address: u16, value: u8) -> Self {
         Self { address, value }
+    }
+}
+
+/// Represents a write of the value to the memory location specified by the
+/// address field.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SetProgramStatusFlagState {
+    pub flag: ProgramStatusFlags,
+    pub value: bool,
+}
+
+impl SetProgramStatusFlagState {
+    pub fn new(flag: ProgramStatusFlags, value: bool) -> Self {
+        Self { flag, value }
     }
 }
 

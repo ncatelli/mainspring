@@ -11,9 +11,13 @@ impl Offset for LDA {}
 
 impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDA> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xa9)])
-            .map(|_| LDA)
-            .parse(input)
+        parcel::one_of(vec![
+            parcel::parsers::byte::expect_byte(0xa9),
+            parcel::parsers::byte::expect_byte(0xa5),
+            parcel::parsers::byte::expect_byte(0xad),
+        ])
+        .map(|_| LDA)
+        .parse(input)
     }
 }
 

@@ -52,8 +52,17 @@ impl<'a> Parser<'a, &'a [u8], Absolute> for Absolute {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct ZeroPage(u8);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct ZeroPage(pub u8);
+
+impl Cyclable for ZeroPage {}
+impl Offset for ZeroPage {}
+
+impl<'a> Parser<'a, &'a [u8], ZeroPage> for ZeroPage {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPage> {
+        any_byte().map(ZeroPage).parse(input)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Relative(i8);

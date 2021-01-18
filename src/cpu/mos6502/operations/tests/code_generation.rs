@@ -2,7 +2,7 @@ use crate::address_map::Addressable;
 use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
-    register::{ByteRegisters, GPRegister, GeneralPurpose, WordRegisters},
+    register::{ByteRegisters, GPRegister, GeneralPurpose, ProgramStatusFlags, WordRegisters},
     Generate, MOS6502,
 };
 use crate::cpu::register::Register;
@@ -11,21 +11,43 @@ use crate::cpu::register::Register;
 
 #[test]
 fn should_generate_immediate_address_mode_cmp_machine_code() {
-    let cpu = MOS6502::default();
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
     let op: Operation = Instruction::new(mnemonic::CMP, address_mode::Immediate::default()).into();
     let mc = op.generate(&cpu);
+    let expected_mops = vec![
+        Microcode::SetProgramStatusFlagState(SetProgramStatusFlagState::new(
+            ProgramStatusFlags::Zero,
+            true,
+        )),
+        Microcode::SetProgramStatusFlagState(SetProgramStatusFlagState::new(
+            ProgramStatusFlags::Carry,
+            true,
+        )),
+        Microcode::SetProgramStatusFlagState(SetProgramStatusFlagState::new(
+            ProgramStatusFlags::Negative,
+            false,
+        )),
+    ];
 
     // check Mops value is correct
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
 
     // validate mops -> vector looks correct
     assert_eq!(
         vec![
             vec![],
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                WordRegisters::PC,
-                2
-            ))]
+            expected_mops
+                .clone()
+                .into_iter()
+                .chain(
+                    vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                        WordRegisters::PC,
+                        2
+                    ))]
+                    .into_iter()
+                )
+                .collect()
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
     )

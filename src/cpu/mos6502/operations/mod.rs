@@ -16,57 +16,76 @@ pub mod mnemonic;
 #[cfg(test)]
 mod tests;
 
-/// Represents a response that will yield a result that might or might not set a carry bit.
+/// Represents a response that will yield a result that might or might not
+/// result in wrapping, overflow or negative values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum Carryable<T> {
-    Set(T),
-    Unset(T),
+struct Operand<T> {
+    carry: bool,
+    negative: bool,
+    zero: bool,
+    inner: T,
 }
 
-impl<T> Carryable<T> {
-    fn new(v: T) -> Self {
-        Self::Unset(v)
+impl<T> Operand<T> {
+    fn new(inner: T) -> Self {
+        Self {
+            carry: false,
+            negative: false,
+            zero: false,
+            inner,
+        }
+    }
+    fn with_flags(inner: T, carry: bool, negative: bool, zero: bool) -> Self {
+        Self {
+            carry,
+            negative,
+            zero,
+            inner,
+        }
     }
 
     fn unwrap(self) -> T {
-        match self {
-            Self::Set(v) => v,
-            Self::Unset(v) => v,
-        }
+        self.inner
     }
 }
 
-impl Sub for Carryable<u8> {
+impl<T> PartialEq<T> for Operand<T>
+where
+    T: PartialEq + Copy,
+{
+    fn eq(&self, rhs: &T) -> bool {
+        let lhs = self.unwrap();
+        lhs == *rhs
+    }
+}
+
+impl Sub for Operand<u8> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
         let lhs = self.unwrap();
         let rhs = other.unwrap();
-        let carry = rhs > lhs;
-
+        let carry = (lhs as u16 + rhs as u16) > 255;
+        let negative = (lhs as i16 + rhs as i16) < 0;
+        let zero = lhs == rhs;
         let difference = (Wrapping(lhs) - Wrapping(rhs)).0;
 
-        match carry {
-            true => Self::Set(difference),
-            false => Self::Unset(difference),
-        }
+        Self::with_flags(difference, carry, negative, zero)
     }
 }
 
-impl Add for Carryable<u8> {
+impl Add for Operand<u8> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
         let lhs = self.unwrap();
         let rhs = other.unwrap();
-        let carry = 255 < (rhs as u16 + lhs as u16);
+        let carry = (lhs as u16 + rhs as u16) > 255;
+        let negative = (lhs as i16 + rhs as i16) < 0;
+        let zero = lhs == rhs;
+        let sum = (Wrapping(lhs) + Wrapping(rhs)).0;
 
-        let sum = (Wrapping(lhs) - Wrapping(rhs)).0;
-
-        match carry {
-            true => Self::Set(sum),
-            false => Self::Unset(sum),
-        }
+        Self::with_flags(sum, carry, negative, zero)
     }
 }
 
@@ -269,12 +288,33 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Immediate(am_value) = self.address_mode;
-        let rhs = Carryable::new(am_value);
-        let lhs = Carryable::new(cpu.acc.read());
-        let _diff = lhs - rhs;
+        let mut mc = vec![];
 
-        MOps::new(self.offset(), self.cycles(), vec![])
+        let address_mode::Immediate(am_value) = self.address_mode;
+        let rhs = Operand::new(am_value);
+        let lhs = Operand::new(cpu.acc.read());
+        let carry = lhs >= rhs;
+        let diff = lhs - rhs;
+
+        // set zero flag
+        mc.push(Microcode::SetProgramStatusFlagState(
+            SetProgramStatusFlagState::new(
+                ProgramStatusFlags::Zero,
+                diff == 0, // Set the zero flag if lhs and rhs are the same
+            ),
+        ));
+
+        // set carry
+        mc.push(Microcode::SetProgramStatusFlagState(
+            SetProgramStatusFlagState::new(ProgramStatusFlags::Carry, carry),
+        ));
+
+        // set negative
+        mc.push(Microcode::SetProgramStatusFlagState(
+            SetProgramStatusFlagState::new(ProgramStatusFlags::Negative, diff.negative),
+        ));
+
+        MOps::new(self.offset(), self.cycles(), mc)
     }
 }
 

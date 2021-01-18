@@ -127,6 +127,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
         parcel::one_of(vec![
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::LDA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),

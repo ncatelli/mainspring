@@ -47,6 +47,15 @@ fn should_cycle_on_lda_immediate_operation() {
 }
 
 #[test]
+fn should_cycle_on_lda_zeropage_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xa5, 0xff]);
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x00, state.acc.read());
+}
+
+#[test]
 fn should_cycle_on_lda_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xad, 0x00, 0x02])

@@ -27,6 +27,18 @@ pub enum ByteRegisters {
     SP,
 }
 
+/// Represets each flag represented in the ProgramStatus Register.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ProgramStatusFlags {
+    Negative,
+    Overflow,
+    Break,
+    Decimal,
+    Interrupt,
+    Zero,
+    Carry,
+}
+
 /// Represets each type of general purpose register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum GPRegister {
@@ -152,17 +164,17 @@ impl Register<u8, u8> for ProcessorStatus {
     }
 }
 
-impl Into<u8> for ProcessorStatus {
-    fn into(self) -> u8 {
+impl From<ProcessorStatus> for u8 {
+    fn from(src: ProcessorStatus) -> u8 {
         let mut ps: u8 = 0;
-        ps |= (self.negative as u8) << 7;
-        ps |= (self.overflow as u8) << 6;
-        ps |= (self.unused as u8) << 5;
-        ps |= (self.brk as u8) << 4;
-        ps |= (self.decimal as u8) << 3;
-        ps |= (self.interrupt_disable as u8) << 2;
-        ps |= (self.zero as u8) << 1;
-        ps |= self.carry as u8;
+        ps |= (src.negative as u8) << 7;
+        ps |= (src.overflow as u8) << 6;
+        ps |= (src.unused as u8) << 5;
+        ps |= (src.brk as u8) << 4;
+        ps |= (src.decimal as u8) << 3;
+        ps |= (src.interrupt_disable as u8) << 2;
+        ps |= (src.zero as u8) << 1;
+        ps |= src.carry as u8;
         ps
     }
 }

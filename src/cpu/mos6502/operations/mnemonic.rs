@@ -98,6 +98,16 @@ pub struct EOR;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CMP;
 
+impl Offset for CMP {}
+
+impl<'a> Parser<'a, &'a [u8], CMP> for CMP {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CMP> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xc9)])
+            .map(|_| CMP)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CPX;
 

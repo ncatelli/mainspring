@@ -7,6 +7,30 @@ use crate::cpu::mos6502::{
 };
 use crate::cpu::register::Register;
 
+// CMP
+
+#[test]
+fn should_generate_immediate_address_mode_cmp_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::CMP, address_mode::Immediate::default()).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(MOps::new(2, 2, vec![]), mc);
+
+    // validate mops -> vector looks correct
+    assert_eq!(
+        vec![
+            vec![],
+            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                WordRegisters::PC,
+                2
+            ))]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
 // NOP
 
 #[test]

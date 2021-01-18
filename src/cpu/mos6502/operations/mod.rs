@@ -7,12 +7,67 @@ use crate::cpu::{
 };
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
+use std::num::Wrapping;
+use std::ops::{Add, Sub};
 
 pub mod address_mode;
 pub mod mnemonic;
 
 #[cfg(test)]
 mod tests;
+
+/// Represents a response that will yield a result that might or might not set a carry bit.
+enum Carryable<T> {
+    Set(T),
+    Unset(T),
+}
+
+impl<T> Carryable<T> {
+    fn new(v: T) -> Self {
+        Self::Unset(v)
+    }
+
+    fn unwrap(self) -> T {
+        match self {
+            Self::Set(v) => v,
+            Self::Unset(v) => v,
+        }
+    }
+}
+
+impl Sub for Carryable<u8> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self::Output {
+        let lhs = self.unwrap();
+        let rhs = other.unwrap();
+        let carry = rhs > lhs;
+
+        let difference = (Wrapping(lhs) - Wrapping(rhs)).0;
+
+        match carry {
+            true => Self::Set(difference),
+            false => Self::Unset(difference),
+        }
+    }
+}
+
+impl Add for Carryable<u8> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        let lhs = self.unwrap();
+        let rhs = other.unwrap();
+        let carry = 255 < (rhs as u16 + lhs as u16);
+
+        let sum = (Wrapping(lhs) - Wrapping(rhs)).0;
+
+        match carry {
+            true => Self::Set(sum),
+            false => Self::Unset(sum),
+        }
+    }
+}
 
 /// MOps functions as a concrete wrapper around a microcode operation with
 /// metadata around sizing and cycles. This trait does NOT represent a cycle
@@ -125,14 +180,15 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
-            inst_to_operation!(mnemonic::NOP, address_mode::Implied),
+            inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::JMP, address_mode::Indirect::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
-            inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
-            inst_to_operation!(mnemonic::JMP, address_mode::Indirect::default()),
         ])
         .parse(input)
     }
@@ -184,6 +240,42 @@ where
             self.offset(),
             self.cycles(),
             Box::new(move |cpu| self.generate(cpu)),
+        )
+    }
+}
+
+// CMP
+
+impl Cyclable for Instruction<mnemonic::CMP, address_mode::Immediate> {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate>>
+    for Instruction<mnemonic::CMP, address_mode::Immediate>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate>> {
+        expect_byte(0xc9)
+            .and_then(|_| address_mode::Immediate::default())
+            .map(|am| Instruction::new(mnemonic::CMP, am))
+            .parse(input)
+    }
+}
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immediate> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        let address_mode::Immediate(value) = self.address_mode;
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                value,
+            ))],
         )
     }
 }

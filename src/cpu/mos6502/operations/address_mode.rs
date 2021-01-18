@@ -64,6 +64,30 @@ impl<'a> Parser<'a, &'a [u8], ZeroPage> for ZeroPage {
     }
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct ZeroPageIndexedWithX(pub u8);
+
+impl Cyclable for ZeroPageIndexedWithX {}
+impl Offset for ZeroPageIndexedWithX {}
+
+impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithX> for ZeroPageIndexedWithX {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPageIndexedWithX> {
+        any_byte().map(ZeroPageIndexedWithX).parse(input)
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct ZeroPageIndexedWithY(pub u8);
+
+impl Cyclable for ZeroPageIndexedWithY {}
+impl Offset for ZeroPageIndexedWithY {}
+
+impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPageIndexedWithY> {
+        any_byte().map(ZeroPageIndexedWithY).parse(input)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Relative(i8);
 
@@ -89,12 +113,6 @@ pub struct AbsoluteIndexedWithX(u16);
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AbsoluteIndexedWithY(u16);
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct ZeroPageIndexedWithX(u8);
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct ZeroPageIndexedWithY(u8);
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct IndexedIndirect(u8);

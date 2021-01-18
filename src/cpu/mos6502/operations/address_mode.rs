@@ -52,7 +52,7 @@ impl<'a> Parser<'a, &'a [u8], Absolute> for Absolute {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ZeroPage(pub u8);
 
 impl Cyclable for ZeroPage {}

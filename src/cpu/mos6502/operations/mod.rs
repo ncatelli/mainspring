@@ -222,6 +222,41 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immedi
     }
 }
 
+impl Cyclable for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
+    fn cycles(&self) -> usize {
+        3
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPage>>
+    for Instruction<mnemonic::LDA, address_mode::ZeroPage>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPage>> {
+        expect_byte(0xa5)
+            .and_then(|_| address_mode::ZeroPage::default())
+            .map(|am| Instruction::new(mnemonic::LDA, am))
+            .parse(input)
+    }
+}
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::ZeroPage(addr) = self.address_mode;
+        let value = cpu.address_map.read(addr as u16);
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                ByteRegisters::ACC,
+                value,
+            ))],
+        )
+    }
+}
+
 impl Cyclable for Instruction<mnemonic::LDA, address_mode::Absolute> {
     fn cycles(&self) -> usize {
         4

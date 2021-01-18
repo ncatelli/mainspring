@@ -3,7 +3,7 @@ use crate::address_map::{
     Addressable,
 };
 use crate::cpu::{
-    mos6502::{register, GPRegister, MOS6502},
+    mos6502::{register, register::GPRegister, MOS6502},
     register::Register,
     CPU,
 };
@@ -27,14 +27,36 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
 }
 
 #[test]
-fn should_cycle_on_nop_implied_operation() {
-    let cpu = generate_test_cpu_with_instructions(vec![]);
-    let state = cpu.run(3).unwrap();
-    assert_eq!(0x6001, state.pc.read());
+fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0x00),
+    );
 
-    // take 2 more cycles to validate ea has incremented again.
-    let next_state = state.run(2).unwrap();
-    assert_eq!(0x6002, next_state.pc.read());
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert!(!state.ps.carry);
+    assert!(!state.ps.negative);
+    assert!(!state.ps.zero);
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0xff),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
 }
 
 #[test]
@@ -82,6 +104,17 @@ fn should_cycle_on_lda_absolute_operation() {
     // val in mem should be null
     assert_eq!(0x00, state.acc.read());
     assert_eq!(0x00, state.address_map.read(0x0200));
+}
+
+#[test]
+fn should_cycle_on_nop_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![]);
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+
+    // take 2 more cycles to validate ea has incremented again.
+    let next_state = state.run(2).unwrap();
+    assert_eq!(0x6002, next_state.pc.read());
 }
 
 #[test]

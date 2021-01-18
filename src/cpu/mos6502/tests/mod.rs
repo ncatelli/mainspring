@@ -56,6 +56,17 @@ fn should_cycle_on_lda_zeropage_operation() {
 }
 
 #[test]
+fn should_cycle_on_lda_zeropage_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xb5, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+}
+
+#[test]
 fn should_cycle_on_lda_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xad, 0x00, 0x02])

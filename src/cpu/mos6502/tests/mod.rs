@@ -66,6 +66,7 @@ fn should_cycle_on_lda_immediate_operation() {
     let state = cpu.run(4).unwrap();
     assert_eq!(0x6004, state.pc.read());
     assert_eq!(0x0f, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, false));
 }
 
 #[test]
@@ -75,6 +76,7 @@ fn should_cycle_on_lda_zeropage_operation() {
     let state = cpu.run(3).unwrap();
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0x00, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, true));
 }
 
 #[test]
@@ -86,6 +88,7 @@ fn should_cycle_on_lda_zeropage_indexed_with_x_operation() {
     let state = cpu.run(4).unwrap();
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0xff, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
 }
 
 #[test]
@@ -104,6 +107,7 @@ fn should_cycle_on_lda_absolute_operation() {
     // val in mem should be null
     assert_eq!(0x00, state.acc.read());
     assert_eq!(0x00, state.address_map.read(0x0200));
+    assert_eq!((state.ps.negative, state.ps.zero), (false, true));
 }
 
 #[test]

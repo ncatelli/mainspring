@@ -155,10 +155,23 @@ fn should_cycle_on_jmp_indirect_operation() {
 }
 
 #[test]
-fn should_cycle_on_txa_implied_operation() {
-    let cpu = generate_test_cpu_with_instructions(vec![0x8a])
+fn should_cycle_on_tax_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xaa])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x00));
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(0xff, state.x.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
+fn should_cycle_on_txa_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x8a])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x00))
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());

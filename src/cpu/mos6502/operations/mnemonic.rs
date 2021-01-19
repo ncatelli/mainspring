@@ -149,6 +149,16 @@ pub struct TAX;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TXA;
 
+impl Offset for TXA {}
+
+impl<'a> Parser<'a, &'a [u8], TXA> for TXA {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TXA> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x8a)])
+            .map(|_| TXA)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TAY;
 

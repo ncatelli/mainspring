@@ -210,6 +210,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::TXA, address_mode::Implied),
         ])
         .parse(input)
     }
@@ -601,6 +602,45 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Indire
                 WordRegisters::PC,
                 addr - self.offset() as u16,
             ))],
+        )
+    }
+}
+
+impl Cyclable for Instruction<mnemonic::TXA, address_mode::Implied> {
+    fn cycles(&self) -> usize {
+        2
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::TXA, address_mode::Implied>>
+    for Instruction<mnemonic::TXA, address_mode::Implied>
+{
+    fn parse(
+        &self,
+        input: &'a [u8],
+    ) -> ParseResult<&'a [u8], Instruction<mnemonic::TXA, address_mode::Implied>> {
+        expect_byte(0x8a)
+            .and_then(|_| address_mode::Implied)
+            .map(|am| Instruction::new(mnemonic::TXA, am))
+            .parse(input)
+    }
+}
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::TXA, address_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = Operand::new(cpu.acc.read());
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::X,
+                    value.unwrap(),
+                )),
+            ],
         )
     }
 }

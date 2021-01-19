@@ -27,14 +27,6 @@ struct Operand<T> {
 }
 
 impl<T> Operand<T> {
-    fn new(inner: T) -> Self {
-        Self {
-            carry: false,
-            negative: false,
-            zero: false,
-            inner,
-        }
-    }
     fn with_flags(inner: T, carry: bool, negative: bool, zero: bool) -> Self {
         Self {
             carry,
@@ -59,16 +51,26 @@ where
     }
 }
 
+impl Operand<u8> {
+    fn new(inner: u8) -> Self {
+        Self {
+            carry: false,
+            negative: inner > 127,
+            zero: inner == 0,
+            inner,
+        }
+    }
+}
+
 impl Sub for Operand<u8> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
-        let lhs = self.unwrap();
-        let rhs = other.unwrap();
-        let carry = (lhs as u16 + rhs as u16) > 255;
-        let negative = (lhs as i16 + rhs as i16) < 0;
-        let zero = lhs == rhs;
+        let (lhs, rhs) = (self.unwrap(), other.unwrap());
         let difference = (Wrapping(lhs) - Wrapping(rhs)).0;
+        let carry = (lhs as u16 + rhs as u16) > 255;
+        let negative = difference > 127; // most significant bit set
+        let zero = lhs == rhs;
 
         Self::with_flags(difference, carry, negative, zero)
     }
@@ -78,12 +80,11 @@ impl Add for Operand<u8> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
-        let lhs = self.unwrap();
-        let rhs = other.unwrap();
-        let carry = (lhs as u16 + rhs as u16) > 255;
-        let negative = (lhs as i16 + rhs as i16) < 0;
-        let zero = lhs == rhs;
+        let (lhs, rhs) = (self.unwrap(), other.unwrap());
         let sum = (Wrapping(lhs) + Wrapping(rhs)).0;
+        let carry = (lhs as u16 + rhs as u16) > 255;
+        let negative = sum > 127; // most significant bit set
+        let zero = lhs == rhs;
 
         Self::with_flags(sum, carry, negative, zero)
     }
@@ -342,14 +343,20 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immediate> {
     fn generate(self, _: &MOS6502) -> MOps {
-        let address_mode::Immediate(value) = self.address_mode;
+        let address_mode::Immediate(am_val) = self.address_mode;
+        let value = Operand::new(am_val);
+
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                value,
-            ))],
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::ACC,
+                    value.unwrap(),
+                )),
+            ],
         )
     }
 }
@@ -377,14 +384,19 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPage>
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::ZeroPage(addr) = self.address_mode;
-        let value = cpu.address_map.read(addr as u16);
+        let value = Operand::new(cpu.address_map.read(addr as u16));
+
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                value,
-            ))],
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::ACC,
+                    value.unwrap(),
+                )),
+            ],
         )
     }
 }
@@ -413,14 +425,20 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPa
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::ZeroPageIndexedWithX(addr) = self.address_mode;
         let x = cpu.x.read();
-        let value = cpu.address_map.read((addr + x) as u16);
+        let indirect_value = cpu.address_map.read((addr + x) as u16);
+        let value = Operand::new(indirect_value);
+
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                value,
-            ))],
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::ACC,
+                    value.unwrap(),
+                )),
+            ],
         )
     }
 }
@@ -448,14 +466,18 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Absolute>
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Absolute(addr) = self.address_mode;
-        let val = cpu.address_map.read(addr);
+        let value = Operand::new(cpu.address_map.read(addr));
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                val,
-            ))],
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::ACC,
+                    value.unwrap(),
+                )),
+            ],
         )
     }
 }

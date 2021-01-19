@@ -133,3 +133,12 @@ impl Dec16bitRegister {
         Self { register, value }
     }
 }
+
+#[allow(unused_macros)]
+macro_rules! gen_flag_set_microcode {
+    ($flag:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::SetProgramStatusFlagState(
+            $crate::cpu::mos6502::microcode::SetProgramStatusFlagState::new($flag, $value),
+        )
+    };
+}

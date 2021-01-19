@@ -90,10 +90,11 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
         MOps::new(
             2,
             2,
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                0xff
-            ))]
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff))
+            ]
         ),
         mc
     );
@@ -103,6 +104,8 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
         vec![
             vec![],
             vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff)),
                 Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
             ]
@@ -122,10 +125,14 @@ fn should_generate_zeropage_address_mode_lda_machine_code() {
         MOps::new(
             2,
             3,
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                0x00 // memory defaults to null
-            ))]
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::ACC,
+                    0x00 // memory defaults to null
+                ))
+            ]
         ),
         mc
     );
@@ -136,6 +143,8 @@ fn should_generate_zeropage_address_mode_lda_machine_code() {
             vec![],
             vec![],
             vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00)),
                 Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
             ]
@@ -158,10 +167,14 @@ fn should_generate_zeropage_indexed_with_x_address_mode_lda_machine_code() {
         MOps::new(
             2,
             4,
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                0xff // value at 0x05 in memory should be 0xff
-            ))]
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    ByteRegisters::ACC,
+                    0xff // value at 0x05 in memory should be 0xff
+                ))
+            ]
         ),
         mc
     );
@@ -173,6 +186,8 @@ fn should_generate_zeropage_indexed_with_x_address_mode_lda_machine_code() {
             vec![],
             vec![],
             vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff)),
                 Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
             ]
@@ -192,10 +207,11 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
         MOps::new(
             3,
             4,
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                ByteRegisters::ACC,
-                0x00
-            ))]
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00))
+            ]
         ),
         mc
     );
@@ -207,6 +223,8 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
             vec![],
             vec![],
             vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00)),
                 Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
             ]

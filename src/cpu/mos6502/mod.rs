@@ -10,6 +10,9 @@ use crate::{
     cpu::{register::Register, StepState, CPU},
 };
 
+#[macro_use]
+pub mod microcode;
+
 #[cfg(test)]
 mod tests;
 
@@ -21,8 +24,6 @@ use register::{
 
 pub mod operations;
 use operations::Operation;
-
-pub mod microcode;
 
 pub trait Generate<T, U> {
     fn generate(self, cpu: &T) -> U;

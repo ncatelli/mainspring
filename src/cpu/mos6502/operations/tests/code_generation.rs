@@ -16,18 +16,9 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
     let op: Operation = Instruction::new(mnemonic::CMP, address_mode::Immediate::default()).into();
     let mc = op.generate(&cpu);
     let expected_mops = vec![
-        Microcode::SetProgramStatusFlagState(SetProgramStatusFlagState::new(
-            ProgramStatusFlags::Zero,
-            true,
-        )),
-        Microcode::SetProgramStatusFlagState(SetProgramStatusFlagState::new(
-            ProgramStatusFlags::Carry,
-            true,
-        )),
-        Microcode::SetProgramStatusFlagState(SetProgramStatusFlagState::new(
-            ProgramStatusFlags::Negative,
-            false,
-        )),
+        gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+        gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+        gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
     // check Mops value is correct

@@ -289,33 +289,21 @@ impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let mut mc = vec![];
-
         let address_mode::Immediate(am_value) = self.address_mode;
         let rhs = Operand::new(am_value);
         let lhs = Operand::new(cpu.acc.read());
         let carry = lhs >= rhs;
         let diff = lhs - rhs;
 
-        // set zero flag
-        mc.push(Microcode::SetProgramStatusFlagState(
-            SetProgramStatusFlagState::new(
-                ProgramStatusFlags::Zero,
-                diff == 0, // Set the zero flag if lhs and rhs are the same
-            ),
-        ));
-
-        // set carry
-        mc.push(Microcode::SetProgramStatusFlagState(
-            SetProgramStatusFlagState::new(ProgramStatusFlags::Carry, carry),
-        ));
-
-        // set negative
-        mc.push(Microcode::SetProgramStatusFlagState(
-            SetProgramStatusFlagState::new(ProgramStatusFlags::Negative, diff.negative),
-        ));
-
-        MOps::new(self.offset(), self.cycles(), mc)
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+            ],
+        )
     }
 }
 

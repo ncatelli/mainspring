@@ -1,2 +1,2 @@
 # mos6502_emulator
-A minimal 6502 emulator to make testing changes to spasm and the tk01 easier.
+A CPU device and emulation framework focused on implementing a CPU through Instructions that emit a virtual microcode.

@@ -290,7 +290,7 @@ impl Execute<MOS6502> for microcode::Write8bitRegister {
                 cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
             }
             ByteRegisters::Y => {
-                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(value))
+                cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(value))
             }
             ByteRegisters::SP => cpu.with_sp_register(StackPointer::with_value(value)),
             ByteRegisters::PS => cpu.with_ps_register(ProcessorStatus::with_value(value)),
@@ -314,7 +314,7 @@ impl Execute<MOS6502> for microcode::Inc8bitRegister {
             }
             ByteRegisters::Y => {
                 let old_val = cpu.y.read();
-                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val + value))
+                cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(old_val + value))
             }
             ByteRegisters::SP => {
                 let old_val = cpu.sp.read();
@@ -343,7 +343,7 @@ impl Execute<MOS6502> for microcode::Dec8bitRegister {
             }
             ByteRegisters::Y => {
                 let old_val = cpu.y.read();
-                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val - value))
+                cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(old_val - value))
             }
             ByteRegisters::SP => {
                 let old_val = cpu.sp.read();

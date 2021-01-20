@@ -8,7 +8,7 @@ pub struct Accumulator;
 /// Implied address address mode. This is signified by no address mode
 /// arguments. An example instruction with an implied address mode would be.
 /// `nop`
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Implied;
 
 impl Offset for Implied {

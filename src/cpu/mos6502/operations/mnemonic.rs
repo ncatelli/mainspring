@@ -185,6 +185,16 @@ impl<'a> Parser<'a, &'a [u8], TAY> for TAY {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TYA;
 
+impl Offset for TYA {}
+
+impl<'a> Parser<'a, &'a [u8], TYA> for TYA {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TYA> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x98)])
+            .map(|_| TYA)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TSX;
 

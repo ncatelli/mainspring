@@ -356,6 +356,28 @@ fn should_generate_implied_address_mode_tax_machine_code() {
 }
 
 #[test]
+fn should_generate_implied_address_mode_tay_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    let op: Operation = Instruction::new(mnemonic::TAY, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::Y, 0xff))
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_implied_address_mode_txa_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0xff));
     let op: Operation = Instruction::new(mnemonic::TXA, address_mode::Implied).into();

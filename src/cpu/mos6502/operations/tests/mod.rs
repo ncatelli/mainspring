@@ -53,6 +53,12 @@ fn should_parse_implied_address_mode_tax_instruction() {
 }
 
 #[test]
+fn should_parse_implied_address_mode_tay_instruction() {
+    let bytecode = [0xa8, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_txa_instruction() {
     let bytecode = [0x8a, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

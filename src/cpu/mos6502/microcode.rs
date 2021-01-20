@@ -135,10 +135,73 @@ impl Dec16bitRegister {
 }
 
 #[allow(unused_macros)]
+macro_rules! gen_write_memory_microcode {
+    ($addr:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::WriteMemory(
+            $crate::cpu::mos6502::microcode::WriteMemory::new($addr, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
 macro_rules! gen_flag_set_microcode {
     ($flag:expr, $value:expr) => {
         $crate::cpu::mos6502::microcode::Microcode::SetProgramStatusFlagState(
             $crate::cpu::mos6502::microcode::SetProgramStatusFlagState::new($flag, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! gen_write_8bit_register_microcode {
+    ($reg:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::Write8bitRegister(
+            $crate::cpu::mos6502::microcode::Write8bitRegister::new($reg, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! gen_inc_8bit_register_microcode {
+    ($reg:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::Inc8bitRegister(
+            $crate::cpu::mos6502::microcode::Inc8bitRegister::new($reg, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! gen_dec_8bit_register_microcode {
+    ($reg:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::Dec8bitRegister(
+            $crate::cpu::mos6502::microcode::Dec8bitRegister::new($reg, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! gen_write_16bit_register_microcode {
+    ($reg:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::Write16bitRegister(
+            $crate::cpu::mos6502::microcode::Write16bitRegister::new($reg, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! gen_inc_16bit_register_microcode {
+    ($reg:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::Inc16bitRegister(
+            $crate::cpu::mos6502::microcode::Inc16bitRegister::new($reg, $value),
+        )
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! gen_dec_16bit_register_microcode {
+    ($reg:expr, $value:expr) => {
+        $crate::cpu::mos6502::microcode::Microcode::Dec16bitRegister(
+            $crate::cpu::mos6502::microcode::Dec16bitRegister::new($reg, $value),
         )
     };
 }

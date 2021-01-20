@@ -1,7 +1,7 @@
 extern crate parcel;
 use crate::address_map::Addressable;
 use crate::cpu::{
-    mos6502::{microcode::*, register::*, Generate, MOS6502},
+    mos6502::{microcode::Microcode, register::*, Generate, MOS6502},
     register::Register,
     Cyclable, Offset,
 };
@@ -126,14 +126,16 @@ impl From<MOps> for Vec<Vec<Microcode>> {
     fn from(src: MOps) -> Self {
         let cycles = src.cycles();
         let offset = src.offset() as u16;
-        let mut mcs = vec![vec![]; cycles - 1];
-        let mut microcode = src.microcode;
-        microcode.push(Microcode::Inc16bitRegister(Inc16bitRegister::new(
-            WordRegisters::PC,
-            offset,
-        )));
+        let mut mcs = vec![Vec::<Microcode>::new(); cycles - 1];
 
-        mcs.push(microcode);
+        mcs.push(
+            src.microcode
+                .into_iter()
+                .chain(
+                    vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, offset)].into_iter(),
+                )
+                .collect(),
+        );
         mcs
     }
 }
@@ -269,27 +271,33 @@ where
     }
 }
 
+macro_rules! gen_instruction_cycles_and_parser {
+    ($mnemonic:ty, $address_mode:ty, $opcode:literal, $cycles:literal) => {
+        impl Cyclable for Instruction<$mnemonic, $address_mode> {
+            fn cycles(&self) -> usize {
+                $cycles
+            }
+        }
+
+        impl<'a> Parser<'a, &'a [u8], Instruction<$mnemonic, $address_mode>>
+            for Instruction<$mnemonic, $address_mode>
+        {
+            fn parse(
+                &self,
+                input: &'a [u8],
+            ) -> ParseResult<&'a [u8], Instruction<$mnemonic, $address_mode>> {
+                expect_byte($opcode)
+                    .and_then(|_| <$address_mode>::default())
+                    .map(|am| Instruction::new(<$mnemonic>::default(), am))
+                    .parse(input)
+            }
+        }
+    };
+}
+
 // CMP
 
-impl Cyclable for Instruction<mnemonic::CMP, address_mode::Immediate> {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate>>
-    for Instruction<mnemonic::CMP, address_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::CMP, address_mode::Immediate>> {
-        expect_byte(0xc9)
-            .and_then(|_| address_mode::Immediate::default())
-            .map(|am| Instruction::new(mnemonic::CMP, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::CMP, address_mode::Immediate, 0xc9, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -311,27 +319,46 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immedi
     }
 }
 
-/// LDA
+// JMP
 
-impl Cyclable for Instruction<mnemonic::LDA, address_mode::Immediate> {
-    fn cycles(&self) -> usize {
-        2
+gen_instruction_cycles_and_parser!(mnemonic::JMP, address_mode::Absolute, 0x4c, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Absolute> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        let address_mode::Absolute(addr) = self.address_mode;
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_16bit_register_microcode!(
+                WordRegisters::PC,
+                addr - self.offset() as u16
+            )],
+        )
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate>>
-    for Instruction<mnemonic::LDA, address_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::Immediate>> {
-        expect_byte(0xa9)
-            .and_then(|_| address_mode::Immediate::default())
-            .map(|am| Instruction::new(mnemonic::LDA, am))
-            .parse(input)
+gen_instruction_cycles_and_parser!(mnemonic::JMP, address_mode::Indirect, 0x6c, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Indirect> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::Indirect(indirect_addr) = self.address_mode;
+        let lsb = cpu.address_map.read(indirect_addr);
+        let msb = cpu.address_map.read(indirect_addr + 1);
+        let addr = u16::from_le_bytes([lsb, msb]);
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_16bit_register_microcode!(
+                WordRegisters::PC,
+                addr - self.offset() as u16
+            )],
+        )
     }
 }
+
+// LDA
+
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::Immediate, 0xa9, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immediate> {
     fn generate(self, _: &MOS6502) -> MOps {
@@ -344,34 +371,13 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Immedi
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::ACC,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }
 }
 
-impl Cyclable for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
-    fn cycles(&self) -> usize {
-        3
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPage>>
-    for Instruction<mnemonic::LDA, address_mode::ZeroPage>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPage>> {
-        expect_byte(0xa5)
-            .and_then(|_| address_mode::ZeroPage::default())
-            .map(|am| Instruction::new(mnemonic::LDA, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::ZeroPage, 0xa5, 3);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -384,34 +390,13 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPa
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::ACC,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }
 }
 
-impl Cyclable for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX> {
-    fn cycles(&self) -> usize {
-        4
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX>>
-    for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX>> {
-        expect_byte(0xb5)
-            .and_then(|_| address_mode::ZeroPageIndexedWithX::default())
-            .map(|am| Instruction::new(mnemonic::LDA, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::ZeroPageIndexedWithX, 0xb5, 4);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -426,34 +411,13 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPa
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::ACC,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }
 }
 
-impl Cyclable for Instruction<mnemonic::LDA, address_mode::Absolute> {
-    fn cycles(&self) -> usize {
-        4
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::LDA, address_mode::Absolute>>
-    for Instruction<mnemonic::LDA, address_mode::Absolute>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::LDA, address_mode::Absolute>> {
-        expect_byte(0xad)
-            .and_then(|_| address_mode::Absolute::default())
-            .map(|am| Instruction::new(mnemonic::LDA, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::Absolute, 0xad, 4);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -465,36 +429,25 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolu
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::ACC,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }
 }
 
-/// STA
+// NOP
 
-impl Cyclable for Instruction<mnemonic::STA, address_mode::Absolute> {
-    fn cycles(&self) -> usize {
-        4
+gen_instruction_cycles_and_parser!(mnemonic::NOP, address_mode::Implied, 0xea, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implied> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        MOps::new(self.offset(), self.cycles(), vec![])
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>>
-    for Instruction<mnemonic::STA, address_mode::Absolute>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::STA, address_mode::Absolute>> {
-        expect_byte(0x8d)
-            .and_then(|_| address_mode::Absolute::default())
-            .map(|am| Instruction::new(mnemonic::STA, am))
-            .parse(input)
-    }
-}
+// STA
+
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::Absolute, 0x8d, 4);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -503,131 +456,14 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolu
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![Microcode::WriteMemory(WriteMemory::new(addr, acc_val))],
+            vec![gen_write_memory_microcode!(addr, acc_val)],
         )
     }
 }
 
-// NOP
+// TAX
 
-impl Cyclable for Instruction<mnemonic::NOP, address_mode::Implied> {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::NOP, address_mode::Implied>>
-    for Instruction<mnemonic::NOP, address_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::NOP, address_mode::Implied>> {
-        mnemonic::NOP
-            .and_then(|_| address_mode::Implied)
-            .map(|am| Instruction::new(mnemonic::NOP, am))
-            .parse(input)
-    }
-}
-
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implied> {
-    fn generate(self, _: &MOS6502) -> MOps {
-        MOps::new(self.offset(), self.cycles(), vec![])
-    }
-}
-
-// JMP
-
-impl Cyclable for Instruction<mnemonic::JMP, address_mode::Absolute> {
-    fn cycles(&self) -> usize {
-        3
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>>
-    for Instruction<mnemonic::JMP, address_mode::Absolute>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::JMP, address_mode::Absolute>> {
-        expect_byte(0x4c)
-            .and_then(|_| address_mode::Absolute::default())
-            .map(|am| Instruction::new(mnemonic::JMP, am))
-            .parse(input)
-    }
-}
-
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Absolute> {
-    fn generate(self, _: &MOS6502) -> MOps {
-        let address_mode::Absolute(addr) = self.address_mode;
-        MOps::new(
-            self.offset(),
-            self.cycles(),
-            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
-                WordRegisters::PC,
-                addr - self.offset() as u16,
-            ))],
-        )
-    }
-}
-
-impl Cyclable for Instruction<mnemonic::JMP, address_mode::Indirect> {
-    fn cycles(&self) -> usize {
-        5
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::JMP, address_mode::Indirect>>
-    for Instruction<mnemonic::JMP, address_mode::Indirect>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::JMP, address_mode::Indirect>> {
-        expect_byte(0x6c)
-            .and_then(|_| address_mode::Indirect::default())
-            .map(|am| Instruction::new(mnemonic::JMP, am))
-            .parse(input)
-    }
-}
-
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, address_mode::Indirect> {
-    fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Indirect(indirect_addr) = self.address_mode;
-        let lsb = cpu.address_map.read(indirect_addr);
-        let msb = cpu.address_map.read(indirect_addr + 1);
-        let addr = u16::from_le_bytes([lsb, msb]);
-        MOps::new(
-            self.offset(),
-            self.cycles(),
-            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
-                WordRegisters::PC,
-                addr - self.offset() as u16,
-            ))],
-        )
-    }
-}
-
-impl Cyclable for Instruction<mnemonic::TAX, address_mode::Implied> {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
-
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::TAX, address_mode::Implied>>
-    for Instruction<mnemonic::TAX, address_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::TAX, address_mode::Implied>> {
-        expect_byte(0xaa)
-            .and_then(|_| address_mode::Implied)
-            .map(|am| Instruction::new(mnemonic::TAX, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::TAX, address_mode::Implied, 0xaa, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::TAX, address_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -639,34 +475,15 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::TAX, address_mode::Implie
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::X,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
 }
 
-impl Cyclable for Instruction<mnemonic::TAY, address_mode::Implied> {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
+// TAY
 
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::TAY, address_mode::Implied>>
-    for Instruction<mnemonic::TAY, address_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::TAY, address_mode::Implied>> {
-        expect_byte(0xa8)
-            .and_then(|_| address_mode::Implied)
-            .map(|am| Instruction::new(mnemonic::TAY, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::TAY, address_mode::Implied, 0xa8, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::TAY, address_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -678,34 +495,15 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::TAY, address_mode::Implie
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::Y,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
 }
 
-impl Cyclable for Instruction<mnemonic::TXA, address_mode::Implied> {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
+// TXA
 
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::TXA, address_mode::Implied>>
-    for Instruction<mnemonic::TXA, address_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::TXA, address_mode::Implied>> {
-        expect_byte(0x8a)
-            .and_then(|_| address_mode::Implied)
-            .map(|am| Instruction::new(mnemonic::TXA, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::TXA, address_mode::Implied, 0x8a, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::TXA, address_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -717,34 +515,15 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::TXA, address_mode::Implie
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::ACC,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }
 }
 
-impl Cyclable for Instruction<mnemonic::TYA, address_mode::Implied> {
-    fn cycles(&self) -> usize {
-        2
-    }
-}
+// TYA
 
-impl<'a> Parser<'a, &'a [u8], Instruction<mnemonic::TYA, address_mode::Implied>>
-    for Instruction<mnemonic::TYA, address_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [u8],
-    ) -> ParseResult<&'a [u8], Instruction<mnemonic::TYA, address_mode::Implied>> {
-        expect_byte(0x98)
-            .and_then(|_| address_mode::Implied)
-            .map(|am| Instruction::new(mnemonic::TYA, am))
-            .parse(input)
-    }
-}
+gen_instruction_cycles_and_parser!(mnemonic::TYA, address_mode::Implied, 0x98, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::TYA, address_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> MOps {
@@ -756,10 +535,7 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::TYA, address_mode::Implie
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
-                    ByteRegisters::ACC,
-                    value.unwrap(),
-                )),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }

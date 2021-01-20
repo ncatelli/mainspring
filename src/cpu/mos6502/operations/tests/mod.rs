@@ -11,6 +11,12 @@ macro_rules! gen_op_parse_assertion {
 }
 
 #[test]
+fn should_parse_implied_address_mode_clc_instruction() {
+    let bytecode = [0x18, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_nop_instruction() {
     let bytecode = [0xea, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

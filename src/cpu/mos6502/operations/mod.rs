@@ -217,6 +217,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::TAX, address_mode::Implied),
             inst_to_operation!(mnemonic::TAY, address_mode::Implied),
+            inst_to_operation!(mnemonic::TSX, address_mode::Implied),
             inst_to_operation!(mnemonic::TXA, address_mode::Implied),
             inst_to_operation!(mnemonic::TYA, address_mode::Implied),
         ])
@@ -553,6 +554,26 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::TAY, address_mode::Implie
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// TSX
+
+gen_instruction_cycles_and_parser!(mnemonic::TSX, address_mode::Implied, 0xba, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::TSX, address_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = Operand::new(cpu.sp.read());
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
             ],
         )
     }

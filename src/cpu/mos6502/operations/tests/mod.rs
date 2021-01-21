@@ -77,6 +77,12 @@ fn should_parse_implied_address_mode_tay_instruction() {
 }
 
 #[test]
+fn should_parse_implied_address_mode_tsx_instruction() {
+    let bytecode = [0xba, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_txa_instruction() {
     let bytecode = [0x8a, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

@@ -55,13 +55,7 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
             expected_mops
                 .clone()
                 .into_iter()
-                .chain(
-                    vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                        WordRegisters::PC,
-                        2
-                    ))]
-                    .into_iter()
-                )
+                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)].into_iter())
                 .collect()
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -129,10 +123,7 @@ fn should_generate_implied_address_mode_nop_machine_code() {
     assert_eq!(
         vec![
             vec![],
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                WordRegisters::PC,
-                1
-            ))]
+            vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 1)]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
     )
@@ -154,7 +145,7 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
             ]
         ),
         mc
@@ -167,8 +158,8 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff)),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -189,10 +180,10 @@ fn should_generate_zeropage_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
+                gen_write_8bit_register_microcode!(
                     ByteRegisters::ACC,
                     0x00 // memory defaults to null
-                ))
+                )
             ]
         ),
         mc
@@ -206,8 +197,8 @@ fn should_generate_zeropage_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00)),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -231,10 +222,10 @@ fn should_generate_zeropage_indexed_with_x_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(
+                gen_write_8bit_register_microcode!(
                     ByteRegisters::ACC,
                     0xff // value at 0x05 in memory should be 0xff
-                ))
+                )
             ]
         ),
         mc
@@ -249,8 +240,8 @@ fn should_generate_zeropage_indexed_with_x_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff)),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 2))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -271,7 +262,7 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00)
             ]
         ),
         mc
@@ -286,8 +277,8 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0x00)),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -320,7 +311,7 @@ fn should_generate_absolute_address_mode_sta_machine_code() {
             vec![],
             vec![
                 Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00)),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -354,7 +345,7 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
             vec![],
             vec![
                 Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, addr - 3)),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -396,7 +387,7 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
                     WordRegisters::PC,
                     indirect_addr - 3
                 )),
-                Microcode::Inc16bitRegister(Inc16bitRegister::new(WordRegisters::PC, 3))
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -418,7 +409,7 @@ fn should_generate_implied_address_mode_tax_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::X, 0xff))
+                gen_write_8bit_register_microcode!(ByteRegisters::X, 0xff)
             ]
         ),
         mc
@@ -440,7 +431,7 @@ fn should_generate_implied_address_mode_tay_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::Y, 0xff))
+                gen_write_8bit_register_microcode!(ByteRegisters::Y, 0xff)
             ]
         ),
         mc
@@ -461,7 +452,7 @@ fn should_generate_implied_address_mode_tsx_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::X, 0xff))
+                gen_write_8bit_register_microcode!(ByteRegisters::X, 0xff)
             ]
         ),
         mc
@@ -482,8 +473,25 @@ fn should_generate_implied_address_mode_txa_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
             ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_implied_address_mode_txs_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::TXS, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![gen_write_8bit_register_microcode!(ByteRegisters::SP, 0x00)]
         ),
         mc
     );
@@ -503,7 +511,7 @@ fn should_generate_implied_address_mode_tya_machine_code() {
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::ACC, 0xff))
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
             ]
         ),
         mc

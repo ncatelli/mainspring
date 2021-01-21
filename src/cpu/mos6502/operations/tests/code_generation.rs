@@ -2,10 +2,34 @@ use crate::address_map::Addressable;
 use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
-    register::{ByteRegisters, GPRegister, GeneralPurpose, ProgramStatusFlags, WordRegisters},
+    register::{
+        ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramStatusFlags,
+        WordRegisters,
+    },
     Generate, MOS6502,
 };
 use crate::cpu::register::Register;
+
+// CLC
+
+#[test]
+fn should_generate_implied_address_mode_clc_machine_code() {
+    let mut ps = ProcessorStatus::new();
+    ps.carry = true;
+    let cpu = MOS6502::default().with_ps_register(ps);
+    let op: Operation = Instruction::new(mnemonic::CLC, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),]
+        ),
+        mc
+    );
+}
 
 // CMP
 

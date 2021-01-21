@@ -203,6 +203,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::CLC, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Indirect::default()),
@@ -293,6 +294,20 @@ macro_rules! gen_instruction_cycles_and_parser {
             }
         }
     };
+}
+
+// CLC
+
+gen_instruction_cycles_and_parser!(mnemonic::CLC, address_mode::Implied, 0x18, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::CLC, address_mode::Implied> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, false)],
+        )
+    }
 }
 
 // CMP

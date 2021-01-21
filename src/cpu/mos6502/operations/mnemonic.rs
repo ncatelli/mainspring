@@ -1,12 +1,11 @@
 extern crate parcel;
-use crate::cpu::{Cyclable, Offset};
+use crate::cpu::Offset;
 use parcel::{ParseResult, Parser};
 
 // Load-Store
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDA;
 
-impl Cyclable for LDA {}
 impl Offset for LDA {}
 
 impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
@@ -150,7 +149,7 @@ impl Offset for TAX {}
 
 impl<'a> Parser<'a, &'a [u8], TAX> for TAX {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TAX> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xaa)])
+        parcel::parsers::byte::expect_byte(0xaa)
             .map(|_| TAX)
             .parse(input)
     }
@@ -163,7 +162,7 @@ impl Offset for TXA {}
 
 impl<'a> Parser<'a, &'a [u8], TXA> for TXA {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TXA> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x8a)])
+        parcel::parsers::byte::expect_byte(0x8a)
             .map(|_| TXA)
             .parse(input)
     }
@@ -176,7 +175,7 @@ impl Offset for TAY {}
 
 impl<'a> Parser<'a, &'a [u8], TAY> for TAY {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TAY> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xa8)])
+        parcel::parsers::byte::expect_byte(0xa8)
             .map(|_| TAY)
             .parse(input)
     }
@@ -189,7 +188,7 @@ impl Offset for TYA {}
 
 impl<'a> Parser<'a, &'a [u8], TYA> for TYA {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TYA> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x98)])
+        parcel::parsers::byte::expect_byte(0x98)
             .map(|_| TYA)
             .parse(input)
     }
@@ -247,6 +246,16 @@ pub struct RTI;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLC;
 
+impl Offset for CLC {}
+
+impl<'a> Parser<'a, &'a [u8], CLC> for CLC {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLC> {
+        parcel::parsers::byte::expect_byte(0xad)
+            .map(|_| CLC)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEC;
 
@@ -276,15 +285,9 @@ pub struct NOP;
 
 impl Offset for NOP {}
 
-impl From<NOP> for u8 {
-    fn from(_: NOP) -> Self {
-        0xea
-    }
-}
-
 impl<'a> Parser<'a, &'a [u8], NOP> for NOP {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], NOP> {
-        parcel::parsers::byte::expect_byte(NOP.into())
+        parcel::parsers::byte::expect_byte(0xea)
             .map(|_| NOP)
             .parse(input)
     }

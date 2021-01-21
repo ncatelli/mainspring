@@ -17,6 +17,12 @@ fn should_parse_implied_address_mode_clc_instruction() {
 }
 
 #[test]
+fn should_parse_implied_address_mode_cld_instruction() {
+    let bytecode = [0xd8, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_inx_instruction() {
     let bytecode = [0xe8, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

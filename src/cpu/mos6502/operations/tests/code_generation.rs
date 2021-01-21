@@ -4,7 +4,7 @@ use crate::cpu::mos6502::{
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
     register::{
         ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramStatusFlags,
-        WordRegisters,
+        StackPointer, WordRegisters,
     },
     Generate, MOS6502,
 };
@@ -441,6 +441,27 @@ fn should_generate_implied_address_mode_tay_machine_code() {
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
                 Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::Y, 0xff))
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_implied_address_mode_tsx_machine_code() {
+    let cpu = MOS6502::default().with_sp_register(StackPointer::default());
+    let op: Operation = Instruction::new(mnemonic::TSX, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                Microcode::Write8bitRegister(Write8bitRegister::new(ByteRegisters::X, 0xff))
             ]
         ),
         mc

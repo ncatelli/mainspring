@@ -88,17 +88,9 @@ pub struct StackPointer {
     inner: u8,
 }
 
-impl StackPointer {
-    /// instantiates a new stack pointer register with a value.
-    pub fn with_value(inner: u8) -> Self {
-        Self::default().write(inner)
-    }
-}
-
-impl Register<u16, u8> for StackPointer {
-    fn read(&self) -> u16 {
-        let bp: u16 = 0x0100;
-        bp + self.inner as u16
+impl Register<u8, u8> for StackPointer {
+    fn read(&self) -> u8 {
+        self.inner
     }
 
     fn write(self, value: u8) -> Self {

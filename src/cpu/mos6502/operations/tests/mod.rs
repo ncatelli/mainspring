@@ -89,6 +89,12 @@ fn should_parse_implied_address_mode_txa_instruction() {
 }
 
 #[test]
+fn should_parse_implied_address_mode_txs_instruction() {
+    let bytecode = [0x9a, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_tya_instruction() {
     let bytecode = [0x98, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

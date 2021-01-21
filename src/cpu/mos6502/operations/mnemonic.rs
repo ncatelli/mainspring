@@ -230,6 +230,16 @@ impl<'a> Parser<'a, &'a [u8], TSX> for TSX {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TXS;
 
+impl Offset for TXS {}
+
+impl<'a> Parser<'a, &'a [u8], TXS> for TXS {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TXS> {
+        parcel::parsers::byte::expect_byte(0x9a)
+            .map(|_| TXS)
+            .parse(input)
+    }
+}
+
 // Stack Operations
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHA;

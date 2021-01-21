@@ -76,6 +76,19 @@ fn should_cycle_on_inx_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
+    assert_eq!(128, state.x.read());
+    assert_eq!((true, false), (state.ps.negative, state.ps.zero));
+}
+
+#[test]
+fn should_cycle_on_iny_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc8])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(127));
+    assert_eq!(false, cpu.ps.negative);
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(128, state.y.read());
     assert_eq!((true, false), (state.ps.negative, state.ps.zero));
 }
 

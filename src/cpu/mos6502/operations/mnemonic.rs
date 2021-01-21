@@ -72,6 +72,16 @@ impl<'a> Parser<'a, &'a [u8], INX> for INX {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INY;
 
+impl Offset for INY {}
+
+impl<'a> Parser<'a, &'a [u8], INY> for INY {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], INY> {
+        parcel::parsers::byte::expect_byte(0xc8)
+            .map(|_| INY)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEC;
 

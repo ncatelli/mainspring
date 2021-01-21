@@ -7,58 +7,21 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'mos6502_emulator'",
+            "name": "Debug unit tests in library 'mainspring'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
                     "--lib",
-                    "--package=mos6502_emulator"
+                    "--package=mainspring"
                 ],
                 "filter": {
-                    "name": "mos6502_emulator",
+                    "name": "mainspring",
                     "kind": "lib"
                 }
             },
             "args": [],
             "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'mos6502_emulator'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=mos6502_emulator",
-                    "--package=mos6502_emulator"
-                ],
-                "filter": {
-                    "name": "mos6502_emulator",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'mos6502_emulator'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=mos6502_emulator",
-                    "--package=mos6502_emulator"
-                ],
-                "filter": {
-                    "name": "mos6502_emulator",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
+        }
     ]
 }

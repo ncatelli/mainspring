@@ -67,11 +67,11 @@ impl MOS6502 {
     /// # Examples
     ///
     /// ```
-    /// use mos6502_emulator::address_map::{
+    /// use mainspring::address_map::{
     ///     memory::{Memory, ReadOnly},
     ///     Addressable,
     /// };
-    /// use mos6502_emulator::cpu::mos6502::MOS6502;
+    /// use mainspring::cpu::mos6502::MOS6502;
     ///
     /// let (start_addr, stop_addr) = (0x6000, 0x7000);
     /// let nop_sled = [0xea; 0x7000 - 0x6000].to_vec();

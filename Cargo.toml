@@ -1,5 +1,5 @@
 [package]
-name = "mos6502_emulator"
+name = "mainspring"
 version = "0.1.0"
 authors = ["Nate Catelli <ncatelli@packetfire.org>"]
 edition = "2018"

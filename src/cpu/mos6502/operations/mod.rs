@@ -205,6 +205,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
         parcel::one_of(vec![
             inst_to_operation!(mnemonic::CLC, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::INX, address_mode::Implied),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, address_mode::Indirect::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::Immediate::default()),
@@ -329,6 +330,26 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immedi
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+            ],
+        )
+    }
+}
+
+// INX
+
+gen_instruction_cycles_and_parser!(mnemonic::INX, address_mode::Implied, 0xe8, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::INX, address_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = Operand::new(cpu.x.read()) + Operand::new(1);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
             ],
         )
     }

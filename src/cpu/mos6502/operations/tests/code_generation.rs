@@ -68,6 +68,29 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
     )
 }
 
+// CLC
+
+#[test]
+fn should_generate_implied_address_mode_inx_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x12));
+    let op: Operation = Instruction::new(mnemonic::INX, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, 0x13)
+            ]
+        ),
+        mc
+    );
+}
+
 // NOP
 
 #[test]

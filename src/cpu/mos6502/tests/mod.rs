@@ -197,6 +197,15 @@ fn should_cycle_on_jmp_indirect_operation() {
 }
 
 #[test]
+fn should_cycle_on_sed_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xf8]);
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(true, state.ps.decimal);
+}
+
+#[test]
 fn should_cycle_on_tax_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xaa])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))

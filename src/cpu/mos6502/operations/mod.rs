@@ -7,7 +7,6 @@ use crate::cpu::{
 };
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
-use std::num::Wrapping;
 use std::ops::{Add, Sub};
 
 pub mod address_mode;
@@ -67,10 +66,9 @@ impl Sub for Operand<u8> {
 
     fn sub(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let difference = (Wrapping(lhs) - Wrapping(rhs)).0;
-        let carry = (lhs as u16 + rhs as u16) > 255;
+        let (difference, carry) = lhs.overflowing_sub(rhs);
         let negative = difference > 127; // most significant bit set
-        let zero = lhs == rhs;
+        let zero = difference == 0;
 
         Self::with_flags(difference, carry, negative, zero)
     }
@@ -81,10 +79,9 @@ impl Add for Operand<u8> {
 
     fn add(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let sum = (Wrapping(lhs) + Wrapping(rhs)).0;
-        let carry = (lhs as u16 + rhs as u16) > 255;
+        let (sum, carry) = lhs.overflowing_add(rhs);
         let negative = sum > 127; // most significant bit set
-        let zero = lhs == rhs;
+        let zero = sum == 0;
 
         Self::with_flags(sum, carry, negative, zero)
     }
@@ -216,6 +213,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::SED, address_mode::Implied),
             inst_to_operation!(mnemonic::TAX, address_mode::Implied),
             inst_to_operation!(mnemonic::TAY, address_mode::Implied),
             inst_to_operation!(mnemonic::TSX, address_mode::Implied),
@@ -516,6 +514,20 @@ gen_instruction_cycles_and_parser!(mnemonic::NOP, address_mode::Implied, 0xea, 2
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implied> {
     fn generate(self, _: &MOS6502) -> MOps {
         MOps::new(self.offset(), self.cycles(), vec![])
+    }
+}
+
+// CLD
+
+gen_instruction_cycles_and_parser!(mnemonic::SED, address_mode::Implied, 0xf8, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SED, address_mode::Implied> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, true)],
+        )
     }
 }
 

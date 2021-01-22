@@ -315,6 +315,16 @@ impl<'a> Parser<'a, &'a [u8], CLD> for CLD {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SED;
 
+impl Offset for SED {}
+
+impl<'a> Parser<'a, &'a [u8], SED> for SED {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], SED> {
+        parcel::parsers::byte::expect_byte(0xf8)
+            .map(|_| SED)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLI;
 

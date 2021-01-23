@@ -232,6 +232,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
             inst_to_operation!(mnemonic::BEQ, address_mode::Relative::default()),
+            inst_to_operation!(mnemonic::BNE, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::CLC, address_mode::Implied),
             inst_to_operation!(mnemonic::CLD, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
@@ -332,6 +333,36 @@ macro_rules! gen_instruction_cycles_and_parser {
     };
 }
 
+// Branching
+
+fn branch_on_case(
+    cond: bool,
+    branch_offset: i8,
+    inst_offset: usize,
+    cycles: usize,
+    cpu: &MOS6502,
+) -> MOps {
+    let jmp_on_eq = (Wrapping(cpu.pc.read()) + Wrapping(branch_offset as u16)).0;
+    let mc = if cond {
+        vec![gen_write_16bit_register_microcode!(
+            WordRegisters::PC,
+            // handle for underflow
+            (Wrapping(jmp_on_eq) - Wrapping(inst_offset as u16)).0
+        )]
+    } else {
+        vec![]
+    };
+
+    // if the branch is true and that branch crosses a page boundary pay a 1 cycle penalty.
+    let branch_penalty = match (cond, Page::from(cpu.pc.read()).contains(jmp_on_eq)) {
+        (true, false) => 2,
+        (true, true) => 1,
+        _ => 0,
+    };
+
+    MOps::new(inst_offset, cycles + branch_penalty, mc)
+}
+
 // BEQ
 
 gen_instruction_cycles_and_parser!(mnemonic::BEQ, address_mode::Relative, 0xf0, 2);
@@ -339,25 +370,18 @@ gen_instruction_cycles_and_parser!(mnemonic::BEQ, address_mode::Relative, 0xf0, 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Relative(offset) = self.address_mode;
-        let jmp_on_eq = (Wrapping(cpu.pc.read()) + Wrapping(offset as u16)).0;
-        let mc = if cpu.ps.zero {
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                // handle for underflow
-                (Wrapping(jmp_on_eq) - Wrapping(self.offset() as u16)).0
-            )]
-        } else {
-            vec![]
-        };
 
-        // if the branch is take and that branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = match (cpu.ps.zero, Page::from(cpu.pc.read()).contains(jmp_on_eq)) {
-            (true, false) => 2,
-            (true, true) => 1,
-            _ => 0,
-        };
+        branch_on_case(cpu.ps.zero, offset, self.offset(), self.cycles(), cpu)
+    }
+}
 
-        MOps::new(self.offset(), self.cycles() + branch_penalty, mc)
+gen_instruction_cycles_and_parser!(mnemonic::BNE, address_mode::Relative, 0xd0, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BNE, address_mode::Relative> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::Relative(offset) = self.address_mode;
+
+        branch_on_case(!cpu.ps.zero, offset, self.offset(), self.cycles(), cpu)
     }
 }
 

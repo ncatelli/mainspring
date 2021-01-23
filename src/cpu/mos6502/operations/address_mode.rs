@@ -88,8 +88,22 @@ impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Relative(i8);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Relative(pub i8);
+
+impl Cyclable for Relative {}
+impl Offset for Relative {}
+
+impl<'a> Parser<'a, &'a [u8], Relative> for Relative {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Relative> {
+        any_byte()
+            .map(|b| {
+                let offset = unsafe { std::mem::transmute::<u8, i8>(b) };
+                Relative(offset)
+            })
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Indirect(pub u16);

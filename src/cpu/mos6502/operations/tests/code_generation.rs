@@ -10,6 +10,19 @@ use crate::cpu::mos6502::{
 };
 use crate::cpu::register::Register;
 
+// BEQ
+
+#[test]
+fn should_generate_relative_address_mode_beq_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
+    let mc = op.generate(&cpu);
+    let pc = cpu.pc.read();
+
+    // check Mops value is correct
+    assert_eq!(MOps::new(2, 2, vec![]), mc);
+}
+
 // CLC
 
 #[test]

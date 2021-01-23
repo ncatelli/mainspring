@@ -7,6 +7,7 @@ use crate::cpu::{
 };
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
+use std::num::Wrapping;
 use std::ops::{Add, Sub};
 
 pub mod address_mode;
@@ -18,7 +19,7 @@ mod tests;
 /// Represents a response that will yield a result that might or might not
 /// result in wrapping, overflow or negative values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct Operand<T> {
+pub struct Operand<T> {
     carry: bool,
     negative: bool,
     zero: bool,
@@ -51,7 +52,7 @@ where
 }
 
 impl Operand<u8> {
-    fn new(inner: u8) -> Self {
+    pub fn new(inner: u8) -> Self {
         Self {
             carry: false,
             negative: inner > 127,
@@ -307,8 +308,19 @@ gen_instruction_cycles_and_parser!(mnemonic::BEQ, address_mode::Relative, 0xf0, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Relative(_) = self.address_mode;
-        MOps::new(self.offset(), self.cycles(), vec![])
+        let address_mode::Relative(offset) = self.address_mode;
+        let jmp_on_eq = (Wrapping(cpu.pc.read()) + Wrapping(offset as u16)).0;
+        let mc = if cpu.ps.zero {
+            vec![gen_write_16bit_register_microcode!(
+                WordRegisters::PC,
+                // handle for underflow
+                (Wrapping(jmp_on_eq) - Wrapping(self.offset() as u16)).0
+            )]
+        } else {
+            vec![]
+        };
+
+        MOps::new(self.offset(), self.cycles(), mc)
     }
 }
 

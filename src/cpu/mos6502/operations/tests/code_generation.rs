@@ -3,8 +3,8 @@ use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
     register::{
-        ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramStatusFlags,
-        StackPointer, WordRegisters,
+        ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
+        ProgramStatusFlags, StackPointer, WordRegisters,
     },
     Generate, MOS6502,
 };
@@ -14,13 +14,33 @@ use crate::cpu::register::Register;
 
 #[test]
 fn should_generate_relative_address_mode_beq_machine_code() {
-    let cpu = MOS6502::default();
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+
+    // case should jump
+    cpu.ps.zero = true;
+
     let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
-    let mc = op.generate(&cpu);
-    let pc = cpu.pc.read();
+    let branch_case_true_mc = op.generate(&cpu);
+
+    // case shouldn't ujump
+    cpu.ps.zero = false;
+
+    let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
+    let branch_case_false_mc = op.generate(&cpu);
+
+    let pc = cpu.pc.read() - 8 - 2; // pc - relative address - inst size
+
+    assert_eq!(
+        MOps::new(
+            2,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        branch_case_true_mc
+    );
 
     // check Mops value is correct
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    assert_eq!(MOps::new(2, 2, vec![]), branch_case_false_mc);
 }
 
 // CLC

@@ -16,27 +16,48 @@ use crate::cpu::register::Register;
 fn should_generate_relative_address_mode_beq_machine_code() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
 
-    // case should jump
+    // case should jump in page
+    cpu.ps.zero = true;
+
+    let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(8)).into();
+    let branch_case_true_in_page_mc = op.generate(&cpu);
+
+    // case should jump out of page
     cpu.ps.zero = true;
 
     let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
-    let branch_case_true_mc = op.generate(&cpu);
+    let branch_case_true_out_of_page_mc = op.generate(&cpu);
 
-    // case shouldn't ujump
+    // case shouldn't jump
     cpu.ps.zero = false;
 
     let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
     let branch_case_false_mc = op.generate(&cpu);
 
-    let pc = cpu.pc.read() - 8 - 2; // pc - relative address - inst size
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![gen_write_16bit_register_microcode!(
+                WordRegisters::PC,
+                // pc - relative address - inst size
+                cpu.pc.read() + 8 - 2
+            )]
+        ),
+        branch_case_true_in_page_mc
+    );
 
     assert_eq!(
         MOps::new(
             2,
-            2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+            4,
+            vec![gen_write_16bit_register_microcode!(
+                WordRegisters::PC,
+                // pc - relative address - inst size
+                cpu.pc.read() - 8 - 2
+            )]
         ),
-        branch_case_true_mc
+        branch_case_true_out_of_page_mc
     );
 
     // check Mops value is correct

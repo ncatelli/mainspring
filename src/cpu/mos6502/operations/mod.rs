@@ -8,7 +8,7 @@ use crate::cpu::{
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
 use std::num::Wrapping;
-use std::ops::{Add, Sub};
+use std::ops::{Add, Range, Sub};
 
 pub mod address_mode;
 pub mod mnemonic;
@@ -16,10 +16,36 @@ pub mod mnemonic;
 #[cfg(test)]
 mod tests;
 
+/// Page represents an 8-bit memory page
+struct Page {
+    inner: Range<u16>,
+}
+
+impl Page {
+    #[allow(unused)]
+    fn new(start: u16, end: u16) -> Self {
+        Self { inner: start..end }
+    }
+
+    fn from_addr(addr: u16) -> Self {
+        let page_size = 0xff;
+        let upper_page_bound: u16 = addr + (page_size - (addr % (page_size + 1)));
+        let lower_page_bound: u16 = upper_page_bound - page_size;
+
+        Self {
+            inner: lower_page_bound..upper_page_bound + 1,
+        }
+    }
+
+    fn contains(&self, addr: u16) -> bool {
+        self.inner.contains(&addr)
+    }
+}
+
 /// Represents a response that will yield a result that might or might not
 /// result in wrapping, overflow or negative values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Operand<T> {
+struct Operand<T> {
     carry: bool,
     negative: bool,
     zero: bool,
@@ -320,7 +346,17 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relati
             vec![]
         };
 
-        MOps::new(self.offset(), self.cycles(), mc)
+        // if the branch is take and that branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = match (
+            cpu.ps.zero,
+            Page::from_addr(cpu.pc.read()).contains(jmp_on_eq),
+        ) {
+            (true, false) => 2,
+            (true, true) => 1,
+            _ => 0,
+        };
+
+        MOps::new(self.offset(), self.cycles() + branch_penalty, mc)
     }
 }
 

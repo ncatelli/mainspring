@@ -146,6 +146,7 @@ pub struct BCS;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BNE;
 
+/// Branch on Zero. Follows branch when the Zero flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BEQ;
 

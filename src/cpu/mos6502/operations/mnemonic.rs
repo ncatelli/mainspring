@@ -331,6 +331,16 @@ pub struct CLI;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEI;
 
+impl Offset for SEI {}
+
+impl<'a> Parser<'a, &'a [u8], SEI> for SEI {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], SEI> {
+        parcel::parsers::byte::expect_byte(0x78)
+            .map(|_| SEI)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLV;
 

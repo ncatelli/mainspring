@@ -16,7 +16,8 @@ pub mod mnemonic;
 #[cfg(test)]
 mod tests;
 
-/// Page represents an 8-bit memory page
+/// Page represents an 8-bit memory page for the purpose of determining if an
+/// address falls within the space of a page.
 struct Page {
     inner: Range<u16>,
 }
@@ -27,18 +28,21 @@ impl Page {
         Self { inner: start..end }
     }
 
-    fn from_addr(addr: u16) -> Self {
+    /// Returns true if the passed address falls within the range of the page.
+    fn contains(&self, addr: u16) -> bool {
+        self.inner.contains(&addr)
+    }
+}
+
+impl From<u16> for Page {
+    fn from(addr: u16) -> Self {
         let page_size = 0xff;
         let upper_page_bound: u16 = addr + (page_size - (addr % (page_size + 1)));
         let lower_page_bound: u16 = upper_page_bound - page_size;
 
         Self {
-            inner: lower_page_bound..upper_page_bound + 1,
+            inner: lower_page_bound..upper_page_bound,
         }
-    }
-
-    fn contains(&self, addr: u16) -> bool {
-        self.inner.contains(&addr)
     }
 }
 
@@ -347,10 +351,7 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relati
         };
 
         // if the branch is take and that branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = match (
-            cpu.ps.zero,
-            Page::from_addr(cpu.pc.read()).contains(jmp_on_eq),
-        ) {
+        let branch_penalty = match (cpu.ps.zero, Page::from(cpu.pc.read()).contains(jmp_on_eq)) {
             (true, false) => 2,
             (true, true) => 1,
             _ => 0,

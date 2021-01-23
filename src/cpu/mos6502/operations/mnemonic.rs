@@ -146,8 +146,19 @@ pub struct BCS;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BNE;
 
+/// Branch on Zero. Follows branch when the Zero flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BEQ;
+
+impl Offset for BEQ {}
+
+impl<'a> Parser<'a, &'a [u8], BEQ> for BEQ {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BEQ> {
+        parcel::parsers::byte::expect_byte(0xf0)
+            .map(|_| BEQ)
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BPL;

@@ -3,12 +3,68 @@ use crate::cpu::mos6502::{
     microcode::*,
     operations::{address_mode, mnemonic, Instruction, MOps, Operation},
     register::{
-        ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramStatusFlags,
-        StackPointer, WordRegisters,
+        ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
+        ProgramStatusFlags, StackPointer, WordRegisters,
     },
     Generate, MOS6502,
 };
 use crate::cpu::register::Register;
+
+// BEQ
+
+#[test]
+fn should_generate_beq_machine_code_with_branch_penalty() {
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+    cpu.ps.zero = true;
+
+    let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(8)).into();
+    let mc = op.generate(&cpu);
+
+    // pc - relative address - inst size
+    let pc = cpu.pc.read() + 8 - 2;
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_beq_machine_code_with_branch_and_page_penalty() {
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+    // case should jump out of page
+    cpu.ps.zero = true;
+
+    let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
+    let mc = op.generate(&cpu);
+
+    // pc - relative address - inst size
+    let pc = cpu.pc.read() - 8 - 2;
+
+    assert_eq!(
+        MOps::new(
+            2,
+            4,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_beq_machine_code_with_no_jump() {
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+    cpu.ps.zero = false;
+
+    let op: Operation = Instruction::new(mnemonic::BEQ, address_mode::Relative(-8)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(MOps::new(2, 2, vec![]), mc);
+}
 
 // CLC
 
@@ -20,7 +76,6 @@ fn should_generate_implied_address_mode_clc_machine_code() {
     let op: Operation = Instruction::new(mnemonic::CLC, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -41,7 +96,6 @@ fn should_generate_implied_address_mode_cld_machine_code() {
     let op: Operation = Instruction::new(mnemonic::CLD, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -66,7 +120,6 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    // check Mops value is correct
     assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
 
     // validate mops -> vector looks correct
@@ -91,7 +144,6 @@ fn should_generate_implied_address_mode_inx_machine_code() {
     let op: Operation = Instruction::new(mnemonic::INX, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -114,7 +166,6 @@ fn should_generate_implied_address_mode_iny_machine_code() {
     let op: Operation = Instruction::new(mnemonic::INY, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -137,7 +188,6 @@ fn should_generate_implied_address_mode_nop_machine_code() {
     let op: Operation = Instruction::new(mnemonic::NOP, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(MOps::new(1, 2, vec![]), mc);
 
     // validate mops -> vector looks correct
@@ -158,7 +208,6 @@ fn should_generate_immediate_address_mode_lda_machine_code() {
     let op: Operation = Instruction::new(mnemonic::LDA, address_mode::Immediate(0xff)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             2,
@@ -193,7 +242,6 @@ fn should_generate_zeropage_address_mode_lda_machine_code() {
     let op: Operation = Instruction::new(mnemonic::LDA, address_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             2,
@@ -235,7 +283,6 @@ fn should_generate_zeropage_indexed_with_x_address_mode_lda_machine_code() {
         Instruction::new(mnemonic::LDA, address_mode::ZeroPageIndexedWithX(0x00)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             2,
@@ -275,7 +322,6 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
     let op: Operation = Instruction::new(mnemonic::LDA, address_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             3,
@@ -316,7 +362,6 @@ fn should_generate_implied_address_mode_sed_machine_code() {
     let op: Operation = Instruction::new(mnemonic::SED, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -337,7 +382,6 @@ fn should_generate_implied_address_mode_sei_machine_code() {
     let op: Operation = Instruction::new(mnemonic::SEI, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -356,7 +400,6 @@ fn should_generate_absolute_address_mode_sta_machine_code() {
     let op: Operation = Instruction::new(mnemonic::STA, address_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             3,
@@ -388,7 +431,6 @@ fn should_generate_absolute_address_mode_jmp_machine_code() {
     let op: Operation = Instruction::new(mnemonic::JMP, address_mode::Absolute(addr)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             3,
@@ -425,7 +467,6 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
     let op: Operation = Instruction::new(mnemonic::JMP, address_mode::Indirect(base_addr)).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             3,
@@ -464,7 +505,6 @@ fn should_generate_implied_address_mode_tax_machine_code() {
     let op: Operation = Instruction::new(mnemonic::TAX, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -486,7 +526,6 @@ fn should_generate_implied_address_mode_tay_machine_code() {
     let op: Operation = Instruction::new(mnemonic::TAY, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -507,7 +546,6 @@ fn should_generate_implied_address_mode_tsx_machine_code() {
     let op: Operation = Instruction::new(mnemonic::TSX, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -528,7 +566,6 @@ fn should_generate_implied_address_mode_txa_machine_code() {
     let op: Operation = Instruction::new(mnemonic::TXA, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -549,7 +586,6 @@ fn should_generate_implied_address_mode_txs_machine_code() {
     let op: Operation = Instruction::new(mnemonic::TXS, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,
@@ -566,7 +602,6 @@ fn should_generate_implied_address_mode_tya_machine_code() {
     let op: Operation = Instruction::new(mnemonic::TYA, address_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    // check Mops value is correct
     assert_eq!(
         MOps::new(
             1,

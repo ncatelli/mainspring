@@ -7,13 +7,44 @@ use crate::cpu::{
 };
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
-use std::ops::{Add, Sub};
+use std::num::Wrapping;
+use std::ops::{Add, Range, Sub};
 
 pub mod address_mode;
 pub mod mnemonic;
 
 #[cfg(test)]
 mod tests;
+
+/// Page represents an 8-bit memory page for the purpose of determining if an
+/// address falls within the space of a page.
+struct Page {
+    inner: Range<u16>,
+}
+
+impl Page {
+    #[allow(unused)]
+    fn new(start: u16, end: u16) -> Self {
+        Self { inner: start..end }
+    }
+
+    /// Returns true if the passed address falls within the range of the page.
+    fn contains(&self, addr: u16) -> bool {
+        self.inner.contains(&addr)
+    }
+}
+
+impl From<u16> for Page {
+    fn from(addr: u16) -> Self {
+        let page_size = 0xff;
+        let upper_page_bound: u16 = addr + (page_size - (addr % (page_size + 1)));
+        let lower_page_bound: u16 = upper_page_bound - page_size;
+
+        Self {
+            inner: lower_page_bound..upper_page_bound,
+        }
+    }
+}
 
 /// Represents a response that will yield a result that might or might not
 /// result in wrapping, overflow or negative values.
@@ -51,7 +82,7 @@ where
 }
 
 impl Operand<u8> {
-    fn new(inner: u8) -> Self {
+    pub fn new(inner: u8) -> Self {
         Self {
             carry: false,
             negative: inner > 127,
@@ -200,6 +231,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::BEQ, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::CLC, address_mode::Implied),
             inst_to_operation!(mnemonic::CLD, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
@@ -298,6 +330,35 @@ macro_rules! gen_instruction_cycles_and_parser {
             }
         }
     };
+}
+
+// BEQ
+
+gen_instruction_cycles_and_parser!(mnemonic::BEQ, address_mode::Relative, 0xf0, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relative> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::Relative(offset) = self.address_mode;
+        let jmp_on_eq = (Wrapping(cpu.pc.read()) + Wrapping(offset as u16)).0;
+        let mc = if cpu.ps.zero {
+            vec![gen_write_16bit_register_microcode!(
+                WordRegisters::PC,
+                // handle for underflow
+                (Wrapping(jmp_on_eq) - Wrapping(self.offset() as u16)).0
+            )]
+        } else {
+            vec![]
+        };
+
+        // if the branch is take and that branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = match (cpu.ps.zero, Page::from(cpu.pc.read()).contains(jmp_on_eq)) {
+            (true, false) => 2,
+            (true, true) => 1,
+            _ => 0,
+        };
+
+        MOps::new(self.offset(), self.cycles() + branch_penalty, mc)
+    }
 }
 
 // CLC

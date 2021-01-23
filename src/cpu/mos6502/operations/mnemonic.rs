@@ -143,8 +143,19 @@ pub struct BCC;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCS;
 
+/// Branch on Zero. Follows branch when the Zero flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BNE;
+
+impl Offset for BNE {}
+
+impl<'a> Parser<'a, &'a [u8], BNE> for BNE {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BNE> {
+        parcel::parsers::byte::expect_byte(0xd0)
+            .map(|_| BNE)
+            .parse(input)
+    }
+}
 
 /// Branch on Zero. Follows branch when the Zero flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

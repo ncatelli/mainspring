@@ -311,7 +311,7 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
 #[test]
 fn should_generate_implied_address_mode_sed_machine_code() {
     let mut ps = ProcessorStatus::new();
-    ps.carry = true;
+    ps.decimal = false;
     let cpu = MOS6502::default().with_ps_register(ps);
     let op: Operation = Instruction::new(mnemonic::SED, address_mode::Implied).into();
     let mc = op.generate(&cpu);
@@ -322,6 +322,27 @@ fn should_generate_implied_address_mode_sed_machine_code() {
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, true),]
+        ),
+        mc
+    );
+}
+
+// SEI
+
+#[test]
+fn should_generate_implied_address_mode_sei_machine_code() {
+    let mut ps = ProcessorStatus::new();
+    ps.interrupt_disable = false;
+    let cpu = MOS6502::default().with_ps_register(ps);
+    let op: Operation = Instruction::new(mnemonic::SEI, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // check Mops value is correct
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),]
         ),
         mc
     );

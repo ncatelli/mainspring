@@ -71,6 +71,12 @@ fn should_parse_absolute_address_mode_sed_instruction() {
 }
 
 #[test]
+fn should_parse_absolute_address_mode_sei_instruction() {
+    let bytecode = [0x78, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_sta_instruction() {
     let bytecode = [0x8d, 0x34, 0x12];
     gen_op_parse_assertion!(&bytecode);

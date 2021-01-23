@@ -102,6 +102,22 @@ fn should_cycle_on_iny_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_jmp_absolute_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x4c, 0x50, 0x60]);
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6050, state.pc.read());
+}
+
+#[test]
+fn should_cycle_on_jmp_indirect_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x6c, 0x50, 0x60]);
+    let state = cpu.run(5).unwrap();
+
+    assert_eq!(0xeaea, state.pc.read());
+}
+
+#[test]
 fn should_cycle_on_lda_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa9, 0xff, 0xa9, 0x0f]);
 
@@ -164,6 +180,24 @@ fn should_cycle_on_nop_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_sed_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xf8]);
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(true, state.ps.decimal);
+}
+
+#[test]
+fn should_cycle_on_sei_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x78]);
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(true, state.ps.interrupt_disable);
+}
+
+#[test]
 fn should_cycle_on_sta_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8d, 0x00, 0x02])
@@ -178,31 +212,6 @@ fn should_cycle_on_sta_absolute_operation() {
 
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x0200));
-}
-
-#[test]
-fn should_cycle_on_jmp_absolute_operation() {
-    let cpu = generate_test_cpu_with_instructions(vec![0x4c, 0x50, 0x60]);
-
-    let state = cpu.run(3).unwrap();
-    assert_eq!(0x6050, state.pc.read());
-}
-
-#[test]
-fn should_cycle_on_jmp_indirect_operation() {
-    let cpu = generate_test_cpu_with_instructions(vec![0x6c, 0x50, 0x60]);
-    let state = cpu.run(5).unwrap();
-
-    assert_eq!(0xeaea, state.pc.read());
-}
-
-#[test]
-fn should_cycle_on_sed_implied_operation() {
-    let cpu = generate_test_cpu_with_instructions(vec![0xf8]);
-
-    let state = cpu.run(2).unwrap();
-    assert_eq!(0x6001, state.pc.read());
-    assert_eq!(true, state.ps.decimal);
 }
 
 #[test]

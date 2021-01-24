@@ -17,6 +17,12 @@ fn should_parse_relative_address_mode_bcc_instruction() {
 }
 
 #[test]
+fn should_parse_relative_address_mode_bcs_instruction() {
+    let bytecode = [0xb0, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_relative_address_mode_beq_instruction() {
     let bytecode = [0xf0, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

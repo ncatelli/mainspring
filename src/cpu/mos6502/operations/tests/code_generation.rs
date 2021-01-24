@@ -190,6 +190,29 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
     )
 }
 
+// INC
+
+#[test]
+fn should_generate_implied_address_mode_inc_machine_code() {
+    let mut cpu = MOS6502::default();
+    cpu.address_map.write(0x01ff, 0x05).unwrap();
+    let op: Operation = Instruction::new(mnemonic::INC, address_mode::Absolute(0x01ff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            6,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_memory_microcode!(0x01ff, 0x06),
+            ]
+        ),
+        mc
+    );
+}
+
 // INX
 
 #[test]

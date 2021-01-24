@@ -20,7 +20,7 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
         .unwrap()
         .with_pc_register(register::ProgramCounter::with_value(start_addr))
         .register_address_space(
-            start_addr..stop_addr,
+            start_addr..=stop_addr,
             Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
         )
         .unwrap()
@@ -136,6 +136,16 @@ fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
 }
 
 #[test]
+fn should_cycle_on_inc_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xee, 0xff, 0x01]);
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(1, state.address_map.read(0x01ff));
+    assert_eq!((false, false), (state.ps.negative, state.ps.zero));
+}
+
+#[test]
 fn should_cycle_on_inx_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe8])
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(127));
@@ -213,7 +223,7 @@ fn should_cycle_on_lda_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xad, 0x00, 0x02])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
         .register_address_space(
-            ram_start..ram_end,
+            ram_start..=ram_end,
             Memory::<ReadWrite>::new(ram_start, ram_end),
         )
         .unwrap();
@@ -261,7 +271,7 @@ fn should_cycle_on_sta_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x8d, 0x00, 0x02])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
         .register_address_space(
-            ram_start..ram_end,
+            ram_start..=ram_end,
             Memory::<ReadWrite>::new(ram_start, ram_end),
         )
         .unwrap();

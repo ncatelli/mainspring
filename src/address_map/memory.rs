@@ -40,7 +40,7 @@ impl<T> Memory<T> {
     /// address.
     pub fn new(start_address: u16, stop_address: u16) -> Self {
         let mut data = Vec::new();
-        data.resize((stop_address - start_address) as usize, 0);
+        data.resize((stop_address - start_address) as usize + 1, 0);
         Memory {
             mem_type: PhantomData,
             start_address,

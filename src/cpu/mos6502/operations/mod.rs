@@ -231,6 +231,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::BCC, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BEQ, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BNE, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::CLC, address_mode::Implied),
@@ -364,6 +365,18 @@ fn branch_on_case(
     MOps::new(inst_offset, cycles + branch_penalty, mc)
 }
 
+// BCC
+
+gen_instruction_cycles_and_parser!(mnemonic::BCC, address_mode::Relative, 0x90, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BCC, address_mode::Relative> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::Relative(offset) = self.address_mode;
+
+        branch_on_case(!cpu.ps.carry, offset, self.offset(), self.cycles(), cpu)
+    }
+}
+
 // BEQ
 
 gen_instruction_cycles_and_parser!(mnemonic::BEQ, address_mode::Relative, 0xf0, 2);
@@ -375,6 +388,8 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relati
         branch_on_case(cpu.ps.zero, offset, self.offset(), self.cycles(), cpu)
     }
 }
+
+// BNE
 
 gen_instruction_cycles_and_parser!(mnemonic::BNE, address_mode::Relative, 0xd0, 2);
 

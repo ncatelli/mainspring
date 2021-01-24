@@ -1,3 +1,5 @@
+//! A small demonstration example of mainspring showing a basic custom Addressable implementation.
+
 extern crate mainspring;
 use mainspring::address_map::memory::{Memory, ReadOnly};
 use mainspring::cpu::mos6502::MOS6502;

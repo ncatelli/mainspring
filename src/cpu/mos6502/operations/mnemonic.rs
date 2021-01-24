@@ -150,6 +150,16 @@ pub struct BIT;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCC;
 
+impl Offset for BCC {}
+
+impl<'a> Parser<'a, &'a [u8], BCC> for BCC {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BCC> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x90)])
+            .map(|_| BCC)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCS;
 

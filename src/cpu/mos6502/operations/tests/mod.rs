@@ -11,6 +11,12 @@ macro_rules! gen_op_parse_assertion {
 }
 
 #[test]
+fn should_parse_relative_address_mode_bcc_instruction() {
+    let bytecode = [0x90, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_relative_address_mode_beq_instruction() {
     let bytecode = [0xf0, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

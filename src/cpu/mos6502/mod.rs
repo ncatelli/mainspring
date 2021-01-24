@@ -1,6 +1,6 @@
 extern crate parcel;
 use std::convert::TryFrom;
-use std::ops::Range;
+use std::ops::RangeInclusive;
 
 use crate::{
     address_map::{
@@ -79,14 +79,14 @@ impl MOS6502 {
     /// assert!(
     ///     MOS6502::default()
     ///         .register_address_space(
-    ///             start_addr..stop_addr,
+    ///             start_addr..=stop_addr,
     ///             Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
     ///         ).is_ok()
     ///     )
     /// ```
     pub fn register_address_space(
         mut self,
-        space: Range<u16>,
+        space: RangeInclusive<u16>,
         addr_space: impl Addressable<u16> + 'static,
     ) -> Result<Self, String> {
         let am = self.address_map;
@@ -143,12 +143,12 @@ impl Default for MOS6502 {
         Self {
             address_map: AddressMap::new()
                 .register(
-                    0x0000..0x00FF,
+                    0x0000..=0x00FF,
                     Box::new(Memory::<ReadWrite>::new(0x0000, 0x00FF)),
                 )
                 .unwrap()
                 .register(
-                    0x0100..0x01FF,
+                    0x0100..=0x01FF,
                     Box::new(Memory::<ReadWrite>::new(0x0100, 0x01FF)),
                 )
                 .unwrap(),

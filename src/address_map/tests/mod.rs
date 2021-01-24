@@ -8,14 +8,14 @@ mod memory;
 macro_rules! u16_address_map {
     () => {
         $crate::address_map::AddressMap::<u16>::new().register(
-            0..std::u16::MAX,
+            0..=std::u16::MAX,
             Box::new($crate::address_map::memory::Memory::<
                 $crate::address_map::memory::ReadWrite,
             >::new(0, std::u16::MAX)),
         )
     };
     ($am:expr) => {
-        $crate::address_map::AddressMap::<u16>::new().register(0..std::u16::MAX, Box::new($am))
+        $crate::address_map::AddressMap::<u16>::new().register(0..=std::u16::MAX, Box::new($am))
     };
     ($range:expr, $am:expr) => {
         $crate::address_map::AddressMap::<u16>::new().register($range, Box::new($am))
@@ -24,15 +24,15 @@ macro_rules! u16_address_map {
 
 #[test]
 fn should_register_valid_memory() {
-    let am = u16_address_map!(0..std::u16::MAX, Memory::<ReadOnly>::new(0, std::u16::MAX));
+    let am = u16_address_map!(0..=std::u16::MAX, Memory::<ReadOnly>::new(0, std::u16::MAX));
     assert!(am.is_ok());
 }
 
 #[test]
 fn should_fail_when_registering_overlapping_address_space() {
-    let am = u16_address_map!(0..0x8000, Memory::<ReadOnly>::new(0, 0x8000)).unwrap();
+    let am = u16_address_map!(0..=0x7fff, Memory::<ReadOnly>::new(0, 0x7fff)).unwrap();
     assert!(am
-        .register(0..0x8000, Box::new(Memory::<ReadOnly>::new(0, 0x8000)))
+        .register(0..=0x7fff, Box::new(Memory::<ReadOnly>::new(0, 0x7fff)))
         .is_err());
 }
 

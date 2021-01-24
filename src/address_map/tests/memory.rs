@@ -30,7 +30,7 @@ fn should_throw_error_when_write_is_attempted_on_readonly_memory() {
 #[test]
 fn should_dump_entire_state_of_memory() {
     let mut expected: Vec<u8> = Vec::new();
-    expected.resize(std::u16::MAX as usize, 0);
+    expected.resize(std::u16::MAX as usize + 1, 0);
     expected[0x8000 as usize] = 0xff;
 
     let mut mem: Memory<ReadWrite> = Memory::new(0, std::u16::MAX);
@@ -62,5 +62,5 @@ fn should_correctly_calculate_offsets() {
     let first_value = data[0];
 
     assert_eq!(0xff, first_value);
-    assert_eq!(0x8000 - 1, data.len());
+    assert_eq!(0x8000, data.len());
 }

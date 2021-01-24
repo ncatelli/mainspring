@@ -56,6 +56,16 @@ pub struct SBC;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INC;
 
+impl Offset for INC {}
+
+impl<'a> Parser<'a, &'a [u8], INC> for INC {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], INC> {
+        parcel::parsers::byte::expect_byte(0xee)
+            .map(|_| INC)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INX;
 

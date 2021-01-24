@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::{cmp::Eq, fmt::Debug, hash::Hash, ops::Range};
+use std::{cmp::Eq, fmt::Debug, hash::Hash, ops::RangeInclusive};
 
 pub mod memory;
 
@@ -52,7 +52,7 @@ pub struct AddressMap<O: Into<usize>>
 where
     O: Into<usize> + Debug + Clone + Copy,
 {
-    inner: HashMap<Range<O>, Box<dyn Addressable<O>>>,
+    inner: HashMap<RangeInclusive<O>, Box<dyn Addressable<O>>>,
 }
 
 impl<O> fmt::Debug for AddressMap<O>
@@ -60,7 +60,7 @@ where
     O: Into<usize> + Debug + Clone + Copy,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let keys: Vec<&Range<O>> = self.inner.keys().collect();
+        let keys: Vec<&RangeInclusive<O>> = self.inner.keys().collect();
         write!(f, "AddressMap {:?}", keys)
     }
 }
@@ -79,13 +79,13 @@ where
     /// an addressable type for receiving read/write requests.
     pub fn register(
         mut self,
-        range: Range<O>,
+        range: RangeInclusive<O>,
         addr_space: Box<dyn Addressable<O>>,
     ) -> Result<AddressMap<O>, RegistrationError> {
         self.inner
             .keys()
             .map(|key| {
-                if key.contains(&range.start) || key.contains(&range.end) {
+                if key.contains(range.start()) || key.contains(range.end()) {
                     Err(format!(
                         "address space {:?} overlaps with {:?}",
                         &range, &key

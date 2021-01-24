@@ -163,6 +163,16 @@ impl<'a> Parser<'a, &'a [u8], BCC> for BCC {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCS;
 
+impl Offset for BCS {}
+
+impl<'a> Parser<'a, &'a [u8], BCS> for BCS {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BCS> {
+        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xb0)])
+            .map(|_| BCS)
+            .parse(input)
+    }
+}
+
 /// Branch on Zero. Follows branch when the Zero flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BNE;

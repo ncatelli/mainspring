@@ -582,6 +582,26 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
     )
 }
 
+// SEC
+
+#[test]
+fn should_generate_implied_address_mode_sec_machine_code() {
+    let mut ps = ProcessorStatus::new();
+    ps.carry = false;
+    let cpu = MOS6502::default().with_ps_register(ps);
+    let op: Operation = Instruction::new(mnemonic::SEC, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),]
+        ),
+        mc
+    );
+}
+
 // SED
 
 #[test]

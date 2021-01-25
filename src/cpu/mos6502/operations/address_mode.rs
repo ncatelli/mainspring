@@ -163,7 +163,7 @@ impl Offset for XIndexedIndirect {}
 
 impl<'a> Parser<'a, &'a [u8], XIndexedIndirect> for XIndexedIndirect {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], XIndexedIndirect> {
-        any_byte().map(|b| XIndexedIndirect(b)).parse(input)
+        any_byte().map(XIndexedIndirect).parse(input)
     }
 }
 

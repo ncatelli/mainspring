@@ -237,6 +237,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::BNE, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::CLC, address_mode::Implied),
             inst_to_operation!(mnemonic::CLD, address_mode::Implied),
+            inst_to_operation!(mnemonic::CLI, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::INC, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::INX, address_mode::Implied),
@@ -438,6 +439,23 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::CLD, address_mode::Implie
             self.offset(),
             self.cycles(),
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, false)],
+        )
+    }
+}
+
+// CLI
+
+gen_instruction_cycles_and_parser!(mnemonic::CLI, address_mode::Implied, 0x58, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::CLI, address_mode::Implied> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_flag_set_microcode!(
+                ProgramStatusFlags::Interrupt,
+                false
+            )],
         )
     }
 }

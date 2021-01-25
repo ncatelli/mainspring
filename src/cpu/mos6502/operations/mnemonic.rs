@@ -380,6 +380,16 @@ impl<'a> Parser<'a, &'a [u8], SED> for SED {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLI;
 
+impl Offset for CLI {}
+
+impl<'a> Parser<'a, &'a [u8], CLI> for CLI {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLI> {
+        parcel::parsers::byte::expect_byte(0x58)
+            .map(|_| CLI)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEI;
 

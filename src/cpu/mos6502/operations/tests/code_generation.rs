@@ -270,6 +270,29 @@ fn should_generate_implied_address_mode_cld_machine_code() {
     );
 }
 
+// CLI
+
+#[test]
+fn should_generate_implied_address_mode_cli_machine_code() {
+    let mut ps = ProcessorStatus::new();
+    ps.interrupt_disable = true;
+    let cpu = MOS6502::default().with_ps_register(ps);
+    let op: Operation = Instruction::new(mnemonic::CLI, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![gen_flag_set_microcode!(
+                ProgramStatusFlags::Interrupt,
+                false
+            )]
+        ),
+        mc
+    );
+}
+
 // CMP
 
 #[test]

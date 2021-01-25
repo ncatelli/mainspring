@@ -16,6 +16,7 @@ impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
             parcel::parsers::byte::expect_byte(0xb5),
             parcel::parsers::byte::expect_byte(0xad),
             parcel::parsers::byte::expect_byte(0xbd),
+            parcel::parsers::byte::expect_byte(0xb9),
         ])
         .map(|_| LDA)
         .parse(input)

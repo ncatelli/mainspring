@@ -327,6 +327,18 @@ fn should_cycle_on_lda_absolute_indexed_with_x_operation() {
 }
 
 #[test]
+fn should_cycle_on_lda_absolute_indexed_with_y_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xb9, 0x00, 0x00])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
 fn should_cycle_on_nop_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![]);
     let state = cpu.run(3).unwrap();

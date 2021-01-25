@@ -565,7 +565,78 @@ fn should_generate_absolute_address_mode_lda_machine_code() {
         mc
     );
 
-    // validate mops -> vector looks correct
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_x_address_mode_lda_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    let op: Operation =
+        Instruction::new(mnemonic::LDA, address_mode::AbsoluteIndexedWithX(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00)
+            ]
+        ),
+        mc
+    );
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_y_address_mode_lda_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    let op: Operation =
+        Instruction::new(mnemonic::LDA, address_mode::AbsoluteIndexedWithY(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x00)
+            ]
+        ),
+        mc
+    );
+
     assert_eq!(
         vec![
             vec![],

@@ -250,6 +250,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::AbsoluteIndexedWithX::default()),
+            inst_to_operation!(mnemonic::LDA, address_mode::AbsoluteIndexedWithY::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
@@ -684,12 +685,41 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolu
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::AbsoluteIndexedWithX(addr) = self.address_mode;
         let x = cpu.x.read();
-        let x_indexed_addr = addr + x as u16;
-        let indirect_value = cpu.address_map.read(x_indexed_addr);
-        let value = Operand::new(indirect_value);
+        let indexed_addr = addr + x as u16;
+        let indexed_value = cpu.address_map.read(indexed_addr);
+        let value = Operand::new(indexed_value);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(x_indexed_addr) {
+        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
+            1
+        } else {
+            0
+        };
+
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::AbsoluteIndexedWithY, 0xb9, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::AbsoluteIndexedWithY> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::AbsoluteIndexedWithY(addr) = self.address_mode;
+        let y = cpu.y.read();
+        let indexed_addr = addr + y as u16;
+        let indexed_value = cpu.address_map.read(indexed_addr);
+        let value = Operand::new(indexed_value);
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
             1
         } else {
             0

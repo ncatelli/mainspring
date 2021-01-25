@@ -139,8 +139,22 @@ impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithX> for AbsoluteIndexedWithX {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct AbsoluteIndexedWithY(u16);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct AbsoluteIndexedWithY(pub u16);
+
+impl Offset for AbsoluteIndexedWithY {
+    fn offset(&self) -> usize {
+        2
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], AbsoluteIndexedWithY> {
+        parcel::take_n(any_byte(), 2)
+            .map(|b| AbsoluteIndexedWithY(u16::from_le_bytes([b[0], b[1]])))
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct IndexedIndirect(u8);

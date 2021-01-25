@@ -161,6 +161,16 @@ fn should_cycle_on_cld_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_cli_implied_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x58]);
+    cpu.ps.interrupt_disable = true;
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(false, state.ps.interrupt_disable);
+}
+
+#[test]
 fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
         register::GPRegister::ACC,

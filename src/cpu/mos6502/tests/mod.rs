@@ -326,6 +326,16 @@ fn should_cycle_on_nop_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_sec_implied_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x38]);
+    cpu.ps.carry = false;
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(true, state.ps.carry);
+}
+
+#[test]
 fn should_cycle_on_sed_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xf8]);
 

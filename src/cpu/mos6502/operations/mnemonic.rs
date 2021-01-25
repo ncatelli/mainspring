@@ -351,6 +351,16 @@ impl<'a> Parser<'a, &'a [u8], CLC> for CLC {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEC;
 
+impl Offset for SEC {}
+
+impl<'a> Parser<'a, &'a [u8], SEC> for SEC {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], SEC> {
+        parcel::parsers::byte::expect_byte(0x38)
+            .map(|_| SEC)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLD;
 

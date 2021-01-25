@@ -293,6 +293,26 @@ fn should_generate_implied_address_mode_cli_machine_code() {
     );
 }
 
+// CLV
+
+#[test]
+fn should_generate_implied_address_mode_clv_machine_code() {
+    let mut ps = ProcessorStatus::new();
+    ps.overflow = true;
+    let cpu = MOS6502::default().with_ps_register(ps);
+    let op: Operation = Instruction::new(mnemonic::CLV, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![gen_flag_set_microcode!(ProgramStatusFlags::Overflow, false)]
+        ),
+        mc
+    );
+}
+
 // CMP
 
 #[test]

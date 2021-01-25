@@ -406,6 +406,16 @@ impl<'a> Parser<'a, &'a [u8], SEI> for SEI {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLV;
 
+impl Offset for CLV {}
+
+impl<'a> Parser<'a, &'a [u8], CLV> for CLV {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLV> {
+        parcel::parsers::byte::expect_byte(0xb8)
+            .map(|_| CLV)
+            .parse(input)
+    }
+}
+
 // Misc
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BRK;

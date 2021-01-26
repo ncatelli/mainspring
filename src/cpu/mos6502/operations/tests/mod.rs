@@ -156,7 +156,13 @@ fn should_parse_absolute_address_mode_sta_instruction() {
 
 #[test]
 fn should_parse_zeropage_address_mode_sta_instruction() {
-    let bytecode = [0x85, 0x34, 0x12];
+    let bytecode = [0x85, 0x34, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_with_x_index_address_mode_sta_instruction() {
+    let bytecode = [0x95, 0x34, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 

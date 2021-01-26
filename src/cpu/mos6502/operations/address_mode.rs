@@ -64,6 +64,20 @@ impl<'a> Parser<'a, &'a [u8], ZeroPage> for ZeroPage {
     }
 }
 
+impl ZeroPage {
+    /// Unpacks the enclosed address from a Zeropage into a corresponding u8
+    /// address.
+    pub fn unwrap(self) -> u8 {
+        self.into()
+    }
+}
+
+impl From<ZeroPage> for u8 {
+    fn from(src: ZeroPage) -> Self {
+        src.0
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ZeroPageIndexedWithX(pub u8);
 
@@ -73,6 +87,20 @@ impl Offset for ZeroPageIndexedWithX {}
 impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithX> for ZeroPageIndexedWithX {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPageIndexedWithX> {
         any_byte().map(ZeroPageIndexedWithX).parse(input)
+    }
+}
+
+impl ZeroPageIndexedWithX {
+    /// Unpacks the enclosed address from a ZeropageIndexedWithX into a
+    /// corresponding u8 address.
+    pub fn unwrap(self) -> u8 {
+        self.into()
+    }
+}
+
+impl From<ZeroPageIndexedWithX> for u8 {
+    fn from(src: ZeroPageIndexedWithX) -> Self {
+        src.0
     }
 }
 

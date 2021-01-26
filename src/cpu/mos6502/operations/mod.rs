@@ -118,6 +118,16 @@ impl Add for Operand<u8> {
     }
 }
 
+// Address Mode Unpackers
+
+/// Provides a wrapper around the common operation of unpacking a zeropage
+/// address mode and retrieving the value stored at the specified address from
+/// the address map. This value is then returned in a wrapper Operand.
+fn zeropage_to_operand(cpu: &MOS6502, am: address_mode::ZeroPage) -> Operand<u8> {
+    let address_mode::ZeroPage(addr) = am;
+    Operand::new(cpu.address_map.read(addr as u16))
+}
+
 /// MOps functions as a concrete wrapper around a microcode operation with
 /// metadata around sizing and cycles. This trait does NOT represent a cycle
 /// but rather the microcode equivalent of a CPU instruction.
@@ -255,6 +265,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
             inst_to_operation!(mnemonic::SED, address_mode::Implied),
             inst_to_operation!(mnemonic::SEI, address_mode::Implied),
@@ -627,8 +638,7 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::ZeroPage, 0xa5, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::ZeroPage(addr) = self.address_mode;
-        let value = Operand::new(cpu.address_map.read(addr as u16));
+        let value = zeropage_to_operand(cpu, self.address_mode);
 
         MOps::new(
             self.offset(),
@@ -860,6 +870,20 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolu
             self.offset(),
             self.cycles(),
             vec![gen_write_memory_microcode!(addr, acc_val)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::ZeroPage, 0x85, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::ZeroPage(addr) = self.address_mode;
+        let acc_val = cpu.acc.read();
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(addr as u16, acc_val)],
         )
     }
 }

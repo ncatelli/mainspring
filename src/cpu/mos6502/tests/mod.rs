@@ -418,8 +418,21 @@ fn should_cycle_on_sta_absolute_operation() {
 
     let state = cpu.run(4).unwrap();
 
+    assert_eq!(0x6003, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x0200));
+}
+
+#[test]
+fn should_cycle_on_sta_zeropage_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x85, 0x02])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+
+    let state = cpu.run(3).unwrap();
+
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(0xff, state.address_map.read(0x02));
 }
 
 #[test]

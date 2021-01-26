@@ -798,38 +798,6 @@ fn should_generate_implied_address_mode_sei_machine_code() {
     );
 }
 
-// STA
-
-#[test]
-fn should_generate_absolute_address_mode_sta_machine_code() {
-    let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::STA, address_mode::Absolute(0x0100)).into();
-    let mc = op.generate(&cpu);
-
-    assert_eq!(
-        MOps::new(
-            3,
-            4,
-            vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00))]
-        ),
-        mc
-    );
-
-    // validate mops -> vector looks correct
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            vec![
-                Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00)),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
-            ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
-}
-
 #[test]
 fn should_generate_absolute_address_mode_jmp_machine_code() {
     let cpu = MOS6502::default();
@@ -898,6 +866,67 @@ fn should_generate_indirect_address_mode_jmp_machine_code() {
                     indirect_addr - 3
                 )),
                 gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+// STA
+
+#[test]
+fn should_generate_absolute_address_mode_sta_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::STA, address_mode::Absolute(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00))]
+        ),
+        mc
+    );
+
+    // validate mops -> vector looks correct
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00)),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+#[test]
+fn should_generate_zeropage_address_mode_sta_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::STA, address_mode::ZeroPage(0x01)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x00))]
+        ),
+        mc
+    );
+
+    // validate mops -> vector looks correct
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![
+                Microcode::WriteMemory(WriteMemory::new(0x01, 0x00)),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)

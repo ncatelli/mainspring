@@ -119,6 +119,12 @@ fn should_parse_x_indexed_indirect_address_mode_lda_instruction() {
 }
 
 #[test]
+fn should_parse_indirect_y_indexed_address_mode_lda_instruction() {
+    let bytecode = [0xb1, 0x12, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_jmp_instruction() {
     let bytecode = [0x4c, 0x34, 0x12];
     gen_op_parse_assertion!(&bytecode);

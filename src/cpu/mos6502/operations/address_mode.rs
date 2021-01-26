@@ -167,5 +167,13 @@ impl<'a> Parser<'a, &'a [u8], XIndexedIndirect> for XIndexedIndirect {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct IndirectIndexed(u8);
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct IndirectYIndexed(pub u8);
+
+impl Offset for IndirectYIndexed {}
+
+impl<'a> Parser<'a, &'a [u8], IndirectYIndexed> for IndirectYIndexed {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], IndirectYIndexed> {
+        any_byte().map(IndirectYIndexed).parse(input)
+    }
+}

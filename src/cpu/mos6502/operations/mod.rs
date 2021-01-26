@@ -8,7 +8,7 @@ use crate::cpu::{
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
 use std::num::Wrapping;
-use std::ops::{Add, Range, Sub};
+use std::ops::{Add, RangeInclusive, Sub};
 
 pub mod address_mode;
 pub mod mnemonic;
@@ -19,13 +19,13 @@ mod tests;
 /// Page represents an 8-bit memory page for the purpose of determining if an
 /// address falls within the space of a page.
 struct Page {
-    inner: Range<u16>,
+    inner: RangeInclusive<u16>,
 }
 
 impl Page {
     #[allow(unused)]
     fn new(start: u16, end: u16) -> Self {
-        Self { inner: start..end }
+        Self { inner: start..=end }
     }
 
     /// Returns true if the passed address falls within the range of the page.
@@ -41,7 +41,7 @@ impl From<u16> for Page {
         let lower_page_bound: u16 = upper_page_bound - page_size;
 
         Self {
-            inner: lower_page_bound..upper_page_bound,
+            inner: lower_page_bound..=upper_page_bound,
         }
     }
 }
@@ -252,6 +252,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::AbsoluteIndexedWithY::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::XIndexedIndirect::default()),
+            inst_to_operation!(mnemonic::LDA, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
@@ -754,6 +755,38 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::XIndex
         MOps::new(
             self.offset(),
             self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::IndirectYIndexed, 0xb1, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::IndirectYIndexed> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let address_mode::IndirectYIndexed(addr) = self.address_mode;
+        let y = cpu.y.read() as u16;
+        let zpage_base_addr = addr as u16;
+        let indirect_addr = u16::from_le_bytes([
+            cpu.address_map.read(zpage_base_addr),
+            cpu.address_map.read(zpage_base_addr + 1),
+        ]) + y;
+        let value = Operand::new(cpu.address_map.read(indirect_addr));
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(addr as u16).contains(indirect_addr) {
+            1
+        } else {
+            0
+        };
+
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),

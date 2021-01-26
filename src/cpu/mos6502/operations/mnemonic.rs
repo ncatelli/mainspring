@@ -38,9 +38,12 @@ impl Offset for STA {}
 
 impl<'a> Parser<'a, &'a [u8], STA> for STA {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], STA> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x8d)])
-            .map(|_| STA)
-            .parse(input)
+        parcel::one_of(vec![
+            parcel::parsers::byte::expect_byte(0x8d),
+            parcel::parsers::byte::expect_byte(0x85),
+        ])
+        .map(|_| STA)
+        .parse(input)
     }
 }
 

@@ -400,7 +400,7 @@ gen_instruction_cycles_and_parser!(mnemonic::BCC, address_mode::Relative, 0x90, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::BCC, address_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Relative(offset) = self.address_mode;
+        let offset = self.address_mode.unwrap();
 
         branch_on_case(!cpu.ps.carry, offset, self.offset(), self.cycles(), cpu)
     }
@@ -412,7 +412,7 @@ gen_instruction_cycles_and_parser!(mnemonic::BCS, address_mode::Relative, 0xb0, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::BCS, address_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Relative(offset) = self.address_mode;
+        let offset = self.address_mode.unwrap();
 
         branch_on_case(cpu.ps.carry, offset, self.offset(), self.cycles(), cpu)
     }
@@ -424,7 +424,7 @@ gen_instruction_cycles_and_parser!(mnemonic::BEQ, address_mode::Relative, 0xf0, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Relative(offset) = self.address_mode;
+        let offset = self.address_mode.unwrap();
 
         branch_on_case(cpu.ps.zero, offset, self.offset(), self.cycles(), cpu)
     }
@@ -436,7 +436,7 @@ gen_instruction_cycles_and_parser!(mnemonic::BNE, address_mode::Relative, 0xd0, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::BNE, address_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Relative(offset) = self.address_mode;
+        let offset = self.address_mode.unwrap();
 
         branch_on_case(!cpu.ps.zero, offset, self.offset(), self.cycles(), cpu)
     }

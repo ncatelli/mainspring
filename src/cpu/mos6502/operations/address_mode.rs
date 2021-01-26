@@ -116,10 +116,12 @@ impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
     }
 }
 
+/// Relative wraps an i8 and signifies a relative address to the current
+/// instruction. This is commonly used alongside branch instructions that may
+/// cause a short jump either forward or back in memory to facilitate looping.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Relative(pub i8);
 
-impl Cyclable for Relative {}
 impl Offset for Relative {}
 
 impl<'a> Parser<'a, &'a [u8], Relative> for Relative {
@@ -130,6 +132,20 @@ impl<'a> Parser<'a, &'a [u8], Relative> for Relative {
                 Relative(offset)
             })
             .parse(input)
+    }
+}
+
+impl Relative {
+    /// Unpacks the enclosed address from a Relative addressmode into a
+    /// corresponding i8 address.
+    pub fn unwrap(self) -> i8 {
+        self.into()
+    }
+}
+
+impl From<Relative> for i8 {
+    fn from(src: Relative) -> Self {
+        src.0
     }
 }
 

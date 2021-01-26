@@ -41,6 +41,7 @@ impl<'a> Parser<'a, &'a [u8], STA> for STA {
         parcel::one_of(vec![
             parcel::parsers::byte::expect_byte(0x8d),
             parcel::parsers::byte::expect_byte(0x85),
+            parcel::parsers::byte::expect_byte(0x95),
         ])
         .map(|_| STA)
         .parse(input)

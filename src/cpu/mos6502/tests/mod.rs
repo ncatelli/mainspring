@@ -436,6 +436,19 @@ fn should_cycle_on_sta_zeropage_operation() {
 }
 
 #[test]
+fn should_cycle_on_sta_zeropage_with_x_index_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x95, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+
+    let state = cpu.run(4).unwrap();
+
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(0xff, state.address_map.read(0x05));
+}
+
+#[test]
 fn should_cycle_on_tax_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xaa])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))

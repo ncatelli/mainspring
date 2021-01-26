@@ -120,12 +120,21 @@ impl Add for Operand<u8> {
 
 // Address Mode Unpackers
 
-/// Provides a wrapper around the common operation of unpacking a zeropage
-/// address mode and retrieving the value stored at the specified address from
-/// the address map. This value is then returned in a wrapper Operand.
-fn zeropage_to_operand(cpu: &MOS6502, am: address_mode::ZeroPage) -> Operand<u8> {
-    let address_mode::ZeroPage(addr) = am;
-    Operand::new(cpu.address_map.read(addr as u16))
+/// Provides a wrapper around the operation of unpacking an address mode and
+/// adding an indirect offset to it. This appropriately handles for overflow
+/// and returns the address as a u16.
+fn add_indirect_to_address(addr: u16, indirect: u8) -> u16 {
+    addr.overflowing_add(indirect as u16).0
+}
+
+/// Provides a wrapper around the common operation of dereferencing and address
+/// mode and retrieving the value stored at the specified address from the
+/// address map. This value is then returned in a wrapper Operand.
+fn dereference_address_to_operand(cpu: &MOS6502, addr: u16, indirect: u8) -> Operand<u8> {
+    Operand::new(
+        cpu.address_map
+            .read(add_indirect_to_address(addr as u16, indirect)),
+    )
 }
 
 /// MOps functions as a concrete wrapper around a microcode operation with
@@ -266,6 +275,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPage::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
             inst_to_operation!(mnemonic::SED, address_mode::Implied),
             inst_to_operation!(mnemonic::SEI, address_mode::Implied),
@@ -638,7 +648,7 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::ZeroPage, 0xa5, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let value = zeropage_to_operand(cpu, self.address_mode);
+        let value = dereference_address_to_operand(cpu, self.address_mode.unwrap() as u16, 0);
 
         MOps::new(
             self.offset(),
@@ -878,12 +888,28 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::ZeroPage, 0x85, 
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::ZeroPage(addr) = self.address_mode;
+        let addr = self.address_mode.unwrap() as u16;
         let acc_val = cpu.acc.read();
+
         MOps::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr as u16, acc_val)],
+            vec![gen_write_memory_microcode!(addr, acc_val)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::ZeroPageIndexedWithX, 0x95, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::ZeroPageIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indexed_addr = add_indirect_to_address(self.address_mode.unwrap() as u16, cpu.x.read());
+        let acc_val = cpu.acc.read();
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
         )
     }
 }

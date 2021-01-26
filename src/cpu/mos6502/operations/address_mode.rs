@@ -166,12 +166,28 @@ impl<'a> Parser<'a, &'a [u8], Indirect> for Indirect {
     }
 }
 
+/// AbsoluteIndexedWithX represents an address whose value is stored at an X
+/// register offset from the operand value. Example being LL + X, HH + X + 1.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct AbsoluteIndexedWithX(pub u16);
 
 impl Offset for AbsoluteIndexedWithX {
     fn offset(&self) -> usize {
         2
+    }
+}
+
+impl AbsoluteIndexedWithX {
+    /// Unpacks the enclosed address from a AbsoluteIndexedWithX addressmode into a
+    /// corresponding u16 address.
+    pub fn unwrap(self) -> u16 {
+        self.into()
+    }
+}
+
+impl From<AbsoluteIndexedWithX> for u16 {
+    fn from(src: AbsoluteIndexedWithX) -> Self {
+        src.0
     }
 }
 

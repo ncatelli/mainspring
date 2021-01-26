@@ -42,6 +42,7 @@ impl<'a> Parser<'a, &'a [u8], STA> for STA {
             parcel::parsers::byte::expect_byte(0x8d),
             parcel::parsers::byte::expect_byte(0x85),
             parcel::parsers::byte::expect_byte(0x95),
+            parcel::parsers::byte::expect_byte(0x9d),
         ])
         .map(|_| STA)
         .parse(input)

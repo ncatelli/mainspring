@@ -276,6 +276,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPageIndexedWithX::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
             inst_to_operation!(mnemonic::SED, address_mode::Implied),
             inst_to_operation!(mnemonic::SEI, address_mode::Implied),
@@ -705,11 +706,10 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::AbsoluteIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::AbsoluteIndexedWithX(addr) = self.address_mode;
-        let x = cpu.x.read();
-        let indexed_addr = addr + x as u16;
-        let indexed_value = cpu.address_map.read(indexed_addr);
-        let value = Operand::new(indexed_value);
+        let addr = self.address_mode.unwrap();
+        let index = cpu.x.read();
+        let indexed_addr = add_indirect_to_address(addr, index);
+        let value = dereference_address_to_operand(cpu, addr, index);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
         let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
@@ -880,6 +880,20 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolu
             self.offset(),
             self.cycles(),
             vec![gen_write_memory_microcode!(addr, acc_val)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedWithX, 0x9d, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indexed_addr = add_indirect_to_address(self.address_mode.unwrap(), cpu.x.read());
+        let acc_val = cpu.acc.read();
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
         )
     }
 }

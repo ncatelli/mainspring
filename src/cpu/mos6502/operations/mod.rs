@@ -806,17 +806,13 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::IndirectYIndexed
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::IndirectYIndexed> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::IndirectYIndexed(addr) = self.address_mode;
-        let y = cpu.y.read() as u16;
-        let zpage_base_addr = addr as u16;
-        let indirect_addr = u16::from_le_bytes([
-            cpu.address_map.read(zpage_base_addr),
-            cpu.address_map.read(zpage_base_addr + 1),
-        ]) + y;
+        let zpage_base_addr = self.address_mode.unwrap();
+        let indirect_addr =
+            dereference_indirect_indexed_address(cpu, zpage_base_addr, cpu.y.read());
         let value = Operand::new(cpu.address_map.read(indirect_addr));
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr as u16).contains(indirect_addr) {
+        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
             1
         } else {
             0

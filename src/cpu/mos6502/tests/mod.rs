@@ -477,6 +477,21 @@ fn should_cycle_on_sta_x_indexed_indirect_operation() {
 }
 
 #[test]
+fn should_cycle_on_sta_y_indexed_indirect_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x91, 0x00])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+
+    let state = cpu.run(6).unwrap();
+
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(0xff, state.address_map.read(0xff));
+}
+
+#[test]
 fn should_cycle_on_sta_zeropage_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x85, 0x02])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));

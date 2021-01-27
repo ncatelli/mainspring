@@ -248,7 +248,7 @@ impl<'a> Parser<'a, &'a [u8], XIndexedIndirect> for XIndexedIndirect {
 
 impl XIndexedIndirect {
     /// Unpacks the enclosed address from a XIndexedIndirect address mode into
-    /// a corresponding u address.
+    /// a corresponding u8 address.
     pub fn unwrap(self) -> u8 {
         self.into()
     }
@@ -260,6 +260,9 @@ impl From<XIndexedIndirect> for u8 {
     }
 }
 
+/// IndirectYIndexed represents an address whose value is stored as a Y
+/// register offset for an indirect address defined as the operand. Example
+/// being (LL, LL + 1) + Y.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct IndirectYIndexed(pub u8);
 
@@ -268,5 +271,19 @@ impl Offset for IndirectYIndexed {}
 impl<'a> Parser<'a, &'a [u8], IndirectYIndexed> for IndirectYIndexed {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], IndirectYIndexed> {
         any_byte().map(IndirectYIndexed).parse(input)
+    }
+}
+
+impl IndirectYIndexed {
+    /// Unpacks the enclosed address from a IndirectYIndexed address mode into
+    /// a corresponding u8 address.
+    pub fn unwrap(self) -> u8 {
+        self.into()
+    }
+}
+
+impl From<IndirectYIndexed> for u8 {
+    fn from(src: IndirectYIndexed) -> Self {
+        src.0
     }
 }

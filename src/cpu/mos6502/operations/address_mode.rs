@@ -232,6 +232,9 @@ impl From<AbsoluteIndexedWithY> for u16 {
     }
 }
 
+/// XIndexedIndirect represents an address whose value is stored as an X
+/// register offset for sequential bytes of an address word. Example being
+/// LL + X, LL + X + 1.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct XIndexedIndirect(pub u8);
 
@@ -240,6 +243,20 @@ impl Offset for XIndexedIndirect {}
 impl<'a> Parser<'a, &'a [u8], XIndexedIndirect> for XIndexedIndirect {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], XIndexedIndirect> {
         any_byte().map(XIndexedIndirect).parse(input)
+    }
+}
+
+impl XIndexedIndirect {
+    /// Unpacks the enclosed address from a XIndexedIndirect address mode into
+    /// a corresponding u address.
+    pub fn unwrap(self) -> u8 {
+        self.into()
+    }
+}
+
+impl From<XIndexedIndirect> for u8 {
+    fn from(src: XIndexedIndirect) -> Self {
+        src.0
     }
 }
 

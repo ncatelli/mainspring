@@ -329,7 +329,6 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
 
     assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
 
-    // validate mops -> vector looks correct
     assert_eq!(
         vec![
             vec![],
@@ -337,6 +336,35 @@ fn should_generate_immediate_address_mode_cmp_machine_code() {
                 .clone()
                 .into_iter()
                 .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)].into_iter())
+                .collect()
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+#[test]
+fn should_generate_absolute_address_mode_cmp_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::CMP, address_mode::Absolute::default()).into();
+    let mc = op.generate(&cpu);
+    let expected_mops = vec![
+        gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+        gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+        gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+    ];
+
+    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            expected_mops
+                .clone()
+                .into_iter()
+                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)].into_iter())
                 .collect()
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)

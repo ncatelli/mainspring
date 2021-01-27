@@ -281,6 +281,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::CLI, address_mode::Implied),
             inst_to_operation!(mnemonic::CLV, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::CMP, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::INC, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::INX, address_mode::Implied),
             inst_to_operation!(mnemonic::INY, address_mode::Implied),
@@ -535,6 +536,27 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Immedi
     fn generate(self, cpu: &MOS6502) -> MOps {
         let address_mode::Immediate(am_value) = self.address_mode;
         let rhs = Operand::new(am_value);
+        let lhs = Operand::new(cpu.acc.read());
+        let carry = lhs >= rhs;
+        let diff = lhs - rhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::CMP, address_mode::Absolute, 0xcd, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let rhs = dereference_address_to_operand(cpu, self.address_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.acc.read());
         let carry = lhs >= rhs;
         let diff = lhs - rhs;

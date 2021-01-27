@@ -189,9 +189,6 @@ fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
-    assert!(!state.ps.carry);
-    assert!(!state.ps.negative);
-    assert!(!state.ps.zero);
     assert_eq!(
         (state.ps.carry, state.ps.negative, state.ps.zero),
         (false, false, false)
@@ -207,6 +204,38 @@ fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
+fn should_cycle_on_cmp_absolute_operation_with_inequal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xcd, 0xff, 0x00]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0x00),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cmp_absolute_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xcd, 0xff, 0x00]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0xff),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
     assert_eq!(
         (state.ps.carry, state.ps.negative, state.ps.zero),
         (true, false, true)

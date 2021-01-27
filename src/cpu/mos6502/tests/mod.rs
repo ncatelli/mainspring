@@ -443,6 +443,25 @@ fn should_cycle_on_sta_absolute_indexed_with_x_operation() {
 }
 
 #[test]
+fn should_cycle_on_sta_absolute_indexed_with_y_operation() {
+    let (ram_start, ram_end) = (0x0200, 0x5fff);
+    let cpu = generate_test_cpu_with_instructions(vec![0x99, 0x00, 0x02])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x5))
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .register_address_space(
+            ram_start..=ram_end,
+            Memory::<ReadWrite>::new(ram_start, ram_end),
+        )
+        .unwrap();
+
+    let state = cpu.run(5).unwrap();
+
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(0xff, state.address_map.read(0x0205));
+}
+
+#[test]
 fn should_cycle_on_sta_zeropage_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x85, 0x02])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));

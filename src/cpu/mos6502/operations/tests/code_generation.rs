@@ -938,6 +938,39 @@ fn should_generate_absolute_with_x_index_address_mode_sta_machine_code() {
 }
 
 #[test]
+fn should_generate_absolute_with_y_index_address_mode_sta_machine_code() {
+    let cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    let op: Operation =
+        Instruction::new(mnemonic::STA, address_mode::AbsoluteIndexedWithY(0x0000)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            5,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
+        ),
+        mc
+    );
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                Microcode::WriteMemory(WriteMemory::new(0x05, 0xff)),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+#[test]
 fn should_generate_zeropage_address_mode_sta_machine_code() {
     let cpu = MOS6502::default();
     let op: Operation = Instruction::new(mnemonic::STA, address_mode::ZeroPage(0x01)).into();

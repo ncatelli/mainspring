@@ -167,7 +167,7 @@ impl<'a> Parser<'a, &'a [u8], Indirect> for Indirect {
 }
 
 /// AbsoluteIndexedWithX represents an address whose value is stored at an X
-/// register offset from the operand value. Example being LL + X, HH + X + 1.
+/// register offset from the operand value. Example being LLHH + X.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct AbsoluteIndexedWithX(pub u16);
 
@@ -178,8 +178,8 @@ impl Offset for AbsoluteIndexedWithX {
 }
 
 impl AbsoluteIndexedWithX {
-    /// Unpacks the enclosed address from a AbsoluteIndexedWithX addressmode into a
-    /// corresponding u16 address.
+    /// Unpacks the enclosed address from a AbsoluteIndexedWithX address mode
+    /// into a corresponding u16 address.
     pub fn unwrap(self) -> u16 {
         self.into()
     }
@@ -199,6 +199,8 @@ impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithX> for AbsoluteIndexedWithX {
     }
 }
 
+/// AbsoluteIndexedWithY represents an address whose value is stored at an Y
+/// register offset from the operand value. Example being LLHH + Y.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct AbsoluteIndexedWithY(pub u16);
 
@@ -213,6 +215,20 @@ impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
         parcel::take_n(any_byte(), 2)
             .map(|b| AbsoluteIndexedWithY(u16::from_le_bytes([b[0], b[1]])))
             .parse(input)
+    }
+}
+
+impl AbsoluteIndexedWithY {
+    /// Unpacks the enclosed address from a AbsoluteIndexedWithY address mode
+    /// into a corresponding u16 address.
+    pub fn unwrap(self) -> u16 {
+        self.into()
+    }
+}
+
+impl From<AbsoluteIndexedWithY> for u16 {
+    fn from(src: AbsoluteIndexedWithY) -> Self {
+        src.0
     }
 }
 

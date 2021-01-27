@@ -274,9 +274,10 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithX::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithY::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPageIndexedWithX::default()),
-            inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
             inst_to_operation!(mnemonic::SED, address_mode::Implied),
             inst_to_operation!(mnemonic::SEI, address_mode::Implied),
@@ -734,11 +735,9 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::AbsoluteIndexedWithY> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::AbsoluteIndexedWithY(addr) = self.address_mode;
-        let y = cpu.y.read();
-        let indexed_addr = addr + y as u16;
-        let indexed_value = cpu.address_map.read(indexed_addr);
-        let value = Operand::new(indexed_value);
+        let addr = self.address_mode.unwrap();
+        let indexed_addr = add_indirect_to_address(addr, cpu.y.read());
+        let value = dereference_address_to_operand(cpu, indexed_addr, 0);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
         let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
@@ -889,6 +888,20 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedW
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let indexed_addr = add_indirect_to_address(self.address_mode.unwrap(), cpu.x.read());
+        let acc_val = cpu.acc.read();
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedWithY, 0x99, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithY> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indexed_addr = add_indirect_to_address(self.address_mode.unwrap(), cpu.y.read());
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),

@@ -123,26 +123,39 @@ impl Add for Operand<u8> {
 /// Provides a wrapper around the operation of unpacking an address mode and
 /// adding an indirect offset to it. This appropriately handles for overflow
 /// and returns the address as a u16.
-fn add_indirect_to_address(addr: u16, indirect: u8) -> u16 {
-    addr.overflowing_add(indirect as u16).0
+fn add_index_to_address(addr: u16, index: u8) -> u16 {
+    addr.overflowing_add(index as u16).0
 }
 
-fn dereference_indexed_indirect_address(cpu: &MOS6502, base_addr: u8, indirect: u8) -> u16 {
+/// Provides a wrapper around the common operation of dereferencing an indexed
+/// indirect address. This is effectively taking the value at
+/// (Operand + Index, addr at Operand + Index + 1).
+fn dereference_indexed_indirect_address(cpu: &MOS6502, base_addr: u8, index: u8) -> u16 {
     u16::from_le_bytes([
         cpu.address_map
-            .read(base_addr.overflowing_add(indirect).0 as u16),
+            .read(base_addr.overflowing_add(index).0 as u16),
         cpu.address_map
-            .read(base_addr.overflowing_add(indirect + 1).0 as u16),
+            .read(base_addr.overflowing_add(index + 1).0 as u16),
     ])
+}
+
+/// Provides a wrapper around the operation of dereferencing an indirect
+/// address and then adding an index to that indirect address. This is
+/// effectively the value at (Operand, Operand + 1) + Index.
+fn dereference_indirect_indexed_address(cpu: &MOS6502, base_addr: u8, index: u8) -> u16 {
+    u16::from_le_bytes([
+        cpu.address_map.read(base_addr as u16),
+        cpu.address_map.read(base_addr.overflowing_add(1).0 as u16),
+    ]) + index as u16
 }
 
 /// Provides a wrapper around the common operation of dereferencing and address
 /// mode and retrieving the value stored at the specified address from the
 /// address map. This value is then returned in a wrapper Operand.
-fn dereference_address_to_operand(cpu: &MOS6502, addr: u16, indirect: u8) -> Operand<u8> {
+fn dereference_address_to_operand(cpu: &MOS6502, addr: u16, index: u8) -> Operand<u8> {
     Operand::new(
         cpu.address_map
-            .read(add_indirect_to_address(addr as u16, indirect)),
+            .read(add_index_to_address(addr as u16, index)),
     )
 }
 
@@ -286,6 +299,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithY::default()),
             inst_to_operation!(mnemonic::STA, address_mode::XIndexedIndirect::default()),
+            inst_to_operation!(mnemonic::STA, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
@@ -719,7 +733,7 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolu
     fn generate(self, cpu: &MOS6502) -> MOps {
         let addr = self.address_mode.unwrap();
         let index = cpu.x.read();
-        let indexed_addr = add_indirect_to_address(addr, index);
+        let indexed_addr = add_index_to_address(addr, index);
         let value = dereference_address_to_operand(cpu, addr, index);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
@@ -746,7 +760,7 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::AbsoluteIndexedW
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::AbsoluteIndexedWithY> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let addr = self.address_mode.unwrap();
-        let indexed_addr = add_indirect_to_address(addr, cpu.y.read());
+        let indexed_addr = add_index_to_address(addr, cpu.y.read());
         let value = dereference_address_to_operand(cpu, indexed_addr, 0);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
@@ -792,17 +806,13 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::IndirectYIndexed
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::IndirectYIndexed> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::IndirectYIndexed(addr) = self.address_mode;
-        let y = cpu.y.read() as u16;
-        let zpage_base_addr = addr as u16;
-        let indirect_addr = u16::from_le_bytes([
-            cpu.address_map.read(zpage_base_addr),
-            cpu.address_map.read(zpage_base_addr + 1),
-        ]) + y;
+        let zpage_base_addr = self.address_mode.unwrap();
+        let indirect_addr =
+            dereference_indirect_indexed_address(cpu, zpage_base_addr, cpu.y.read());
         let value = Operand::new(cpu.address_map.read(indirect_addr));
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr as u16).contains(indirect_addr) {
+        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
             1
         } else {
             0
@@ -892,7 +902,7 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let indexed_addr = add_indirect_to_address(self.address_mode.unwrap(), cpu.x.read());
+        let indexed_addr = add_index_to_address(self.address_mode.unwrap(), cpu.x.read());
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),
@@ -906,7 +916,7 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithY> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let indexed_addr = add_indirect_to_address(self.address_mode.unwrap(), cpu.y.read());
+        let indexed_addr = add_index_to_address(self.address_mode.unwrap(), cpu.y.read());
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),
@@ -922,6 +932,21 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::XIndex
     fn generate(self, cpu: &MOS6502) -> MOps {
         let indirect_addr =
             dereference_indexed_indirect_address(cpu, self.address_mode.unwrap(), cpu.x.read());
+        let acc_val = cpu.acc.read();
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(indirect_addr, acc_val)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::IndirectYIndexed, 0x91, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::IndirectYIndexed> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indirect_addr =
+            dereference_indirect_indexed_address(cpu, self.address_mode.unwrap(), cpu.y.read());
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),
@@ -950,7 +975,7 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::ZeroPageIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::ZeroPageIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let indexed_addr = add_indirect_to_address(self.address_mode.unwrap() as u16, cpu.x.read());
+        let indexed_addr = add_index_to_address(self.address_mode.unwrap() as u16, cpu.x.read());
         let acc_val = cpu.acc.read();
 
         MOps::new(

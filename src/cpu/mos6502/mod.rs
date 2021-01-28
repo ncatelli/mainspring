@@ -102,6 +102,7 @@ impl MOS6502 {
         let msb: u8 = cpu.address_map.read(0x7ffd);
 
         cpu.pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
+        cpu.sp = StackPointer::default();
         StepState::new(6, cpu)
     }
 
@@ -306,23 +307,34 @@ impl Execute<MOS6502> for microcode::Inc8bitRegister {
         match register {
             ByteRegisters::ACC => {
                 let old_val = cpu.acc.read();
-                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(old_val + value))
+                cpu.with_gp_register(
+                    GPRegister::ACC,
+                    GeneralPurpose::with_value(old_val.overflowing_add(value).0),
+                )
             }
             ByteRegisters::X => {
                 let old_val = cpu.x.read();
-                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val + value))
+                cpu.with_gp_register(
+                    GPRegister::X,
+                    GeneralPurpose::with_value(old_val.overflowing_add(value).0),
+                )
             }
             ByteRegisters::Y => {
                 let old_val = cpu.y.read();
-                cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(old_val + value))
+                cpu.with_gp_register(
+                    GPRegister::Y,
+                    GeneralPurpose::with_value(old_val.overflowing_add(value).0),
+                )
             }
             ByteRegisters::SP => {
                 let old_val = cpu.sp.read();
-                cpu.with_sp_register(StackPointer::with_value(old_val as u8 + value))
+                cpu.with_sp_register(StackPointer::with_value(old_val.overflowing_add(value).0))
             }
             ByteRegisters::PS => {
                 let old_val = cpu.ps.read();
-                cpu.with_ps_register(ProcessorStatus::with_value(old_val + value))
+                cpu.with_ps_register(ProcessorStatus::with_value(
+                    old_val.overflowing_add(value).0,
+                ))
             }
         }
     }
@@ -335,23 +347,34 @@ impl Execute<MOS6502> for microcode::Dec8bitRegister {
         match register {
             ByteRegisters::ACC => {
                 let old_val = cpu.acc.read();
-                cpu.with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(old_val - value))
+                cpu.with_gp_register(
+                    GPRegister::ACC,
+                    GeneralPurpose::with_value(old_val.overflowing_sub(value).0),
+                )
             }
             ByteRegisters::X => {
                 let old_val = cpu.x.read();
-                cpu.with_gp_register(GPRegister::X, GeneralPurpose::with_value(old_val - value))
+                cpu.with_gp_register(
+                    GPRegister::X,
+                    GeneralPurpose::with_value(old_val.overflowing_sub(value).0),
+                )
             }
             ByteRegisters::Y => {
                 let old_val = cpu.y.read();
-                cpu.with_gp_register(GPRegister::Y, GeneralPurpose::with_value(old_val - value))
+                cpu.with_gp_register(
+                    GPRegister::Y,
+                    GeneralPurpose::with_value(old_val.overflowing_sub(value).0),
+                )
             }
             ByteRegisters::SP => {
                 let old_val = cpu.sp.read();
-                cpu.with_sp_register(StackPointer::with_value(old_val as u8 - value))
+                cpu.with_sp_register(StackPointer::with_value(old_val.overflowing_sub(value).0))
             }
             ByteRegisters::PS => {
                 let old_val = cpu.ps.read();
-                cpu.with_ps_register(ProcessorStatus::with_value(old_val - value))
+                cpu.with_ps_register(ProcessorStatus::with_value(
+                    old_val.overflowing_sub(value).0,
+                ))
             }
         }
     }
@@ -364,14 +387,14 @@ impl Execute<MOS6502> for microcode::Write16bitRegister {
 
 impl Execute<MOS6502> for microcode::Inc16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let pc = cpu.pc.read() + self.value;
+        let pc = cpu.pc.read().overflowing_add(self.value).0;
         cpu.with_pc_register(ProgramCounter::with_value(pc))
     }
 }
 
 impl Execute<MOS6502> for microcode::Dec16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
-        let pc = cpu.pc.read() - self.value;
+        let pc = cpu.pc.read().overflowing_sub(self.value).0;
         cpu.with_pc_register(ProgramCounter::with_value(pc))
     }
 }

@@ -143,6 +143,12 @@ fn should_parse_absolute_address_mode_jmp_instruction() {
 }
 
 #[test]
+fn should_parse_implied_address_mode_pha_instruction() {
+    let bytecode = [0x48, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_sec_instruction() {
     let bytecode = [0x38, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

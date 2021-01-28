@@ -821,19 +821,6 @@ fn should_generate_implied_address_mode_pha_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
-            1,
-            3,
-            vec![
-                gen_write_memory_microcode!(0x01ff, 0xff),
-                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
-            ]
-        ),
-        mc
-    );
-
-    // validate mops -> vector looks correct
-    assert_eq!(
         vec![
             vec![],
             vec![],
@@ -841,6 +828,37 @@ fn should_generate_implied_address_mode_pha_machine_code() {
                 // should write to the top of the stack
                 gen_write_memory_microcode!(0x01ff, 0xff),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 1)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
+// PLA
+
+#[test]
+fn should_generate_implied_address_mode_pla_machine_code() {
+    let mut cpu = MOS6502::default()
+        .reset()
+        .unwrap()
+        // simulate having pushed teh value 0xff to the stack
+        .with_sp_register(StackPointer::with_value(0xfe));
+    cpu.address_map.write(0x01ff, 0xff).unwrap();
+
+    let op: Operation = Instruction::new(mnemonic::PLA, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff),
                 gen_inc_16bit_register_microcode!(WordRegisters::PC, 1)
             ]
         ],

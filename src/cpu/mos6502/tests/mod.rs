@@ -417,6 +417,19 @@ fn should_cycle_on_pha_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_pla_implied_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x68])
+        // simulate having pushed teh value 0xff to the stack
+        .with_sp_register(register::StackPointer::with_value(0xfe));
+    cpu.address_map.write(0x01ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!((true, false), (state.ps.negative, state.ps.zero));
+}
+
+#[test]
 fn should_cycle_on_sec_implied_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x38]);
     cpu.ps.carry = false;

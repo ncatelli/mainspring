@@ -330,6 +330,16 @@ impl<'a> Parser<'a, &'a [u8], PHA> for PHA {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLA;
 
+impl Offset for PLA {}
+
+impl<'a> Parser<'a, &'a [u8], PLA> for PLA {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PLA> {
+        parcel::parsers::byte::expect_byte(0x46)
+            .map(|_| PLA)
+            .parse(input)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHP;
 

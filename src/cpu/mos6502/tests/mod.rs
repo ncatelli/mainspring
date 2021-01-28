@@ -243,6 +243,38 @@ fn should_cycle_on_cmp_absolute_operation_with_equal_operands() {
 }
 
 #[test]
+fn should_cycle_on_cmp_zeropage_operation_with_inequal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xc5, 0xff]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0x00),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cmp_zeropage_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xc5, 0xff]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0xff),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
 fn should_cycle_on_inc_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xee, 0xff, 0x01]);
 

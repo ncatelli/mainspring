@@ -371,6 +371,34 @@ fn should_generate_absolute_address_mode_cmp_machine_code() {
     )
 }
 
+#[test]
+fn should_generate_zeropage_address_mode_cmp_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::CMP, address_mode::ZeroPage::default()).into();
+    let mc = op.generate(&cpu);
+    let expected_mops = vec![
+        gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+        gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+        gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+    ];
+
+    assert_eq!(MOps::new(2, 3, expected_mops.clone()), mc);
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            expected_mops
+                .clone()
+                .into_iter()
+                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)].into_iter())
+                .collect()
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
 // INC
 
 #[test]

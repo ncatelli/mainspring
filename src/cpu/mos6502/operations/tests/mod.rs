@@ -59,6 +59,18 @@ fn should_parse_implied_address_mode_clv_instruction() {
 }
 
 #[test]
+fn should_parse_immediate_address_mode_cmp_instruction() {
+    let bytecode = [0xc9, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_absolute_address_mode_cmp_instruction() {
+    let bytecode = [0xcd, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_inc_instruction() {
     let bytecode = [0xee, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

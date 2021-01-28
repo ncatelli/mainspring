@@ -35,12 +35,27 @@ impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
     }
 }
 
+// Absolute wraps a u16 and represents an address in HHLL format.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Absolute(pub u16);
 
 impl Offset for Absolute {
     fn offset(&self) -> usize {
         2
+    }
+}
+
+impl Absolute {
+    /// Unpacks the enclosed address from a Absolute into a corresponding u16
+    /// address.
+    pub fn unwrap(self) -> u16 {
+        self.into()
+    }
+}
+
+impl From<Absolute> for u16 {
+    fn from(src: Absolute) -> Self {
+        src.0
     }
 }
 

@@ -311,9 +311,22 @@ impl<'a> Parser<'a, &'a [u8], TXS> for TXS {
 }
 
 // Stack Operations
+
+/// Push Accumulator on stack
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHA;
 
+impl Offset for PHA {}
+
+impl<'a> Parser<'a, &'a [u8], PHA> for PHA {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PHA> {
+        parcel::parsers::byte::expect_byte(0x48)
+            .map(|_| PHA)
+            .parse(input)
+    }
+}
+
+/// Pull Accumulator from stack
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLA;
 

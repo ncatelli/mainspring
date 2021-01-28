@@ -159,6 +159,13 @@ fn dereference_address_to_operand(cpu: &MOS6502, addr: u16, index: u8) -> Operan
     )
 }
 
+/// Provides a wrapper around generating a 16-bit address from the stack
+/// pointer. This exists as a function solely to not lose intent in the type
+/// conversion to u16.
+fn stack_pointer_from_byte_value(value: u8) -> u16 {
+    u16::from_le_bytes([value, 0x01])
+}
+
 /// MOps functions as a concrete wrapper around a microcode operation with
 /// metadata around sizing and cycles. This trait does NOT represent a cycle
 /// but rather the microcode equivalent of a CPU instruction.
@@ -296,6 +303,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::XIndexedIndirect::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
+            inst_to_operation!(mnemonic::PHA, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithY::default()),
@@ -859,6 +867,26 @@ gen_instruction_cycles_and_parser!(mnemonic::NOP, address_mode::Implied, 0xea, 2
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, address_mode::Implied> {
     fn generate(self, _: &MOS6502) -> MOps {
         MOps::new(self.offset(), self.cycles(), vec![])
+    }
+}
+
+// PHA
+
+gen_instruction_cycles_and_parser!(mnemonic::PHA, address_mode::Implied, 0x48, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::PHA, address_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = cpu.acc.read();
+        let sp = cpu.sp.read();
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_write_memory_microcode!(stack_pointer_from_byte_value(sp), value),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+            ],
+        )
     }
 }
 

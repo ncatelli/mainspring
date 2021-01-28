@@ -407,6 +407,16 @@ fn should_cycle_on_nop_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_pha_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x48])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0xff, state.address_map.read(0x01ff));
+}
+
+#[test]
 fn should_cycle_on_sec_implied_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x38]);
     cpu.ps.carry = false;

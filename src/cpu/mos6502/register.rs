@@ -108,6 +108,12 @@ impl Default for StackPointer {
     }
 }
 
+macro_rules! bit_is_set {
+    ($value:expr, $place:expr) => {
+        (($value >> $place) & 1) == 1
+    };
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct ProcessorStatus {
     pub carry: bool,
@@ -147,12 +153,22 @@ impl Register<u8, u8> for ProcessorStatus {
         self.clone().into()
     }
 
-    fn write(self, _value: u8) -> Self {
-        todo!()
+    fn write(self, value: u8) -> Self {
+        Self::with_value(value)
     }
 
-    fn with_value(_value: u8) -> Self {
-        todo!()
+    fn with_value(value: u8) -> Self {
+        // check if each bit is set
+        Self {
+            negative: bit_is_set!(value, 7),
+            overflow: bit_is_set!(value, 6),
+            unused: bit_is_set!(value, 5),
+            brk: bit_is_set!(value, 4),
+            decimal: bit_is_set!(value, 3),
+            interrupt_disable: bit_is_set!(value, 2),
+            zero: bit_is_set!(value, 1),
+            carry: bit_is_set!(value, 0),
+        }
     }
 }
 

@@ -67,7 +67,7 @@ impl<'a> Parser<'a, &'a [u8], Absolute> for Absolute {
     }
 }
 
-// ZeroPage wraps a u8 and represents an address in 00LL format.
+/// ZeroPage wraps a u8 and represents an address in 00LL format.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ZeroPage(pub u8);
 
@@ -94,6 +94,8 @@ impl From<ZeroPage> for u8 {
     }
 }
 
+/// ZeroPageIndexedWithX wraps a u8 and represents an address in the zeropage +
+/// the value of the X register in the format of `00LL + x`.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ZeroPageIndexedWithX(pub u8);
 

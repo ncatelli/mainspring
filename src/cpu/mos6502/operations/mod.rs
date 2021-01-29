@@ -768,10 +768,9 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::ZeroPageIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::ZeroPageIndexedWithX(addr) = self.address_mode;
-        let x = cpu.x.read();
-        let indirect_value = cpu.address_map.read((addr + x) as u16);
-        let value = Operand::new(indirect_value);
+        let base_addr = self.address_mode.unwrap() as u16;
+        let index = cpu.x.read();
+        let value = dereference_address_to_operand(cpu, base_addr, index);
 
         MOps::new(
             self.offset(),

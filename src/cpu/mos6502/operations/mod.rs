@@ -987,26 +987,6 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Absolu
     }
 }
 
-gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::XIndexedIndirect, 0xa1, 6);
-
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::XIndexedIndirect> {
-    fn generate(self, cpu: &MOS6502) -> MOps {
-        let indirect_addr =
-            dereference_indexed_indirect_address(cpu, self.address_mode.unwrap(), cpu.x.read());
-        let value = Operand::new(cpu.address_map.read(indirect_addr));
-
-        MOps::new(
-            self.offset(),
-            self.cycles(),
-            vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
-            ],
-        )
-    }
-}
-
 gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::IndirectYIndexed, 0xb1, 5);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::IndirectYIndexed> {
@@ -1026,6 +1006,26 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::Indire
         MOps::new(
             self.offset(),
             self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::XIndexedIndirect, 0xa1, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::XIndexedIndirect> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indirect_addr =
+            dereference_indexed_indirect_address(cpu, self.address_mode.unwrap(), cpu.x.read());
+        let value = Operand::new(cpu.address_map.read(indirect_addr));
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
@@ -1176,12 +1176,12 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::Absolu
     }
 }
 
-gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::XIndexedIndirect, 0x81, 6);
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::IndirectYIndexed, 0x91, 6);
 
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::XIndexedIndirect> {
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::IndirectYIndexed> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let indirect_addr =
-            dereference_indexed_indirect_address(cpu, self.address_mode.unwrap(), cpu.x.read());
+            dereference_indirect_indexed_address(cpu, self.address_mode.unwrap(), cpu.y.read());
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),
@@ -1191,12 +1191,12 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::XIndex
     }
 }
 
-gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::IndirectYIndexed, 0x91, 6);
+gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::XIndexedIndirect, 0x81, 6);
 
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::IndirectYIndexed> {
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::XIndexedIndirect> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let indirect_addr =
-            dereference_indirect_indexed_address(cpu, self.address_mode.unwrap(), cpu.y.read());
+            dereference_indexed_indirect_address(cpu, self.address_mode.unwrap(), cpu.x.read());
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),

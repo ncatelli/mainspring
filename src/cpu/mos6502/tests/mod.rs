@@ -646,6 +646,25 @@ fn should_cycle_on_lda_x_indexed_indirect_operation() {
 }
 
 #[test]
+fn should_cycle_on_ldx_absolute_operation() {
+    let (ram_start, ram_end) = (0x0200, 0x5fff);
+    let cpu = generate_test_cpu_with_instructions(vec![0xae, 0x00, 0x02])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
+        .register_address_space(
+            ram_start..=ram_end,
+            Memory::<ReadWrite>::new(ram_start, ram_end),
+        )
+        .unwrap();
+
+    let state = cpu.run(4).unwrap();
+
+    // val in mem should be null
+    assert_eq!(0x00, state.x.read());
+    assert_eq!(0x00, state.address_map.read(0x0200));
+    assert_eq!((state.ps.negative, state.ps.zero), (false, true));
+}
+
+#[test]
 fn should_cycle_on_ldx_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa2, 0xff]);
 

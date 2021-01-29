@@ -952,6 +952,26 @@ fn should_generate_x_indexed_indirect_address_mode_lda_machine_code() {
 // LDX
 
 #[test]
+fn should_generate_absolute_address_mode_ldx_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::LDX, address_mode::Absolute(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, 0x00)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_immediate_address_mode_ldx_machine_code() {
     let cpu = MOS6502::default();
     let op: Operation = Instruction::new(mnemonic::LDX, address_mode::Immediate(0xff)).into();

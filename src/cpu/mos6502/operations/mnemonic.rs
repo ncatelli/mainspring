@@ -151,6 +151,7 @@ impl<'a> Parser<'a, &'a [u8], CMP> for CMP {
             parcel::parsers::byte::expect_byte(0xcd),
             parcel::parsers::byte::expect_byte(0xc5),
             parcel::parsers::byte::expect_byte(0xd5),
+            parcel::parsers::byte::expect_byte(0xdd),
         ])
         .map(|_| CMP)
         .parse(input)

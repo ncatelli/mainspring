@@ -880,49 +880,6 @@ fn should_generate_absolute_indexed_with_y_address_mode_lda_machine_code() {
 }
 
 #[test]
-fn should_generate_x_indexed_indirect_address_mode_lda_machine_code() {
-    let mut cpu =
-        MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
-    cpu.address_map.write(0x05, 0xff).unwrap();
-    cpu.address_map.write(0x06, 0x00).unwrap();
-    cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
-
-    let op: Operation =
-        Instruction::new(mnemonic::LDA, address_mode::XIndexedIndirect(0x00)).into();
-    let mc = op.generate(&cpu);
-
-    assert_eq!(
-        MOps::new(
-            2,
-            6,
-            vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xea)
-            ]
-        ),
-        mc
-    );
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xea),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
-            ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
-}
-
-#[test]
 fn should_generate_indirect_y_indexed_address_mode_lda_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
@@ -946,22 +903,32 @@ fn should_generate_indirect_y_indexed_address_mode_lda_machine_code() {
         ),
         mc
     );
+}
+
+#[test]
+fn should_generate_x_indexed_indirect_address_mode_lda_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::LDA, address_mode::XIndexedIndirect(0x00)).into();
+    let mc = op.generate(&cpu);
 
     assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            vec![],
+        MOps::new(
+            2,
+            6,
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xea),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xea)
             ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
+        ),
+        mc
+    );
 }
 
 // NOP
@@ -1233,43 +1200,6 @@ fn should_generate_absolute_with_y_index_address_mode_sta_machine_code() {
 }
 
 #[test]
-fn should_generate_x_indexed_indirect_address_mode_sta_machine_code() {
-    let mut cpu = MOS6502::default()
-        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    cpu.address_map.write(0x05, 0xff).unwrap();
-    cpu.address_map.write(0x06, 0x00).unwrap();
-
-    let op: Operation =
-        Instruction::new(mnemonic::STA, address_mode::XIndexedIndirect(0x00)).into();
-    let mc = op.generate(&cpu);
-
-    assert_eq!(
-        MOps::new(
-            2,
-            6,
-            vec![Microcode::WriteMemory(WriteMemory::new(0xff, 0xff))]
-        ),
-        mc
-    );
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![
-                Microcode::WriteMemory(WriteMemory::new(0xff, 0xff)),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
-            ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
-}
-
-#[test]
 fn should_generate_indirect_y_indexed_address_mode_sta_machine_code() {
     let mut cpu = MOS6502::default()
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05))
@@ -1289,21 +1219,28 @@ fn should_generate_indirect_y_indexed_address_mode_sta_machine_code() {
         ),
         mc
     );
+}
+
+#[test]
+fn should_generate_x_indexed_indirect_address_mode_sta_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+
+    let op: Operation =
+        Instruction::new(mnemonic::STA, address_mode::XIndexedIndirect(0x00)).into();
+    let mc = op.generate(&cpu);
 
     assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![
-                Microcode::WriteMemory(WriteMemory::new(0xff, 0xff)),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)
-            ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
+        MOps::new(
+            2,
+            6,
+            vec![Microcode::WriteMemory(WriteMemory::new(0xff, 0xff))]
+        ),
+        mc
+    );
 }
 
 #[test]

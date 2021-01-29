@@ -83,14 +83,14 @@ fn should_parse_absolute_indexed_with_y_address_mode_cmp_instruction() {
 }
 
 #[test]
-fn should_parse_x_indexed_indirect_address_mode_cmp_instruction() {
-    let bytecode = [0xc1, 0x34, 0x00];
+fn should_parse_indirect_indexed_with_y_address_mode_cmp_instruction() {
+    let bytecode = [0xd1, 0x34, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 
 #[test]
-fn should_parse_indirect_indexed_with_y_address_mode_cmp_instruction() {
-    let bytecode = [0xd1, 0x34, 0x00];
+fn should_parse_x_indexed_indirect_address_mode_cmp_instruction() {
+    let bytecode = [0xc1, 0x34, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 
@@ -161,14 +161,14 @@ fn should_parse_absolute_indexed_with_y_address_mode_lda_instruction() {
 }
 
 #[test]
-fn should_parse_x_indexed_indirect_address_mode_lda_instruction() {
-    let bytecode = [0xa1, 0x12, 0x00];
+fn should_parse_indirect_y_indexed_address_mode_lda_instruction() {
+    let bytecode = [0xb1, 0x12, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 
 #[test]
-fn should_parse_indirect_y_indexed_address_mode_lda_instruction() {
-    let bytecode = [0xb1, 0x12, 0x00];
+fn should_parse_x_indexed_indirect_address_mode_lda_instruction() {
+    let bytecode = [0xa1, 0x12, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 
@@ -227,14 +227,14 @@ fn should_parse_absolute_indexed_with_y_address_mode_sta_instruction() {
 }
 
 #[test]
-fn should_parse_x_indexed_indirect_address_mode_sta_instruction() {
-    let bytecode = [0x81, 0x34, 0x00];
+fn should_parse_indirect_y_indexed_address_mode_sta_instruction() {
+    let bytecode = [0x91, 0x34, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 
 #[test]
-fn should_parse_indirect_y_indexed_address_mode_sta_instruction() {
-    let bytecode = [0x91, 0x34, 0x00];
+fn should_parse_x_indexed_indirect_address_mode_sta_instruction() {
+    let bytecode = [0x81, 0x34, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 

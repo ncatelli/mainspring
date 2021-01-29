@@ -2,7 +2,7 @@ extern crate parcel;
 use crate::cpu::Offset;
 use parcel::{ParseResult, Parser};
 
-// Load operand into Accumulator
+/// Load operand into Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDA;
 
@@ -25,8 +25,19 @@ impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
     }
 }
 
+/// Load operand into X-Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDX;
+
+impl Offset for LDX {}
+
+impl<'a> Parser<'a, &'a [u8], LDX> for LDX {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDX> {
+        parcel::parsers::byte::expect_byte(0xa2)
+            .map(|_| LDX)
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDY;

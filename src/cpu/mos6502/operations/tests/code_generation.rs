@@ -434,6 +434,33 @@ fn should_generate_absolute_indexed_with_y_address_mode_cmp_machine_code() {
 }
 
 #[test]
+fn should_generate_indirect_y_indexed_address_mode_cmp_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xea));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::CMP, address_mode::IndirectYIndexed(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            5,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_x_indexed_indirect_address_mode_cmp_machine_code() {
     let mut cpu = MOS6502::default()
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))

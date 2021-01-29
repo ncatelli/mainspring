@@ -646,6 +646,16 @@ fn should_cycle_on_lda_x_indexed_indirect_operation() {
 }
 
 #[test]
+fn should_cycle_on_ldx_immediate_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xa2, 0xff]);
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.x.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
 fn should_cycle_on_nop_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![]);
     let state = cpu.run(3).unwrap();

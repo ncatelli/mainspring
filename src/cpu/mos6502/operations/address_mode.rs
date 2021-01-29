@@ -35,6 +35,20 @@ impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
     }
 }
 
+impl Immediate {
+    /// Unpacks the enclosed value from an Immediate into a corresponding u8
+    /// operand.
+    pub fn unwrap(self) -> u8 {
+        self.into()
+    }
+}
+
+impl From<Immediate> for u8 {
+    fn from(src: Immediate) -> Self {
+        src.0
+    }
+}
+
 // Absolute wraps a u16 and represents an address in HHLL format.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Absolute(pub u16);

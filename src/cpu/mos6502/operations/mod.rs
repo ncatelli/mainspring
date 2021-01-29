@@ -127,6 +127,13 @@ fn add_index_to_address(addr: u16, index: u8) -> u16 {
     addr.overflowing_add(index as u16).0
 }
 
+/// Provides a wrapper around the operation of unpacking a zeropage address mode
+/// and adding an indirect offset to it. This appropriately handles for overflow
+/// and returns the address as a u16.
+fn add_index_to_zeropage_address(zeropage_addr: u8, index: u8) -> u16 {
+    zeropage_addr.overflowing_add(index).0 as u16
+}
+
 /// Provides a wrapper around the common operation of dereferencing an indexed
 /// indirect address. This is effectively taking the value at
 /// (Operand + Index, addr at Operand + Index + 1).
@@ -289,6 +296,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::CLV, address_mode::Implied),
             inst_to_operation!(mnemonic::CMP, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::CMP, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::CMP, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::CMP, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::CMP, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::INC, address_mode::Absolute::default()),
@@ -584,6 +592,36 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::Absolu
     }
 }
 
+gen_instruction_cycles_and_parser!(mnemonic::CMP, address_mode::AbsoluteIndexedWithX, 0xdd, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::AbsoluteIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let index = cpu.x.read();
+        let base_addr = self.address_mode.unwrap();
+        let indexed_addr = add_index_to_address(base_addr, index);
+        let rhs = dereference_address_to_operand(cpu, indexed_addr, 0);
+        let lhs = Operand::new(cpu.acc.read());
+        let carry = lhs >= rhs;
+        let diff = lhs - rhs;
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(base_addr).contains(indexed_addr) {
+            1
+        } else {
+            0
+        };
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+            ],
+        )
+    }
+}
+
 gen_instruction_cycles_and_parser!(mnemonic::CMP, address_mode::ZeroPage, 0xc5, 3);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::ZeroPage> {
@@ -610,7 +648,8 @@ gen_instruction_cycles_and_parser!(mnemonic::CMP, address_mode::ZeroPageIndexedW
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::ZeroPageIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let index = cpu.x.read();
-        let rhs = dereference_address_to_operand(cpu, self.address_mode.unwrap() as u16, index);
+        let base_addr = add_index_to_zeropage_address(self.address_mode.unwrap(), index);
+        let rhs = dereference_address_to_operand(cpu, base_addr, 0);
         let lhs = Operand::new(cpu.acc.read());
         let carry = lhs >= rhs;
         let diff = lhs - rhs;
@@ -768,9 +807,9 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::ZeroPageIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::ZeroPageIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let base_addr = self.address_mode.unwrap() as u16;
         let index = cpu.x.read();
-        let value = dereference_address_to_operand(cpu, base_addr, index);
+        let addr = add_index_to_zeropage_address(self.address_mode.unwrap(), index);
+        let value = dereference_address_to_operand(cpu, addr as u16, 0);
 
         MOps::new(
             self.offset(),
@@ -806,8 +845,8 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::AbsoluteIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let addr = self.address_mode.unwrap();
         let index = cpu.x.read();
+        let addr = self.address_mode.unwrap();
         let indexed_addr = add_index_to_address(addr, index);
         let value = dereference_address_to_operand(cpu, addr, index);
 
@@ -834,8 +873,9 @@ gen_instruction_cycles_and_parser!(mnemonic::LDA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::AbsoluteIndexedWithY> {
     fn generate(self, cpu: &MOS6502) -> MOps {
+        let index = cpu.y.read();
         let addr = self.address_mode.unwrap();
-        let indexed_addr = add_index_to_address(addr, cpu.y.read());
+        let indexed_addr = add_index_to_address(addr, index);
         let value = dereference_address_to_operand(cpu, indexed_addr, 0);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
@@ -1019,7 +1059,8 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let indexed_addr = add_index_to_address(self.address_mode.unwrap(), cpu.x.read());
+        let index = cpu.x.read();
+        let indexed_addr = add_index_to_address(self.address_mode.unwrap(), index);
         let acc_val = cpu.acc.read();
         MOps::new(
             self.offset(),
@@ -1033,8 +1074,10 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::AbsoluteIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::AbsoluteIndexedWithY> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let indexed_addr = add_index_to_address(self.address_mode.unwrap(), cpu.y.read());
+        let index = cpu.y.read();
+        let indexed_addr = add_index_to_address(self.address_mode.unwrap(), index);
         let acc_val = cpu.acc.read();
+
         MOps::new(
             self.offset(),
             self.cycles(),
@@ -1092,7 +1135,8 @@ gen_instruction_cycles_and_parser!(mnemonic::STA, address_mode::ZeroPageIndexedW
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::ZeroPageIndexedWithX> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let indexed_addr = add_index_to_address(self.address_mode.unwrap() as u16, cpu.x.read());
+        let index = cpu.x.read();
+        let indexed_addr = add_index_to_zeropage_address(self.address_mode.unwrap(), index);
         let acc_val = cpu.acc.read();
 
         MOps::new(

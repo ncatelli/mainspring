@@ -315,6 +315,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDA, address_mode::AbsoluteIndexedWithY::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::LDA, address_mode::XIndexedIndirect::default()),
+            inst_to_operation!(mnemonic::LDX, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::LDX, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::PHA, address_mode::Implied),
@@ -1036,6 +1037,25 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDA, address_mode::XIndex
 }
 
 // LDX
+
+gen_instruction_cycles_and_parser!(mnemonic::LDX, address_mode::Absolute, 0xae, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDX, address_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.address_mode.unwrap();
+        let value = dereference_address_to_operand(cpu, addr, 0);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+            ],
+        )
+    }
+}
 
 gen_instruction_cycles_and_parser!(mnemonic::LDX, address_mode::Immediate, 0xa2, 2);
 

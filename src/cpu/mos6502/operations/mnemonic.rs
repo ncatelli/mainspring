@@ -366,7 +366,7 @@ impl<'a> Parser<'a, &'a [u8], PHA> for PHA {
     }
 }
 
-/// Pull Accumulator from stack
+/// Pull Accumulator from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLA;
 
@@ -380,8 +380,19 @@ impl<'a> Parser<'a, &'a [u8], PLA> for PLA {
     }
 }
 
+/// Push Status Register to stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHP;
+
+impl Offset for PHP {}
+
+impl<'a> Parser<'a, &'a [u8], PHP> for PHP {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PHP> {
+        parcel::parsers::byte::expect_byte(0x08)
+            .map(|_| PHP)
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLP;

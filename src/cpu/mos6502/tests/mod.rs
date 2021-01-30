@@ -665,10 +665,44 @@ fn should_cycle_on_ldx_absolute_operation() {
 }
 
 #[test]
+fn should_cycle_on_ldx_absolute_indexed_with_y_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xbe, 0x00, 0x00])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.x.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
 fn should_cycle_on_ldx_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa2, 0xff]);
 
     let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.x.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
+fn should_cycle_on_ldx_zeropage_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xa6, 0xff]);
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x00, state.x.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, true));
+}
+
+#[test]
+fn should_cycle_on_ldx_zeropage_indexed_with_y_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xb6, 0x00])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0xff, state.x.read());
     assert_eq!((state.ps.negative, state.ps.zero), (true, false));

@@ -136,6 +136,8 @@ impl From<ZeroPageIndexedWithX> for u8 {
     }
 }
 
+/// ZeroPageIndexedWithY wraps a u8 and represents an address in the zeropage +
+/// the value of the Y register in the format of `00LL + y`.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ZeroPageIndexedWithY(pub u8);
 
@@ -145,6 +147,20 @@ impl Offset for ZeroPageIndexedWithY {}
 impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPageIndexedWithY> {
         any_byte().map(ZeroPageIndexedWithY).parse(input)
+    }
+}
+
+impl ZeroPageIndexedWithY {
+    /// Unpacks the enclosed address from a ZeropageIndexedWithY into a
+    /// corresponding u8 address.
+    pub fn unwrap(self) -> u8 {
+        self.into()
+    }
+}
+
+impl From<ZeroPageIndexedWithY> for u8 {
+    fn from(src: ZeroPageIndexedWithY) -> Self {
+        src.0
     }
 }
 

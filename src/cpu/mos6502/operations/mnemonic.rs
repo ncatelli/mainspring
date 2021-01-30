@@ -142,6 +142,7 @@ impl<'a> Parser<'a, &'a [u8], INY> for INY {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEC;
 
+/// Decrement X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEX;
 

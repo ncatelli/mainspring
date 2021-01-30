@@ -493,6 +493,16 @@ fn should_cycle_on_cmp_zeropage_indexed_with_x_operation_with_equal_operands() {
 }
 
 #[test]
+fn should_cycle_on_dec_absolute_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xce, 0xff, 0x01]);
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.address_map.read(0x01ff));
+    assert_eq!((true, false), (state.ps.negative, state.ps.zero));
+}
+
+#[test]
 fn should_cycle_on_dex_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xca])
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x51));

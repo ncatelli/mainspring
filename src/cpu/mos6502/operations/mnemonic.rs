@@ -35,7 +35,10 @@ impl<'a> Parser<'a, &'a [u8], LDX> for LDX {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDX> {
         parcel::one_of(vec![
             parcel::parsers::byte::expect_byte(0xa2),
+            parcel::parsers::byte::expect_byte(0xa6),
+            parcel::parsers::byte::expect_byte(0xb6),
             parcel::parsers::byte::expect_byte(0xae),
+            parcel::parsers::byte::expect_byte(0xbe),
         ])
         .map(|_| LDX)
         .parse(input)

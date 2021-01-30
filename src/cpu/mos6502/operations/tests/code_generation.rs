@@ -972,6 +972,27 @@ fn should_generate_absolute_address_mode_ldx_machine_code() {
 }
 
 #[test]
+fn should_generate_absolute_indexed_with_y_address_mode_ldx_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    let op: Operation =
+        Instruction::new(mnemonic::LDX, address_mode::AbsoluteIndexedWithY(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(ByteRegisters::X, 0x00)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_immediate_address_mode_ldx_machine_code() {
     let cpu = MOS6502::default();
     let op: Operation = Instruction::new(mnemonic::LDX, address_mode::Immediate(0xff)).into();
@@ -985,6 +1006,55 @@ fn should_generate_immediate_address_mode_ldx_machine_code() {
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
                 gen_write_8bit_register_microcode!(ByteRegisters::X, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_address_mode_ldx_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::LDX, address_mode::ZeroPage(0xff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+                gen_write_8bit_register_microcode!(
+                    ByteRegisters::X,
+                    0x00 // memory defaults to null
+                )
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_indexed_with_y_address_mode_ldx_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::LDX, address_mode::ZeroPageIndexedWithY(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(
+                    ByteRegisters::X,
+                    0xff // value at 0x05 in memory should be 0xff
+                )
             ]
         ),
         mc

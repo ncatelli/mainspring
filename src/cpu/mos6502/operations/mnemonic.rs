@@ -380,7 +380,7 @@ impl<'a> Parser<'a, &'a [u8], PLA> for PLA {
     }
 }
 
-/// Push Status Register to stack.
+/// Push Processor Status to stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHP;
 
@@ -394,8 +394,19 @@ impl<'a> Parser<'a, &'a [u8], PHP> for PHP {
     }
 }
 
+// Pull Processor Status from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLP;
+
+impl Offset for PLP {}
+
+impl<'a> Parser<'a, &'a [u8], PLP> for PLP {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PLP> {
+        parcel::parsers::byte::expect_byte(0x28)
+            .map(|_| PLP)
+            .parse(input)
+    }
+}
 
 // Subroutines and Jump
 

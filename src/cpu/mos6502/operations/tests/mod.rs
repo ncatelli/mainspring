@@ -257,6 +257,12 @@ fn should_parse_implied_address_mode_pla_instruction() {
 }
 
 #[test]
+fn should_parse_implied_address_mode_plp_instruction() {
+    let bytecode = [0x28, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_sec_instruction() {
     let bytecode = [0x38, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

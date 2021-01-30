@@ -53,7 +53,7 @@ generate_mnemonic_parser_and_offset!(LDY, 0xa0, 0xa4, 0xb4, 0xac, 0xbc);
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STA;
 
-generate_mnemonic_parser_and_offset!(STA, 0x8b, 0x85, 0x95, 0x9d, 0x99, 0x81, 0x91);
+generate_mnemonic_parser_and_offset!(STA, 0x8d, 0x85, 0x95, 0x9d, 0x99, 0x81, 0x91);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STX;

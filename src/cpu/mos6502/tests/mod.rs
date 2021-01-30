@@ -709,6 +709,69 @@ fn should_cycle_on_ldx_zeropage_indexed_with_y_operation() {
 }
 
 #[test]
+fn should_cycle_on_ldy_absolute_operation() {
+    let (ram_start, ram_end) = (0x0200, 0x5fff);
+    let cpu = generate_test_cpu_with_instructions(vec![0xac, 0x00, 0x02])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff))
+        .register_address_space(
+            ram_start..=ram_end,
+            Memory::<ReadWrite>::new(ram_start, ram_end),
+        )
+        .unwrap();
+
+    let state = cpu.run(4).unwrap();
+
+    // val in mem should be null
+    assert_eq!(0x00, state.x.read());
+    assert_eq!(0x00, state.address_map.read(0x0200));
+    assert_eq!((state.ps.negative, state.ps.zero), (false, true));
+}
+
+#[test]
+fn should_cycle_on_ldy_absolute_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xbc, 0x00, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.y.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
+fn should_cycle_on_ldy_immediate_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xa0, 0xff]);
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.y.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
+fn should_cycle_on_ldy_zeropage_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xa4, 0xff]);
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x00, state.y.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, true));
+}
+
+#[test]
+fn should_cycle_on_ldy_zeropage_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xb4, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.y.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (true, false));
+}
+
+#[test]
 fn should_cycle_on_nop_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![]);
     let state = cpu.run(3).unwrap();

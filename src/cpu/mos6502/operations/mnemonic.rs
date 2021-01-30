@@ -25,7 +25,7 @@ impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
     }
 }
 
-/// Load operand into X-Register
+/// Load operand into X Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDX;
 
@@ -45,8 +45,25 @@ impl<'a> Parser<'a, &'a [u8], LDX> for LDX {
     }
 }
 
+/// Load operand into Y Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDY;
+
+impl Offset for LDY {}
+
+impl<'a> Parser<'a, &'a [u8], LDY> for LDY {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDY> {
+        parcel::one_of(vec![
+            parcel::parsers::byte::expect_byte(0xa0),
+            parcel::parsers::byte::expect_byte(0xa4),
+            parcel::parsers::byte::expect_byte(0xb4),
+            parcel::parsers::byte::expect_byte(0xac),
+            parcel::parsers::byte::expect_byte(0xbc),
+        ])
+        .map(|_| LDY)
+        .parse(input)
+    }
+}
 
 // Store Accumulator in memory
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

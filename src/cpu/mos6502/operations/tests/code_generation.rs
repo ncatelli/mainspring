@@ -568,6 +568,28 @@ fn should_generate_implied_address_mode_dex_machine_code() {
     );
 }
 
+// DEY
+
+#[test]
+fn should_generate_implied_address_mode_dey_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::DEY, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_dec_8bit_register_microcode!(ByteRegisters::Y, 1),
+            ]
+        ),
+        mc
+    );
+}
+
 // INC
 
 #[test]

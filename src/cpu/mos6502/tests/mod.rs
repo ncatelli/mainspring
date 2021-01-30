@@ -504,6 +504,17 @@ fn should_cycle_on_dex_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_dey_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x88])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0xfe, state.y.read());
+    assert_eq!((true, false), (state.ps.negative, state.ps.zero));
+}
+
+#[test]
 fn should_cycle_on_inc_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xee, 0xff, 0x01]);
 

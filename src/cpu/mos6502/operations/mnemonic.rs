@@ -156,8 +156,19 @@ impl<'a> Parser<'a, &'a [u8], DEX> for DEX {
     }
 }
 
+/// Decrement Y register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEY;
+
+impl Offset for DEY {}
+
+impl<'a> Parser<'a, &'a [u8], DEY> for DEY {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], DEY> {
+        parcel::parsers::byte::expect_byte(0x88)
+            .map(|_| DEY)
+            .parse(input)
+    }
+}
 
 // Shift and Rotate
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

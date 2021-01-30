@@ -793,6 +793,16 @@ fn should_cycle_on_pha_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_php_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x08])
+        .with_ps_register(register::ProcessorStatus::with_value(0x55));
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0x55, state.address_map.read(0x01ff));
+}
+
+#[test]
 fn should_cycle_on_pla_implied_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x68])
         // simulate having pushed teh value 0xff to the stack

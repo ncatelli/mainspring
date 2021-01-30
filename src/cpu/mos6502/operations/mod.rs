@@ -327,6 +327,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::LDY, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::NOP, address_mode::Implied),
             inst_to_operation!(mnemonic::PHA, address_mode::Implied),
+            inst_to_operation!(mnemonic::PHP, address_mode::Implied),
             inst_to_operation!(mnemonic::PLA, address_mode::Implied),
             inst_to_operation!(mnemonic::STA, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::STA, address_mode::AbsoluteIndexedWithX::default()),
@@ -1271,6 +1272,26 @@ gen_instruction_cycles_and_parser!(mnemonic::PHA, address_mode::Implied, 0x48, 3
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::PHA, address_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let value = cpu.acc.read();
+        let sp = cpu.sp.read();
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_write_memory_microcode!(stack_pointer_from_byte_value(sp), value),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+            ],
+        )
+    }
+}
+
+// PHP
+
+gen_instruction_cycles_and_parser!(mnemonic::PHP, address_mode::Implied, 0x08, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::PHP, address_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = cpu.ps.read();
         let sp = cpu.sp.read();
 
         MOps::new(

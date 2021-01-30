@@ -1219,6 +1219,32 @@ fn should_generate_implied_address_mode_pha_machine_code() {
     )
 }
 
+// PHP
+
+#[test]
+fn should_generate_implied_address_mode_php_machine_code() {
+    let cpu = MOS6502::default()
+        .reset()
+        .unwrap()
+        .with_ps_register(ProcessorStatus::with_value(0x55));
+    let op: Operation = Instruction::new(mnemonic::PHP, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![
+                // should write to the top of the stack
+                gen_write_memory_microcode!(0x01ff, 0x55),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 1)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
 // PLA
 
 #[test]

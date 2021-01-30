@@ -546,10 +546,32 @@ fn should_generate_zeropage_indexed_with_x_address_mode_cmp_machine_code() {
     )
 }
 
+// DEX
+
+#[test]
+fn should_generate_implied_address_mode_dex_machine_code() {
+    let cpu = MOS6502::default();
+    let op: Operation = Instruction::new(mnemonic::DEX, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_dec_8bit_register_microcode!(ByteRegisters::X, 1),
+            ]
+        ),
+        mc
+    );
+}
+
 // INC
 
 #[test]
-fn should_generate_implied_address_mode_inc_machine_code() {
+fn should_generate_absolute_address_mode_inc_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x01ff, 0x05).unwrap();
     let op: Operation = Instruction::new(mnemonic::INC, address_mode::Absolute(0x01ff)).into();

@@ -302,6 +302,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::CMP, address_mode::XIndexedIndirect::default()),
             inst_to_operation!(mnemonic::CMP, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::CMP, address_mode::ZeroPageIndexedWithX::default()),
+            inst_to_operation!(mnemonic::DEX, address_mode::Implied),
             inst_to_operation!(mnemonic::INC, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::INX, address_mode::Implied),
             inst_to_operation!(mnemonic::INY, address_mode::Implied),
@@ -768,14 +769,34 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::CMP, address_mode::ZeroPa
     }
 }
 
+// DEX
+
+gen_instruction_cycles_and_parser!(mnemonic::DEX, address_mode::Implied, 0xca, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::DEX, address_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = Operand::new(cpu.x.read()) - Operand::new(1);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_dec_8bit_register_microcode!(ByteRegisters::X, 1),
+            ],
+        )
+    }
+}
+
 // INC
 
 gen_instruction_cycles_and_parser!(mnemonic::INC, address_mode::Absolute, 0xee, 6);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::INC, address_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let address_mode::Absolute(addr) = self.address_mode;
-        let value = Operand::new(cpu.address_map.read(addr)) + Operand::new(1);
+        let addr = self.address_mode.unwrap();
+        let value = dereference_address_to_operand(cpu, addr, 0) + Operand::new(1);
 
         MOps::new(
             self.offset(),

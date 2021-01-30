@@ -142,8 +142,19 @@ impl<'a> Parser<'a, &'a [u8], INY> for INY {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEC;
 
+/// Decrement X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEX;
+
+impl Offset for DEX {}
+
+impl<'a> Parser<'a, &'a [u8], DEX> for DEX {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], DEX> {
+        parcel::parsers::byte::expect_byte(0xca)
+            .map(|_| DEX)
+            .parse(input)
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEY;

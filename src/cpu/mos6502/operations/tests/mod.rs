@@ -107,7 +107,13 @@ fn should_parse_zeropage_address_mode_cmp_instruction() {
 }
 
 #[test]
-fn should_parse_implied_address_mode_inc_instruction() {
+fn should_parse_implied_address_mode_dex_instruction() {
+    let bytecode = [0xca, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_absolute_address_mode_inc_instruction() {
     let bytecode = [0xee, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }

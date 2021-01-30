@@ -1276,6 +1276,35 @@ fn should_generate_implied_address_mode_pla_machine_code() {
     )
 }
 
+// PLP
+
+#[test]
+fn should_generate_implied_address_mode_plp_machine_code() {
+    let mut cpu = MOS6502::default()
+        .reset()
+        .unwrap()
+        // simulate having pushed the value 0x55 from ps register to the stack
+        .with_sp_register(StackPointer::with_value(0xfe));
+    cpu.address_map.write(0x01ff, 0x55).unwrap();
+
+    let op: Operation = Instruction::new(mnemonic::PLP, address_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        vec![
+            vec![],
+            vec![],
+            vec![],
+            vec![
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_8bit_register_microcode!(ByteRegisters::PS, 0x55),
+                gen_inc_16bit_register_microcode!(WordRegisters::PC, 1)
+            ]
+        ],
+        Into::<Vec<Vec<Microcode>>>::into(mc)
+    )
+}
+
 // SEC
 
 #[test]

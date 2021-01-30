@@ -1,91 +1,59 @@
 extern crate parcel;
 use crate::cpu::Offset;
-use parcel::{ParseResult, Parser};
+
+macro_rules! generate_mnemonic_parser_and_offset {
+    ($mnemonic:ty, $opcode:literal) => {
+        impl Offset for $mnemonic {}
+
+        impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
+                parcel::parsers::byte::expect_byte($opcode)
+                    .map(|_| <$mnemonic>::default())
+                    .parse(input)
+            }
+        }
+    };
+
+    ($mnemonic:ty, $( $opcode:literal ),* ) => {
+        impl Offset for $mnemonic {}
+
+        impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
+                parcel::one_of(vec![
+                    $(
+                        parcel::parsers::byte::expect_byte($opcode),
+                    )*
+                ])
+                    .map(|_| <$mnemonic>::default())
+                    .parse(input)
+            }
+        }
+    };
+}
 
 /// Load operand into Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDA;
 
-impl Offset for LDA {}
-
-impl<'a> Parser<'a, &'a [u8], LDA> for LDA {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDA> {
-        parcel::one_of(vec![
-            parcel::parsers::byte::expect_byte(0xa9),
-            parcel::parsers::byte::expect_byte(0xa5),
-            parcel::parsers::byte::expect_byte(0xb5),
-            parcel::parsers::byte::expect_byte(0xad),
-            parcel::parsers::byte::expect_byte(0xbd),
-            parcel::parsers::byte::expect_byte(0xb9),
-            parcel::parsers::byte::expect_byte(0xa1),
-            parcel::parsers::byte::expect_byte(0xb1),
-        ])
-        .map(|_| LDA)
-        .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(LDA, 0xa9, 0xa5, 0xb5, 0xad, 0xbd, 0xb9, 0xa1, 0xb1);
 
 /// Load operand into X Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDX;
 
-impl Offset for LDX {}
-
-impl<'a> Parser<'a, &'a [u8], LDX> for LDX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDX> {
-        parcel::one_of(vec![
-            parcel::parsers::byte::expect_byte(0xa2),
-            parcel::parsers::byte::expect_byte(0xa6),
-            parcel::parsers::byte::expect_byte(0xb6),
-            parcel::parsers::byte::expect_byte(0xae),
-            parcel::parsers::byte::expect_byte(0xbe),
-        ])
-        .map(|_| LDX)
-        .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(LDX, 0xa2, 0xa6, 0xb6, 0xae, 0xbe);
 
 /// Load operand into Y Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LDY;
 
-impl Offset for LDY {}
-
-impl<'a> Parser<'a, &'a [u8], LDY> for LDY {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], LDY> {
-        parcel::one_of(vec![
-            parcel::parsers::byte::expect_byte(0xa0),
-            parcel::parsers::byte::expect_byte(0xa4),
-            parcel::parsers::byte::expect_byte(0xb4),
-            parcel::parsers::byte::expect_byte(0xac),
-            parcel::parsers::byte::expect_byte(0xbc),
-        ])
-        .map(|_| LDY)
-        .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(LDY, 0xa0, 0xa4, 0xb4, 0xac, 0xbc);
 
 // Store Accumulator in memory
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STA;
 
-impl Offset for STA {}
-
-impl<'a> Parser<'a, &'a [u8], STA> for STA {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], STA> {
-        parcel::one_of(vec![
-            parcel::parsers::byte::expect_byte(0x8d),
-            parcel::parsers::byte::expect_byte(0x85),
-            parcel::parsers::byte::expect_byte(0x95),
-            parcel::parsers::byte::expect_byte(0x9d),
-            parcel::parsers::byte::expect_byte(0x99),
-            parcel::parsers::byte::expect_byte(0x81),
-            parcel::parsers::byte::expect_byte(0x91),
-        ])
-        .map(|_| STA)
-        .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(STA, 0x8b, 0x85, 0x95, 0x9d, 0x99, 0x81, 0x91);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STX;
@@ -103,72 +71,35 @@ pub struct SBC;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INC;
 
-impl Offset for INC {}
-
-impl<'a> Parser<'a, &'a [u8], INC> for INC {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], INC> {
-        parcel::parsers::byte::expect_byte(0xee)
-            .map(|_| INC)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(INC, 0xee);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INX;
 
-impl Offset for INX {}
-
-impl<'a> Parser<'a, &'a [u8], INX> for INX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], INX> {
-        parcel::parsers::byte::expect_byte(0xe8)
-            .map(|_| INX)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(INX, 0xe8);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INY;
 
-impl Offset for INY {}
+generate_mnemonic_parser_and_offset!(INY, 0xc8);
 
-impl<'a> Parser<'a, &'a [u8], INY> for INY {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], INY> {
-        parcel::parsers::byte::expect_byte(0xc8)
-            .map(|_| INY)
-            .parse(input)
-    }
-}
-
+/// Decrement memory by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEC;
+
+generate_mnemonic_parser_and_offset!(DEC, 0xce);
 
 /// Decrement X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEX;
 
-impl Offset for DEX {}
-
-impl<'a> Parser<'a, &'a [u8], DEX> for DEX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], DEX> {
-        parcel::parsers::byte::expect_byte(0xca)
-            .map(|_| DEX)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(DEX, 0xca);
 
 /// Decrement Y register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEY;
 
-impl Offset for DEY {}
-
-impl<'a> Parser<'a, &'a [u8], DEY> for DEY {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], DEY> {
-        parcel::parsers::byte::expect_byte(0x88)
-            .map(|_| DEY)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(DEY, 0x88);
 
 // Shift and Rotate
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -198,24 +129,7 @@ pub struct EOR;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CMP;
 
-impl Offset for CMP {}
-
-impl<'a> Parser<'a, &'a [u8], CMP> for CMP {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CMP> {
-        parcel::one_of(vec![
-            parcel::parsers::byte::expect_byte(0xc9),
-            parcel::parsers::byte::expect_byte(0xcd),
-            parcel::parsers::byte::expect_byte(0xc5),
-            parcel::parsers::byte::expect_byte(0xd5),
-            parcel::parsers::byte::expect_byte(0xdd),
-            parcel::parsers::byte::expect_byte(0xd9),
-            parcel::parsers::byte::expect_byte(0xc1),
-            parcel::parsers::byte::expect_byte(0xd1),
-        ])
-        .map(|_| CMP)
-        .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(CMP, 0xc9, 0xcd, 0xc5, 0xd5, 0xdd, 0xd9, 0xc1, 0xd1);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CPX;
@@ -230,56 +144,24 @@ pub struct BIT;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCC;
 
-impl Offset for BCC {}
-
-impl<'a> Parser<'a, &'a [u8], BCC> for BCC {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BCC> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0x90)])
-            .map(|_| BCC)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(BCC, 0x90);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCS;
 
-impl Offset for BCS {}
-
-impl<'a> Parser<'a, &'a [u8], BCS> for BCS {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BCS> {
-        parcel::one_of(vec![parcel::parsers::byte::expect_byte(0xb0)])
-            .map(|_| BCS)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(BCS, 0xb0);
 
 /// Branch on Zero. Follows branch when the Zero flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BNE;
 
-impl Offset for BNE {}
-
-impl<'a> Parser<'a, &'a [u8], BNE> for BNE {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BNE> {
-        parcel::parsers::byte::expect_byte(0xd0)
-            .map(|_| BNE)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(BNE, 0xd0);
 
 /// Branch on Zero. Follows branch when the Zero flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BEQ;
 
-impl Offset for BEQ {}
-
-impl<'a> Parser<'a, &'a [u8], BEQ> for BEQ {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], BEQ> {
-        parcel::parsers::byte::expect_byte(0xf0)
-            .map(|_| BEQ)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(BEQ, 0xf0);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BPL;
@@ -297,80 +179,32 @@ pub struct BVS;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TAX;
 
-impl Offset for TAX {}
-
-impl<'a> Parser<'a, &'a [u8], TAX> for TAX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TAX> {
-        parcel::parsers::byte::expect_byte(0xaa)
-            .map(|_| TAX)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(TAX, 0xaa);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TXA;
 
-impl Offset for TXA {}
-
-impl<'a> Parser<'a, &'a [u8], TXA> for TXA {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TXA> {
-        parcel::parsers::byte::expect_byte(0x8a)
-            .map(|_| TXA)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(TXA, 0x8a);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TAY;
 
-impl Offset for TAY {}
-
-impl<'a> Parser<'a, &'a [u8], TAY> for TAY {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TAY> {
-        parcel::parsers::byte::expect_byte(0xa8)
-            .map(|_| TAY)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(TAY, 0xa8);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TYA;
 
-impl Offset for TYA {}
-
-impl<'a> Parser<'a, &'a [u8], TYA> for TYA {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TYA> {
-        parcel::parsers::byte::expect_byte(0x98)
-            .map(|_| TYA)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(TYA, 0x98);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TSX;
 
-impl Offset for TSX {}
-
-impl<'a> Parser<'a, &'a [u8], TSX> for TSX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TSX> {
-        parcel::parsers::byte::expect_byte(0xba)
-            .map(|_| TSX)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(TSX, 0xba);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TXS;
 
-impl Offset for TXS {}
-
-impl<'a> Parser<'a, &'a [u8], TXS> for TXS {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], TXS> {
-        parcel::parsers::byte::expect_byte(0x9a)
-            .map(|_| TXS)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(TXS, 0x9a);
 
 // Stack Operations
 
@@ -378,57 +212,25 @@ impl<'a> Parser<'a, &'a [u8], TXS> for TXS {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHA;
 
-impl Offset for PHA {}
-
-impl<'a> Parser<'a, &'a [u8], PHA> for PHA {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PHA> {
-        parcel::parsers::byte::expect_byte(0x48)
-            .map(|_| PHA)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(PHA, 0x48);
 
 /// Pull Accumulator from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLA;
 
-impl Offset for PLA {}
-
-impl<'a> Parser<'a, &'a [u8], PLA> for PLA {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PLA> {
-        parcel::parsers::byte::expect_byte(0x46)
-            .map(|_| PLA)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(PLA, 0x46);
 
 /// Push Processor Status to stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PHP;
 
-impl Offset for PHP {}
-
-impl<'a> Parser<'a, &'a [u8], PHP> for PHP {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PHP> {
-        parcel::parsers::byte::expect_byte(0x08)
-            .map(|_| PHP)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(PHP, 0x08);
 
 // Pull Processor Status from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLP;
 
-impl Offset for PLP {}
-
-impl<'a> Parser<'a, &'a [u8], PLP> for PLP {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], PLP> {
-        parcel::parsers::byte::expect_byte(0x28)
-            .map(|_| PLP)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(PLP, 0x28);
 
 // Subroutines and Jump
 
@@ -437,18 +239,7 @@ impl<'a> Parser<'a, &'a [u8], PLP> for PLP {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct JMP;
 
-impl Offset for JMP {}
-
-impl<'a> Parser<'a, &'a [u8], JMP> for JMP {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], JMP> {
-        parcel::one_of(vec![
-            parcel::parsers::byte::expect_byte(0x4c),
-            parcel::parsers::byte::expect_byte(0x6c),
-        ])
-        .map(|_| JMP)
-        .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(JMP, 0x4c, 0x6c);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct JSR;
@@ -463,93 +254,37 @@ pub struct RTI;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLC;
 
-impl Offset for CLC {}
-
-impl<'a> Parser<'a, &'a [u8], CLC> for CLC {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLC> {
-        parcel::parsers::byte::expect_byte(0xad)
-            .map(|_| CLC)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(CLC, 0xad);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEC;
 
-impl Offset for SEC {}
-
-impl<'a> Parser<'a, &'a [u8], SEC> for SEC {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], SEC> {
-        parcel::parsers::byte::expect_byte(0x38)
-            .map(|_| SEC)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(SEC, 0x38);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLD;
 
-impl Offset for CLD {}
-
-impl<'a> Parser<'a, &'a [u8], CLD> for CLD {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLD> {
-        parcel::parsers::byte::expect_byte(0xd8)
-            .map(|_| CLD)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(CLD, 0xd8);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SED;
 
-impl Offset for SED {}
-
-impl<'a> Parser<'a, &'a [u8], SED> for SED {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], SED> {
-        parcel::parsers::byte::expect_byte(0xf8)
-            .map(|_| SED)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(SED, 0xf8);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLI;
 
-impl Offset for CLI {}
-
-impl<'a> Parser<'a, &'a [u8], CLI> for CLI {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLI> {
-        parcel::parsers::byte::expect_byte(0x58)
-            .map(|_| CLI)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(CLI, 0x58);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEI;
 
-impl Offset for SEI {}
-
-impl<'a> Parser<'a, &'a [u8], SEI> for SEI {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], SEI> {
-        parcel::parsers::byte::expect_byte(0x78)
-            .map(|_| SEI)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(SEI, 0x78);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLV;
 
-impl Offset for CLV {}
-
-impl<'a> Parser<'a, &'a [u8], CLV> for CLV {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], CLV> {
-        parcel::parsers::byte::expect_byte(0xb8)
-            .map(|_| CLV)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(CLV, 0xb8);
 
 // Misc
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -560,12 +295,4 @@ pub struct BRK;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct NOP;
 
-impl Offset for NOP {}
-
-impl<'a> Parser<'a, &'a [u8], NOP> for NOP {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], NOP> {
-        parcel::parsers::byte::expect_byte(0xea)
-            .map(|_| NOP)
-            .parse(input)
-    }
-}
+generate_mnemonic_parser_and_offset!(NOP, 0xea);

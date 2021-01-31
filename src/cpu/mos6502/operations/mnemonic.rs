@@ -121,7 +121,7 @@ pub struct ROR;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct AND;
 
-generate_mnemonic_parser_and_offset!(AND, 0x29, 0x2d);
+generate_mnemonic_parser_and_offset!(AND, 0x29, 0x2d, 0x25);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ORA;

@@ -23,6 +23,12 @@ fn should_parse_immediate_address_mode_and_instruction() {
 }
 
 #[test]
+fn should_parse_zeropage_address_mode_and_instruction() {
+    let bytecode = [0x25, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_relative_address_mode_bcc_instruction() {
     let bytecode = [0x90, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

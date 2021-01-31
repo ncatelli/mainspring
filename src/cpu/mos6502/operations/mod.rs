@@ -399,6 +399,9 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::STA, address_mode::XIndexedIndirect::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::STA, address_mode::ZeroPageIndexedWithX::default()),
+            inst_to_operation!(mnemonic::STX, address_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::STX, address_mode::ZeroPage::default()),
+            inst_to_operation!(mnemonic::STX, address_mode::ZeroPageIndexedWithY::default()),
             inst_to_operation!(mnemonic::SEC, address_mode::Implied),
             inst_to_operation!(mnemonic::SED, address_mode::Implied),
             inst_to_operation!(mnemonic::SEI, address_mode::Implied),
@@ -2329,6 +2332,51 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::STA, address_mode::ZeroPa
             self.offset(),
             self.cycles(),
             vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STX, address_mode::Absolute, 0x8e, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STX, address_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.address_mode.unwrap();
+        let value = cpu.x.read();
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(addr, value)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STX, address_mode::ZeroPage, 0x86, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STX, address_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.address_mode.unwrap() as u16;
+        let value = cpu.x.read();
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(addr, value)],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::STX, address_mode::ZeroPageIndexedWithY, 0x96, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::STX, address_mode::ZeroPageIndexedWithY> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let index = cpu.y.read();
+        let indexed_addr = add_index_to_zeropage_address(self.address_mode.unwrap(), index);
+        let value = cpu.x.read();
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![gen_write_memory_microcode!(indexed_addr, value)],
         )
     }
 }

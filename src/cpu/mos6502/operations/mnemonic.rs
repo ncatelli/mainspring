@@ -55,8 +55,11 @@ pub struct STA;
 
 generate_mnemonic_parser_and_offset!(STA, 0x8d, 0x85, 0x95, 0x9d, 0x99, 0x81, 0x91);
 
+/// Store X register in memory.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STX;
+
+generate_mnemonic_parser_and_offset!(STX, 0x8e, 0x86, 0x96);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STY;

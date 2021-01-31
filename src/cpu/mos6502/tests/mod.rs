@@ -1275,7 +1275,6 @@ fn should_cycle_on_sta_absolute_operation() {
         .unwrap();
 
     let state = cpu.run(4).unwrap();
-
     assert_eq!(0x6003, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x0200));
@@ -1294,7 +1293,6 @@ fn should_cycle_on_sta_absolute_indexed_with_x_operation() {
         .unwrap();
 
     let state = cpu.run(5).unwrap();
-
     assert_eq!(0x6003, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x0205));
@@ -1313,7 +1311,6 @@ fn should_cycle_on_sta_absolute_indexed_with_y_operation() {
         .unwrap();
 
     let state = cpu.run(5).unwrap();
-
     assert_eq!(0x6003, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x0205));
@@ -1328,7 +1325,6 @@ fn should_cycle_on_sta_y_indexed_indirect_operation() {
     cpu.address_map.write(0x01, 0x00).unwrap();
 
     let state = cpu.run(6).unwrap();
-
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0xff));
@@ -1343,7 +1339,6 @@ fn should_cycle_on_sta_x_indexed_indirect_operation() {
     cpu.address_map.write(0x06, 0x00).unwrap();
 
     let state = cpu.run(6).unwrap();
-
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0xff));
@@ -1355,7 +1350,6 @@ fn should_cycle_on_sta_zeropage_operation() {
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(3).unwrap();
-
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0xff, state.acc.read());
     assert_eq!(0xff, state.address_map.read(0x02));
@@ -1368,9 +1362,48 @@ fn should_cycle_on_sta_zeropage_with_x_index_operation() {
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(4).unwrap();
-
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0xff, state.acc.read());
+    assert_eq!(0xff, state.address_map.read(0x05));
+}
+
+#[test]
+fn should_cycle_on_stx_absolute_operation() {
+    let (ram_start, ram_end) = (0x0200, 0x5fff);
+    let cpu = generate_test_cpu_with_instructions(vec![0x8e, 0x00, 0x02])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
+        .register_address_space(
+            ram_start..=ram_end,
+            Memory::<ReadWrite>::new(ram_start, ram_end),
+        )
+        .unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.x.read());
+    assert_eq!(0xff, state.address_map.read(0x0200));
+}
+
+#[test]
+fn should_cycle_on_stx_zeropage_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x86, 0x02])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff));
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.x.read());
+    assert_eq!(0xff, state.address_map.read(0x02));
+}
+
+#[test]
+fn should_cycle_on_stx_zeropage_with_y_index_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x96, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.x.read());
     assert_eq!(0xff, state.address_map.read(0x05));
 }
 

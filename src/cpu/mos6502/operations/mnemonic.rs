@@ -72,7 +72,7 @@ pub struct SBC;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INC;
 
-generate_mnemonic_parser_and_offset!(INC, 0xee, 0xfe);
+generate_mnemonic_parser_and_offset!(INC, 0xee, 0xfe, 0xe6);
 
 /// Increment X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

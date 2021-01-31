@@ -659,6 +659,27 @@ fn should_generate_absolute_indexed_by_x_address_mode_inc_machine_code() {
     );
 }
 
+#[test]
+fn should_generate_zeropage_address_mode_inc_machine_code() {
+    let mut cpu = MOS6502::default();
+    cpu.address_map.write(0xff, 0x05).unwrap();
+    let op: Operation = Instruction::new(mnemonic::INC, address_mode::ZeroPage(0xff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            5,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_memory_microcode!(0xff, 0x06),
+            ]
+        ),
+        mc
+    );
+}
+
 // INX
 
 #[test]

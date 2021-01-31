@@ -137,6 +137,12 @@ fn should_parse_absolute_indexed_by_x_address_mode_inc_instruction() {
 }
 
 #[test]
+fn should_parse_zeropage_inc_instruction() {
+    let bytecode = [0xe6, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_inx_instruction() {
     let bytecode = [0xe8, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

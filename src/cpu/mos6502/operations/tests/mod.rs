@@ -11,6 +11,12 @@ macro_rules! gen_op_parse_assertion {
 }
 
 #[test]
+fn should_parse_absolute_address_mode_and_instruction() {
+    let bytecode = [0x2d, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_immediate_address_mode_and_instruction() {
     let bytecode = [0x29, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

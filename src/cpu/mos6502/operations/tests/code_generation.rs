@@ -1,14 +1,39 @@
 use crate::address_map::Addressable;
-use crate::cpu::mos6502::{
-    microcode::*,
-    operations::{address_mode, mnemonic, Instruction, MOps, Operation},
-    register::{
-        ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
-        ProgramStatusFlags, StackPointer, WordRegisters,
+use crate::cpu::{
+    mos6502::{
+        microcode::*,
+        operations::{address_mode, mnemonic, Instruction, MOps, Operation},
+        register::{
+            ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
+            ProgramStatusFlags, StackPointer, WordRegisters,
+        },
+        Generate, MOS6502,
     },
-    Generate, MOS6502,
+    register::Register,
 };
-use crate::cpu::register::Register;
+
+// AND
+
+#[test]
+fn should_generate_immediate_address_mode_and_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    let op: Operation = Instruction::new(mnemonic::AND, address_mode::Immediate(0x55)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x55)
+            ]
+        ),
+        mc
+    );
+}
 
 // BCC
 

@@ -117,8 +117,11 @@ pub struct ROL;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ROR;
 
+/// And Memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct AND;
+
+generate_mnemonic_parser_and_offset!(AND, 0x29);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ORA;

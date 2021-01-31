@@ -121,10 +121,13 @@ pub struct ROR;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct AND;
 
-generate_mnemonic_parser_and_offset!(AND, 0x2d, 0x3d, 0x21, 0x29, 0x39, 0x25, 0x35);
+generate_mnemonic_parser_and_offset!(AND, 0x2d, 0x3d, 0x39, 0x21, 0x29, 0x31, 0x25, 0x35);
 
+/// Or memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ORA;
+
+generate_mnemonic_parser_and_offset!(ORA, 0x0d, 0x1d, 0x19, 0x11, 0x09, 0x01, 0x05, 0x15);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct EOR;

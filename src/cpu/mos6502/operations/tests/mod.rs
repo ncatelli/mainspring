@@ -323,6 +323,54 @@ fn should_parse_absolute_address_mode_jmp_instruction() {
 }
 
 #[test]
+fn should_parse_absolute_address_mode_ora_instruction() {
+    let bytecode = [0x0d, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_absolute_indexed_with_x_address_mode_ora_instruction() {
+    let bytecode = [0x1d, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_absolute_indexed_with_y_address_mode_ora_instruction() {
+    let bytecode = [0x19, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_indirect_y_indexed_address_mode_ora_instruction() {
+    let bytecode = [0x11, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_immediate_address_mode_ora_instruction() {
+    let bytecode = [0x09, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_x_indexed_indirect_address_mode_ora_instruction() {
+    let bytecode = [0x01, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_address_mode_ora_instruction() {
+    let bytecode = [0x05, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_indexed_with_x_address_mode_ora_instruction() {
+    let bytecode = [0x15, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_pha_instruction() {
     let bytecode = [0x48, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

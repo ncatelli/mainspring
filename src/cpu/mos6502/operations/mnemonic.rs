@@ -68,16 +68,19 @@ pub struct ADC;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SBC;
 
+/// Increment Memory by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INC;
 
-generate_mnemonic_parser_and_offset!(INC, 0xee);
+generate_mnemonic_parser_and_offset!(INC, 0xee, 0xfe);
 
+/// Increment X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INX;
 
 generate_mnemonic_parser_and_offset!(INX, 0xe8);
 
+/// Increment Y register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct INY;
 

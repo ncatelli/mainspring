@@ -90,7 +90,7 @@ generate_mnemonic_parser_and_offset!(INY, 0xc8);
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct DEC;
 
-generate_mnemonic_parser_and_offset!(DEC, 0xce);
+generate_mnemonic_parser_and_offset!(DEC, 0xce, 0xde, 0xc6, 0xd6);
 
 /// Decrement X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

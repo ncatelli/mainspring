@@ -173,6 +173,54 @@ fn should_parse_implied_address_mode_dey_instruction() {
 }
 
 #[test]
+fn should_parse_absolute_address_mode_eor_instruction() {
+    let bytecode = [0x4d, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_absolute_indexed_with_x_address_mode_eor_instruction() {
+    let bytecode = [0x5d, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_absolute_indexed_with_y_address_mode_eor_instruction() {
+    let bytecode = [0x59, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_indirect_y_indexed_address_mode_eor_instruction() {
+    let bytecode = [0x51, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_immediate_address_mode_eor_instruction() {
+    let bytecode = [0x49, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_x_indexed_indirect_address_mode_eor_instruction() {
+    let bytecode = [0x41, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_address_mode_eor_instruction() {
+    let bytecode = [0x45, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_indexed_with_x_address_mode_eor_instruction() {
+    let bytecode = [0x55, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_inc_instruction() {
     let bytecode = [0xee, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

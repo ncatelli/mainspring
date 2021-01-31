@@ -129,8 +129,11 @@ pub struct ORA;
 
 generate_mnemonic_parser_and_offset!(ORA, 0x0d, 0x1d, 0x19, 0x11, 0x09, 0x01, 0x05, 0x15);
 
+/// Exclusive-Or memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct EOR;
+
+generate_mnemonic_parser_and_offset!(EOR, 0x4d, 0x5d, 0x59, 0x41, 0x49, 0x51, 0x45, 0x55);
 
 // Compare and Test Bit
 

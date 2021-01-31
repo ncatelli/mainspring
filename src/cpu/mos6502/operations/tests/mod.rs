@@ -539,6 +539,24 @@ fn should_parse_zeropage_with_y_index_address_mode_stx_instruction() {
 }
 
 #[test]
+fn should_parse_absolute_address_mode_sty_instruction() {
+    let bytecode = [0x8c, 0x34, 0x12];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_address_mode_sty_instruction() {
+    let bytecode = [0x84, 0x34, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_with_x_index_address_mode_sty_instruction() {
+    let bytecode = [0x94, 0x34, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_tax_instruction() {
     let bytecode = [0xaa, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

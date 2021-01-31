@@ -294,6 +294,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::AND, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::AND, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::BCC, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BCS, address_mode::Relative::default()),
@@ -441,6 +442,26 @@ macro_rules! gen_instruction_cycles_and_parser {
 }
 
 // Bit-wise Operations
+
+gen_instruction_cycles_and_parser!(mnemonic::AND, address_mode::Absolute, 0x2d, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::AND, address_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let rhs = Operand::new(cpu.acc.read());
+        let lhs = dereference_address_to_operand(cpu, self.address_mode.unwrap(), 0);
+        let value = rhs & lhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
 
 gen_instruction_cycles_and_parser!(mnemonic::AND, address_mode::Immediate, 0x29, 2);
 

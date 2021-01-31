@@ -39,6 +39,32 @@ fn should_cycle_on_add_absolute_operation() {
 }
 
 #[test]
+fn should_cycle_on_add_absolute_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x3d, 0xfa, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x55, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, false));
+}
+
+#[test]
+fn should_cycle_on_add_absolute_indexed_with_y_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x39, 0xfa, 0x00])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x55, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, false));
+}
+
+#[test]
 fn should_cycle_on_add_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x29, 0x55])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));

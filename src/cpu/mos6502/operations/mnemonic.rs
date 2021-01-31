@@ -61,8 +61,11 @@ pub struct STX;
 
 generate_mnemonic_parser_and_offset!(STX, 0x8e, 0x86, 0x96);
 
+/// Story Y register in memory.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STY;
+
+generate_mnemonic_parser_and_offset!(STY, 0x8c, 0x84, 0x94);
 
 // Arithmetic
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

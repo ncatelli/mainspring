@@ -1408,6 +1408,46 @@ fn should_cycle_on_stx_zeropage_with_y_index_operation() {
 }
 
 #[test]
+fn should_cycle_on_sty_absolute_operation() {
+    let (ram_start, ram_end) = (0x0200, 0x5fff);
+    let cpu = generate_test_cpu_with_instructions(vec![0x8c, 0x00, 0x02])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff))
+        .register_address_space(
+            ram_start..=ram_end,
+            Memory::<ReadWrite>::new(ram_start, ram_end),
+        )
+        .unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.y.read());
+    assert_eq!(0xff, state.address_map.read(0x0200));
+}
+
+#[test]
+fn should_cycle_on_sty_zeropage_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x84, 0x02])
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.y.read());
+    assert_eq!(0xff, state.address_map.read(0x02));
+}
+
+#[test]
+fn should_cycle_on_sty_zeropage_with_x_index_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x94, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.y.read());
+    assert_eq!(0xff, state.address_map.read(0x05));
+}
+
+#[test]
 fn should_cycle_on_tax_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xaa])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))

@@ -2362,6 +2362,57 @@ fn should_generate_zeropage_with_y_index_address_mode_stx_machine_code() {
 }
 
 #[test]
+fn should_generate_absolute_address_mode_sty_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x55));
+    let op: Operation = Instruction::new(mnemonic::STY, address_mode::Absolute(0x0100)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x55))]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_address_mode_sty_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x55));
+    let op: Operation = Instruction::new(mnemonic::STY, address_mode::ZeroPage(0x01)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x55))]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_with_x_index_address_mode_sty_machine_code() {
+    let cpu = MOS6502::default()
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x55));
+    let op: Operation =
+        Instruction::new(mnemonic::STY, address_mode::ZeroPageIndexedWithX(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            4,
+            vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0x55))]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_implied_address_mode_tax_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));

@@ -29,6 +29,12 @@ fn should_parse_zeropage_address_mode_and_instruction() {
 }
 
 #[test]
+fn should_parse_zeropage_indexed_with_x_address_mode_and_instruction() {
+    let bytecode = [0x35, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_relative_address_mode_bcc_instruction() {
     let bytecode = [0x90, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

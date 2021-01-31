@@ -535,6 +535,17 @@ fn should_cycle_on_inc_absolute_operation() {
 }
 
 #[test]
+fn should_cycle_on_inc_absolute_indexed_with_x_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xfe, 0xfa, 0x01])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+
+    let state = cpu.run(7).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(1, state.address_map.read(0x01ff));
+    assert_eq!((false, false), (state.ps.negative, state.ps.zero));
+}
+
+#[test]
 fn should_cycle_on_inx_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe8])
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(127));

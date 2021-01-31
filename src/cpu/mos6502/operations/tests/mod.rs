@@ -161,6 +161,24 @@ fn should_parse_absolute_address_mode_dec_instruction() {
 }
 
 #[test]
+fn should_parse_absolute_indexed_by_x_address_mode_dec_instruction() {
+    let bytecode = [0xde, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_dec_instruction() {
+    let bytecode = [0xc6, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_indexed_with_x_dec_instruction() {
+    let bytecode = [0xd6, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_implied_address_mode_dex_instruction() {
     let bytecode = [0xca, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

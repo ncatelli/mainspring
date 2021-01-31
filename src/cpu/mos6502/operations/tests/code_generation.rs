@@ -85,6 +85,33 @@ fn should_generate_absolute_indexed_with_y_address_mode_and_machine_code() {
 }
 
 #[test]
+fn should_generate_indirect_y_indexed_address_mode_and_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::AND, address_mode::IndirectYIndexed(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            5,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x55)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_immediate_address_mode_and_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
@@ -95,6 +122,33 @@ fn should_generate_immediate_address_mode_and_machine_code() {
         MOps::new(
             2,
             2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x55)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_x_indexed_indirect_address_mode_and_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::AND, address_mode::XIndexedIndirect(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            6,
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),

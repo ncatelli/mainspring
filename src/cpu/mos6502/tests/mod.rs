@@ -65,11 +65,41 @@ fn should_cycle_on_add_absolute_indexed_with_y_operation() {
 }
 
 #[test]
+fn should_cycle_on_and_indirect_y_indexed_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x31, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x55).unwrap();
+
+    let state = cpu.run(5).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x55, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, false));
+}
+
+#[test]
 fn should_cycle_on_add_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x29, 0x55])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x55, state.acc.read());
+    assert_eq!((state.ps.negative, state.ps.zero), (false, false));
+}
+
+#[test]
+fn should_cycle_on_add_x_indexed_indirect_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x21, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x55).unwrap();
+
+    let state = cpu.run(6).unwrap();
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(0x55, state.acc.read());
     assert_eq!((state.ps.negative, state.ps.zero), (false, false));

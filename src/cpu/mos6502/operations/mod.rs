@@ -8,7 +8,6 @@ use crate::cpu::{
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
 use std::num::Wrapping;
-use std::ops::{Add, RangeInclusive, Sub};
 
 pub mod address_mode;
 pub mod mnemonic;
@@ -19,7 +18,7 @@ mod tests;
 /// Page represents an 8-bit memory page for the purpose of determining if an
 /// address falls within the space of a page.
 struct Page {
-    inner: RangeInclusive<u16>,
+    inner: std::ops::RangeInclusive<u16>,
 }
 
 impl Page {
@@ -85,36 +84,45 @@ impl Operand<u8> {
     pub fn new(inner: u8) -> Self {
         Self {
             carry: false,
-            negative: inner > 127,
+            negative: ((inner >> 7) & 1) == 1, // most significant bit set
             zero: inner == 0,
             inner,
         }
     }
 }
 
-impl Sub for Operand<u8> {
+impl std::ops::Add for Operand<u8> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        let (lhs, rhs) = (self.unwrap(), other.unwrap());
+        let (sum, carry) = lhs.overflowing_add(rhs);
+        let negative = ((sum >> 7) & 1) == 1; // most significant bit set
+        let zero = sum == 0;
+
+        Self::with_flags(sum, carry, negative, zero)
+    }
+}
+
+impl std::ops::Sub for Operand<u8> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
         let (difference, carry) = lhs.overflowing_sub(rhs);
-        let negative = difference > 127; // most significant bit set
+        let negative = ((difference >> 7) & 1) == 1; // most significant bit set
         let zero = difference == 0;
 
         Self::with_flags(difference, carry, negative, zero)
     }
 }
 
-impl Add for Operand<u8> {
+impl std::ops::BitAnd for Operand<u8> {
     type Output = Self;
-
-    fn add(self, other: Self) -> Self::Output {
+    fn bitand(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let (sum, carry) = lhs.overflowing_add(rhs);
-        let negative = sum > 127; // most significant bit set
-        let zero = sum == 0;
-
-        Self::with_flags(sum, carry, negative, zero)
+        let value = lhs & rhs;
+        Self::new(value)
     }
 }
 
@@ -286,6 +294,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::AND, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::BCC, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BCS, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BEQ, address_mode::Relative::default()),
@@ -429,6 +438,28 @@ macro_rules! gen_instruction_cycles_and_parser {
             }
         }
     };
+}
+
+// Bit-wise Operations
+
+gen_instruction_cycles_and_parser!(mnemonic::AND, address_mode::Immediate, 0x29, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::AND, address_mode::Immediate> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let rhs = Operand::new(cpu.acc.read());
+        let lhs = Operand::new(self.address_mode.unwrap());
+        let value = rhs & lhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
 }
 
 // Branching

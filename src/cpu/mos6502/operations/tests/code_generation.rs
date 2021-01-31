@@ -1522,6 +1522,199 @@ fn should_generate_implied_address_mode_nop_machine_code() {
     )
 }
 
+// ORA
+
+#[test]
+fn should_generate_absolute_address_mode_ora_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation = Instruction::new(mnemonic::ORA, address_mode::Absolute(0x00ff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_x_address_mode_ora_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::ORA, address_mode::AbsoluteIndexedWithX(0x00fa)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_y_address_mode_ora_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::ORA, address_mode::AbsoluteIndexedWithY(0x00fa)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_indirect_y_indexed_address_mode_ora_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::ORA, address_mode::IndirectYIndexed(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            5,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_immediate_address_mode_ora_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    let op: Operation = Instruction::new(mnemonic::ORA, address_mode::Immediate(0x55)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_x_indexed_indirect_address_mode_ora_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::ORA, address_mode::XIndexedIndirect(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            6,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_address_mode_ora_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation = Instruction::new(mnemonic::ORA, address_mode::ZeroPage(0xff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_indexed_with_x_address_mode_ora_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::ORA, address_mode::ZeroPageIndexedWithX(0xfa)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xff)
+            ]
+        ),
+        mc
+    );
+}
+
 // PHA
 
 #[test]

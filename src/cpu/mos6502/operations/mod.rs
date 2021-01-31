@@ -308,6 +308,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::INC, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::INC, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::INC, address_mode::ZeroPage::default()),
+            inst_to_operation!(mnemonic::INC, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::INX, address_mode::Implied),
             inst_to_operation!(mnemonic::INY, address_mode::Implied),
             inst_to_operation!(mnemonic::JMP, address_mode::Absolute::default()),
@@ -890,6 +891,27 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::INC, address_mode::ZeroPa
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_memory_microcode!(addr, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::INC, address_mode::ZeroPageIndexedWithX, 0xf6, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::INC, address_mode::ZeroPageIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let index = cpu.x.read();
+        let addr = self.address_mode.unwrap();
+        let indexed_addr = add_index_to_zeropage_address(addr, index);
+        let value = dereference_address_to_operand(cpu, indexed_addr, 0) + Operand::new(1);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
             ],
         )
     }

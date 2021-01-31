@@ -29,8 +29,20 @@ fn should_parse_absolute_indexed_with_y_address_mode_and_instruction() {
 }
 
 #[test]
+fn should_parse_indirect_y_indexed_address_mode_and_instruction() {
+    let bytecode = [0x31, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_immediate_address_mode_and_instruction() {
     let bytecode = [0x29, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_x_indexed_indirect_address_mode_and_instruction() {
+    let bytecode = [0x21, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);
 }
 

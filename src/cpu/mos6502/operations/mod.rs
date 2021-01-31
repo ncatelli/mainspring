@@ -297,7 +297,9 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::AND, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithY::default()),
+            inst_to_operation!(mnemonic::AND, address_mode::IndirectYIndexed::default()),
             inst_to_operation!(mnemonic::AND, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::AND, address_mode::XIndexedIndirect::default()),
             inst_to_operation!(mnemonic::AND, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::AND, address_mode::ZeroPageIndexedWithX::default()),
             inst_to_operation!(mnemonic::BCC, address_mode::Relative::default()),
@@ -527,12 +529,64 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::AND, address_mode::Absolu
     }
 }
 
+gen_instruction_cycles_and_parser!(mnemonic::AND, address_mode::IndirectYIndexed, 0x31, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::AND, address_mode::IndirectYIndexed> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let zpage_base_addr = self.address_mode.unwrap();
+        let indirect_addr =
+            dereference_indirect_indexed_address(cpu, zpage_base_addr, cpu.y.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(cpu.address_map.read(indirect_addr));
+        let value = lhs & rhs;
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
+            1
+        } else {
+            0
+        };
+
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
 gen_instruction_cycles_and_parser!(mnemonic::AND, address_mode::Immediate, 0x29, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::AND, address_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> MOps {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.address_mode.unwrap());
+        let value = lhs & rhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::AND, address_mode::XIndexedIndirect, 0x21, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::AND, address_mode::XIndexedIndirect> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indirect_addr =
+            dereference_indexed_indirect_address(cpu, self.address_mode.unwrap(), cpu.x.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(cpu.address_map.read(indirect_addr));
         let value = lhs & rhs;
 
         MOps::new(

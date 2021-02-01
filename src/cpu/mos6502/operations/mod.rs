@@ -484,10 +484,13 @@ macro_rules! gen_instruction_cycles_and_parser {
                 &self,
                 input: &'a [u8],
             ) -> ParseResult<&'a [u8], Instruction<$mnemonic, $address_mode>> {
-                expect_byte($opcode)
-                    .and_then(|_| <$address_mode>::default())
-                    .map(|am| Instruction::new(<$mnemonic>::default(), am))
-                    .parse(input)
+                // If the expected opcode and address mode match, map it to a
+                // corresponding Instruction.
+                parcel::map(
+                    parcel::and_then(expect_byte($opcode), |_| <$address_mode>::default()),
+                    |am| Instruction::new(<$mnemonic>::default(), am),
+                )
+                .parse(input)
             }
         }
     };

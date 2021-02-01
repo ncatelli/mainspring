@@ -511,33 +511,6 @@ fn should_generate_implied_address_mode_clv_machine_code() {
 // CMP
 
 #[test]
-fn should_generate_immediate_address_mode_cmp_machine_code() {
-    let cpu =
-        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation = Instruction::new(mnemonic::CMP, address_mode::Immediate::default()).into();
-    let mc = op.generate(&cpu);
-    let expected_mops = vec![
-        gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
-        gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
-        gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
-    ];
-
-    assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
-
-    assert_eq!(
-        vec![
-            vec![],
-            expected_mops
-                .clone()
-                .into_iter()
-                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)].into_iter())
-                .collect()
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
-}
-
-#[test]
 fn should_generate_absolute_address_mode_cmp_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
@@ -550,20 +523,6 @@ fn should_generate_absolute_address_mode_cmp_machine_code() {
     ];
 
     assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            expected_mops
-                .clone()
-                .into_iter()
-                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)].into_iter())
-                .collect()
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
 }
 
 #[test]
@@ -581,20 +540,6 @@ fn should_generate_absolute_indexed_with_x_address_mode_cmp_machine_code() {
     ];
 
     assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            expected_mops
-                .clone()
-                .into_iter()
-                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)].into_iter())
-                .collect()
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
 }
 
 #[test]
@@ -612,20 +557,6 @@ fn should_generate_absolute_indexed_with_y_address_mode_cmp_machine_code() {
     ];
 
     assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            expected_mops
-                .clone()
-                .into_iter()
-                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)].into_iter())
-                .collect()
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
 }
 
 #[test]
@@ -653,6 +584,21 @@ fn should_generate_indirect_y_indexed_address_mode_cmp_machine_code() {
         ),
         mc
     );
+}
+
+#[test]
+fn should_generate_immediate_address_mode_cmp_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::CMP, address_mode::Immediate::default()).into();
+    let mc = op.generate(&cpu);
+    let expected_mops = vec![
+        gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+        gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+        gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+    ];
+
+    assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -695,19 +641,6 @@ fn should_generate_zeropage_address_mode_cmp_machine_code() {
     ];
 
     assert_eq!(MOps::new(2, 3, expected_mops.clone()), mc);
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            expected_mops
-                .clone()
-                .into_iter()
-                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)].into_iter())
-                .collect()
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
 }
 
 #[test]
@@ -725,20 +658,70 @@ fn should_generate_zeropage_indexed_with_x_address_mode_cmp_machine_code() {
     ];
 
     assert_eq!(MOps::new(2, 4, expected_mops.clone()), mc);
+}
+
+// CPX
+
+#[test]
+fn should_generate_absolute_address_mode_cpx_machine_code() {
+    let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::CPX, address_mode::Absolute::default()).into();
+    let mc = op.generate(&cpu);
 
     assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            expected_mops
-                .clone()
-                .into_iter()
-                .chain(vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 2)].into_iter())
-                .collect()
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_immediate_address_mode_cpx_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::CPX, address_mode::Immediate::default()).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_address_mode_cpx_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
+    let op: Operation = Instruction::new(mnemonic::CPX, address_mode::ZeroPage::default()).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
+            ]
+        ),
+        mc
+    );
 }
 
 // DEC

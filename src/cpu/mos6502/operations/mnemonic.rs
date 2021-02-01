@@ -7,9 +7,10 @@ macro_rules! generate_mnemonic_parser_and_offset {
 
         impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
-                parcel::parsers::byte::expect_byte($opcode)
-                    .map(|_| <$mnemonic>::default())
-                    .parse(input)
+                parcel::map(
+                    parcel::parsers::byte::expect_byte($opcode),
+                    |_| <$mnemonic>::default()
+                ).parse(input)
             }
         }
     };
@@ -149,8 +150,11 @@ pub struct CMP;
 
 generate_mnemonic_parser_and_offset!(CMP, 0xc9, 0xcd, 0xc5, 0xd5, 0xdd, 0xd9, 0xc1, 0xd1);
 
+/// Compare memory with X register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CPX;
+
+generate_mnemonic_parser_and_offset!(CPX, 0xec, 0xe0, 0xe4);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CPY;

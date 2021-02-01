@@ -285,29 +285,15 @@ fn should_cycle_on_clv_implied_operation() {
 }
 
 #[test]
-fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
-    let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
-        register::GPRegister::ACC,
-        register::GeneralPurpose::with_value(0x00),
-    );
-
-    let state = cpu.run(2).unwrap();
-    assert_eq!(0x6002, state.pc.read());
-    assert_eq!(
-        (state.ps.carry, state.ps.negative, state.ps.zero),
-        (false, false, false)
-    );
-}
-
-#[test]
-fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
-    let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
+fn should_cycle_on_cmp_absolute_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xcd, 0xff, 0x00]).with_gp_register(
         register::GPRegister::ACC,
         register::GeneralPurpose::with_value(0xff),
     );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
 
-    let state = cpu.run(2).unwrap();
-    assert_eq!(0x6002, state.pc.read());
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
     assert_eq!(
         (state.ps.carry, state.ps.negative, state.ps.zero),
         (true, false, true)
@@ -415,22 +401,6 @@ fn should_cycle_on_cmp_absolute_indexed_with_y_operation_with_equal_operands() {
 }
 
 #[test]
-fn should_cycle_on_cmp_absolute_operation_with_equal_operands() {
-    let mut cpu = generate_test_cpu_with_instructions(vec![0xcd, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::ACC,
-        register::GeneralPurpose::with_value(0xff),
-    );
-    cpu.address_map.write(0x00ff, 0xff).unwrap();
-
-    let state = cpu.run(4).unwrap();
-    assert_eq!(0x6003, state.pc.read());
-    assert_eq!(
-        (state.ps.carry, state.ps.negative, state.ps.zero),
-        (true, false, true)
-    );
-}
-
-#[test]
 fn should_cycle_on_cmp_indirect_y_indexed_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd1, 0x01, 0x00])
         .with_gp_register(
@@ -473,6 +443,36 @@ fn should_cycle_on_cmp_indirect_y_indexed_operation_with_inequal_operands() {
     assert_eq!(
         (state.ps.carry, state.ps.negative, state.ps.zero),
         (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0x00),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
+        register::GPRegister::ACC,
+        register::GeneralPurpose::with_value(0xff),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
     );
 }
 
@@ -589,6 +589,100 @@ fn should_cycle_on_cmp_zeropage_indexed_with_x_operation_with_equal_operands() {
     cpu.address_map.write(0x00ff, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpx_absolute_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xec, 0xff, 0x00]).with_gp_register(
+        register::GPRegister::X,
+        register::GeneralPurpose::with_value(0xff),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpx_absolute_operation_with_inequal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xec, 0xff, 0x00]).with_gp_register(
+        register::GPRegister::X,
+        register::GeneralPurpose::with_value(0x00),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpx_immediate_operation_with_inequal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xe0, 0xff]).with_gp_register(
+        register::GPRegister::X,
+        register::GeneralPurpose::with_value(0x00),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpx_immediate_operation_with_equal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xe0, 0xff]).with_gp_register(
+        register::GPRegister::X,
+        register::GeneralPurpose::with_value(0xff),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpx_zeropage_operation_with_inequal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xe4, 0xff]).with_gp_register(
+        register::GPRegister::X,
+        register::GeneralPurpose::with_value(0x00),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpx_zeropage_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xe4, 0xff]).with_gp_register(
+        register::GPRegister::X,
+        register::GeneralPurpose::with_value(0xff),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(3).unwrap();
     assert_eq!(0x6002, state.pc.read());
     assert_eq!(
         (state.ps.carry, state.ps.negative, state.ps.zero),

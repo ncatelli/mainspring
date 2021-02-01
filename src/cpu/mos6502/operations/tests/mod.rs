@@ -155,6 +155,24 @@ fn should_parse_zeropage_address_mode_cmp_instruction() {
 }
 
 #[test]
+fn should_parse_absolute_address_mode_cpx_instruction() {
+    let bytecode = [0xec, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_immediate_address_mode_cpx_instruction() {
+    let bytecode = [0xe0, 0x00, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
+fn should_parse_zeropage_address_mode_cpx_instruction() {
+    let bytecode = [0xe4, 0x34, 0x00];
+    gen_op_parse_assertion!(&bytecode);
+}
+
+#[test]
 fn should_parse_absolute_address_mode_dec_instruction() {
     let bytecode = [0xce, 0x00, 0x00];
     gen_op_parse_assertion!(&bytecode);

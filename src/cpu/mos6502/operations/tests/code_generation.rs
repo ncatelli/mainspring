@@ -707,7 +707,7 @@ fn should_generate_immediate_address_mode_cpx_machine_code() {
 fn should_generate_zeropage_address_mode_cpx_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation = Instruction::new(mnemonic::CPY, address_mode::ZeroPage::default()).into();
+    let op: Operation = Instruction::new(mnemonic::CPX, address_mode::ZeroPage::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(

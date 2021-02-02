@@ -247,6 +247,35 @@ fn bne_implied_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
+fn bvs_implied_operation_should_jump_when_overflow_set() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x70, 0x08]);
+    cpu.ps.overflow = false;
+
+    // 3 cycles with branch penalty
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6008, state.pc.read());
+}
+
+#[test]
+fn bvs_implied_operation_should_incur_penalty_at_page_boundary() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x70, 0xf8]);
+    cpu.ps.overflow = false;
+
+    // 4 cycles with branch penalty
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x5ff8, state.pc.read());
+}
+
+#[test]
+fn bvs_implied_operation_should_not_jump_when_overflow_unset() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x70, 0x08]);
+    cpu.ps.overflow = true;
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+}
+
+#[test]
 fn should_cycle_on_clc_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x18]);
 

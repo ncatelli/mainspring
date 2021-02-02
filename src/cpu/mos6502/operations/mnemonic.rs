@@ -197,8 +197,11 @@ pub struct BMI;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BVC;
 
+/// Branch on Overflow. Follows branch when the overflow flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BVS;
+
+generate_mnemonic_parser_and_offset!(BVS, 0x70);
 
 // Transfer
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

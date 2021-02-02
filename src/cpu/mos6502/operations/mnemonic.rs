@@ -156,8 +156,11 @@ pub struct CPX;
 
 generate_mnemonic_parser_and_offset!(CPX, 0xec, 0xe0, 0xe4);
 
+/// Compare memory with X register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CPY;
+
+generate_mnemonic_parser_and_offset!(CPY, 0xcc, 0xc0, 0xc4);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BIT;

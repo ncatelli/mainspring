@@ -691,6 +691,100 @@ fn should_cycle_on_cpx_zeropage_operation_with_equal_operands() {
 }
 
 #[test]
+fn should_cycle_on_cpy_absolute_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xcc, 0xff, 0x00]).with_gp_register(
+        register::GPRegister::Y,
+        register::GeneralPurpose::with_value(0xff),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpy_absolute_operation_with_inequal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xcc, 0xff, 0x00]).with_gp_register(
+        register::GPRegister::Y,
+        register::GeneralPurpose::with_value(0x00),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpy_immediate_operation_with_inequal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc0, 0xff]).with_gp_register(
+        register::GPRegister::Y,
+        register::GeneralPurpose::with_value(0x00),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpy_immediate_operation_with_equal_operands() {
+    let cpu = generate_test_cpu_with_instructions(vec![0xc0, 0xff]).with_gp_register(
+        register::GPRegister::Y,
+        register::GeneralPurpose::with_value(0xff),
+    );
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpy_zeropage_operation_with_inequal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xc4, 0xff]).with_gp_register(
+        register::GPRegister::Y,
+        register::GeneralPurpose::with_value(0x00),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_cpy_zeropage_operation_with_equal_operands() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0xc4, 0xff]).with_gp_register(
+        register::GPRegister::Y,
+        register::GeneralPurpose::with_value(0xff),
+    );
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, true)
+    );
+}
+
+#[test]
 fn should_cycle_on_dec_absolute_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xce, 0xff, 0x01]);
 

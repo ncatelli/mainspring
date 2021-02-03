@@ -10,6 +10,18 @@ macro_rules! gen_op_parse_assertion {
     };
 }
 
+macro_rules! gen_parse_test {
+    ($($name:ident: $opcode:expr,)*) => {
+        $(
+            #[test]
+            fn $name() {
+                let bytecode: [u8; 3] = [$opcode, 0x00, 0x00];
+                assert!($crate::cpu::mos6502::operations::Operation::try_from(&bytecode).is_ok())
+            }
+        )*
+    };
+}
+
 #[test]
 fn should_parse_absolute_address_mode_and_instruction() {
     let bytecode = [0x2d, 0x00, 0x00];
@@ -82,52 +94,17 @@ fn should_parse_relative_address_mode_bne_instruction() {
     gen_op_parse_assertion!(&bytecode);
 }
 
-#[test]
-fn should_parse_relative_address_mode_bvs_instruction() {
-    let bytecode = [0x70, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
+gen_parse_test! {
+    should_parse_relative_address_mode_bvc_instruction: 0x50,
+    should_parse_relative_address_mode_bvs_instruction: 0x70,
+    should_parse_implied_address_mode_clc_instruction:  0x18,
+    should_parse_implied_address_mode_cld_instruction:  0xd8,
+    should_parse_implied_address_mode_cli_instruction:  0x58,
+    should_parse_implied_address_mode_clv_instruction:  0xb8,
+    should_parse_immediate_address_mode_cmp_instruction:  0xc9,
+    should_parse_absolute_address_mode_cmp_instruction:  0xcd,
+    should_parse_absolute_indexed_with_x_address_mode_cmp_instruction: 0xdd,
 
-#[test]
-fn should_parse_implied_address_mode_clc_instruction() {
-    let bytecode = [0x18, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
-
-#[test]
-fn should_parse_implied_address_mode_cld_instruction() {
-    let bytecode = [0xd8, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
-
-#[test]
-fn should_parse_implied_address_mode_cli_instruction() {
-    let bytecode = [0x58, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
-
-#[test]
-fn should_parse_implied_address_mode_clv_instruction() {
-    let bytecode = [0xb8, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
-
-#[test]
-fn should_parse_immediate_address_mode_cmp_instruction() {
-    let bytecode = [0xc9, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
-
-#[test]
-fn should_parse_absolute_address_mode_cmp_instruction() {
-    let bytecode = [0xcd, 0x00, 0x00];
-    gen_op_parse_assertion!(&bytecode);
-}
-
-#[test]
-fn should_parse_absolute_indexed_with_x_address_mode_cmp_instruction() {
-    let bytecode = [0xdd, 0x34, 0x12];
-    gen_op_parse_assertion!(&bytecode);
 }
 
 #[test]

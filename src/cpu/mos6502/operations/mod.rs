@@ -327,6 +327,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::BCS, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BEQ, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BNE, address_mode::Relative::default()),
+            inst_to_operation!(mnemonic::BMI, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BVC, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::BVS, address_mode::Relative::default()),
             inst_to_operation!(mnemonic::CLC, address_mode::Implied),
@@ -1157,6 +1158,18 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::BEQ, address_mode::Relati
         let offset = self.address_mode.unwrap();
 
         branch_on_case(cpu.ps.zero, offset, self.offset(), self.cycles(), cpu)
+    }
+}
+
+// BMI
+
+gen_instruction_cycles_and_parser!(mnemonic::BMI, address_mode::Relative, 0x30, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BMI, address_mode::Relative> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let offset = self.address_mode.unwrap();
+
+        branch_on_case(cpu.ps.negative, offset, self.offset(), self.cycles(), cpu)
     }
 }
 

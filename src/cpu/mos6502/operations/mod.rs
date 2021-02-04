@@ -45,6 +45,24 @@ impl From<u16> for Page {
     }
 }
 
+/// Takes two numerical values returning whether the bit is set for a specific
+/// place.
+macro_rules! bit_is_set {
+    ($value:expr, $place:expr) => {
+        (($value >> $place) & 1) == 1
+    };
+}
+
+/// This Trait provides addition that that signifies the overflow of a twos complement number.
+trait AddTwosComplement<Rhs = Self> {
+    type Output;
+
+    /// Adds the left and right hand sides, returning the value and the boolean
+    /// representation of the formula
+    /// (!LHSMSB & !RHSMSB & C) || (LHSMSB & RHSMSB & !C).
+    fn twos_complement_add(self, rhs: Rhs, carry: bool) -> (Self::Output, bool);
+}
+
 /// Represents a response that will yield a result that might or might not
 /// result in wrapping, overflow or negative values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -101,6 +119,19 @@ impl std::ops::Add for Operand<u8> {
         let zero = sum == 0;
 
         Self::with_flags(sum, carry, negative, zero)
+    }
+}
+
+impl AddTwosComplement for Operand<u8> {
+    type Output = Self;
+
+    fn twos_complement_add(self, other: Self, carry: bool) -> (Self::Output, bool) {
+        let sum = self + other;
+        let (lhs, rhs) = (self.unwrap(), other.unwrap());
+        let overflow = (!bit_is_set!(lhs, 7) && !bit_is_set!(rhs, 7) && carry)
+            || (bit_is_set!(lhs, 7) && bit_is_set!(rhs, 7) && !carry);
+
+        (sum, overflow)
     }
 }
 
@@ -509,20 +540,6 @@ macro_rules! gen_instruction_cycles_and_parser {
 
 // Arithmetic Operations
 
-macro_rules! bit_is_set {
-    ($value:expr, $place:expr) => {
-        (($value >> $place) & 1) == 1
-    };
-}
-
-/// This method returns a boolean representing if the addition of two bytes
-/// results in a twos-complement overflow. Could be represented by the following
-/// formula (!LHS7 & !RHS7 & C6) || (LHS7 & RHS7 & !C6).
-fn is_twos_complement_overflowing_add(lhs: u8, rhs: u8, carry: bool) -> bool {
-    (!bit_is_set!(lhs, 7) && !bit_is_set!(rhs, 7) && carry)
-        || (bit_is_set!(lhs, 7) && bit_is_set!(rhs, 7) && !carry)
-}
-
 // ADC
 
 gen_instruction_cycles_and_parser!(mnemonic::ADC, address_mode::Immediate, 0x69, 2);
@@ -531,10 +548,9 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::Immedi
     fn generate(self, cpu: &MOS6502) -> MOps {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.address_mode.unwrap());
-        let value = lhs + rhs;
 
         // calculate overflow
-        let overflow = is_twos_complement_overflowing_add(lhs.unwrap(), rhs.unwrap(), cpu.ps.carry);
+        let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
 
         MOps::new(
             self.offset(),

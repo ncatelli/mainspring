@@ -17,8 +17,8 @@ use crate::cpu::{
 #[test]
 fn should_generate_immediate_address_mode_adc_machine_code() {
     let cpu =
-        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xc0));
-    let op: Operation = Instruction::new(mnemonic::ADC, address_mode::Immediate(0xc4)).into();
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80));
+    let op: Operation = Instruction::new(mnemonic::ADC, address_mode::Immediate(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
@@ -27,10 +27,10 @@ fn should_generate_immediate_address_mode_adc_machine_code() {
             2,
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x84)
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x7f)
             ]
         ),
         mc

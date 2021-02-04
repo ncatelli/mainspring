@@ -51,17 +51,15 @@ impl From<u16> for Page {
 struct Operand<T> {
     carry: bool,
     negative: bool,
-    overflow: bool,
     zero: bool,
     inner: T,
 }
 
 impl<T> Operand<T> {
-    fn with_flags(inner: T, carry: bool, negative: bool, overflow: bool, zero: bool) -> Self {
+    fn with_flags(inner: T, carry: bool, negative: bool, zero: bool) -> Self {
         Self {
             carry,
             negative,
-            overflow,
             zero,
             inner,
         }
@@ -87,7 +85,6 @@ impl Operand<u8> {
         Self {
             carry: false,
             negative: ((inner >> 7) & 1) == 1, // most significant bit set
-            overflow: false,
             zero: inner == 0,
             inner,
         }
@@ -103,7 +100,7 @@ impl std::ops::Add for Operand<u8> {
         let negative = ((sum >> 7) & 1) == 1; // most significant bit set
         let zero = sum == 0;
 
-        Self::with_flags(sum, carry, negative, false, zero)
+        Self::with_flags(sum, carry, negative, zero)
     }
 }
 
@@ -116,7 +113,7 @@ impl std::ops::Sub for Operand<u8> {
         let negative = ((difference >> 7) & 1) == 1; // most significant bit set
         let zero = difference == 0;
 
-        Self::with_flags(difference, carry, negative, false, zero)
+        Self::with_flags(difference, carry, negative, zero)
     }
 }
 
@@ -512,6 +509,20 @@ macro_rules! gen_instruction_cycles_and_parser {
 
 // Arithmetic Operations
 
+macro_rules! bit_is_set {
+    ($value:expr, $place:expr) => {
+        (($value >> $place) & 1) == 1
+    };
+}
+
+/// This method returns a boolean representing if the addition of two bytes
+/// results in a twos-complimentary overflow. Could be represented by the
+/// following formula (!LHS7 & !RHS7 & C6) || (LHS7 & RHS7 & !C6).
+fn is_an_overflowing_add(lhs: u8, rhs: u8, carry: bool) -> bool {
+    (!bit_is_set!(lhs, 7) && !bit_is_set!(rhs, 7) && carry)
+        || (bit_is_set!(lhs, 7) && bit_is_set!(rhs, 7) && !carry)
+}
+
 // ADC
 
 gen_instruction_cycles_and_parser!(mnemonic::ADC, address_mode::Immediate, 0x69, 2);
@@ -522,13 +533,16 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::Immedi
         let rhs = Operand::new(self.address_mode.unwrap());
         let value = lhs + rhs;
 
+        // calculate overflow
+        let overflow = is_an_overflowing_add(lhs.unwrap(), rhs.unwrap(), cpu.ps.carry);
+
         MOps::new(
             self.offset(),
             self.cycles(),
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, value.overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],

@@ -5,8 +5,8 @@ use parcel::{parsers::byte::any_byte, MatchStatus, ParseResult, Parser};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Accumulator;
 
-/// Implied address address mode. This is signified by no address mode
-/// arguments. An example instruction with an implied address mode would be.
+/// Implied address addressing mode. This is signified by no addressing mode
+/// arguments. An example instruction with an implied addressing mode would be.
 /// `nop`
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Implied;
@@ -226,7 +226,7 @@ impl Offset for AbsoluteIndexedWithX {
 }
 
 impl AbsoluteIndexedWithX {
-    /// Unpacks the enclosed address from a AbsoluteIndexedWithX address mode
+    /// Unpacks the enclosed address from a AbsoluteIndexedWithX addressing mode
     /// into a corresponding u16 address.
     pub fn unwrap(self) -> u16 {
         self.into()
@@ -267,7 +267,7 @@ impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
 }
 
 impl AbsoluteIndexedWithY {
-    /// Unpacks the enclosed address from a AbsoluteIndexedWithY address mode
+    /// Unpacks the enclosed address from a AbsoluteIndexedWithY addressing mode
     /// into a corresponding u16 address.
     pub fn unwrap(self) -> u16 {
         self.into()
@@ -295,8 +295,8 @@ impl<'a> Parser<'a, &'a [u8], XIndexedIndirect> for XIndexedIndirect {
 }
 
 impl XIndexedIndirect {
-    /// Unpacks the enclosed address from a XIndexedIndirect address mode into
-    /// a corresponding u8 address.
+    /// Unpacks the enclosed address from a XIndexedIndirect addressing mode
+    /// into a corresponding u8 address.
     pub fn unwrap(self) -> u8 {
         self.into()
     }
@@ -323,8 +323,8 @@ impl<'a> Parser<'a, &'a [u8], IndirectYIndexed> for IndirectYIndexed {
 }
 
 impl IndirectYIndexed {
-    /// Unpacks the enclosed address from a IndirectYIndexed address mode into
-    /// a corresponding u8 address.
+    /// Unpacks the enclosed address from a IndirectYIndexed addressing mode
+    /// into a corresponding u8 address.
     pub fn unwrap(self) -> u8 {
         self.into()
     }

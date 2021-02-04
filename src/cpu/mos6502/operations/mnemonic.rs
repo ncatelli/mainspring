@@ -69,8 +69,12 @@ pub struct STY;
 generate_mnemonic_parser_and_offset!(STY, 0x8c, 0x84, 0x94);
 
 // Arithmetic
+
+/// Add Memory to Accumulator with carry.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ADC;
+
+generate_mnemonic_parser_and_offset!(ADC, 0x69);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SBC;

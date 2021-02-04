@@ -51,15 +51,17 @@ impl From<u16> for Page {
 struct Operand<T> {
     carry: bool,
     negative: bool,
+    overflow: bool,
     zero: bool,
     inner: T,
 }
 
 impl<T> Operand<T> {
-    fn with_flags(inner: T, carry: bool, negative: bool, zero: bool) -> Self {
+    fn with_flags(inner: T, carry: bool, negative: bool, overflow: bool, zero: bool) -> Self {
         Self {
             carry,
             negative,
+            overflow,
             zero,
             inner,
         }
@@ -85,6 +87,7 @@ impl Operand<u8> {
         Self {
             carry: false,
             negative: ((inner >> 7) & 1) == 1, // most significant bit set
+            overflow: false,
             zero: inner == 0,
             inner,
         }
@@ -100,7 +103,7 @@ impl std::ops::Add for Operand<u8> {
         let negative = ((sum >> 7) & 1) == 1; // most significant bit set
         let zero = sum == 0;
 
-        Self::with_flags(sum, carry, negative, zero)
+        Self::with_flags(sum, carry, negative, false, zero)
     }
 }
 
@@ -113,7 +116,7 @@ impl std::ops::Sub for Operand<u8> {
         let negative = ((difference >> 7) & 1) == 1; // most significant bit set
         let zero = difference == 0;
 
-        Self::with_flags(difference, carry, negative, zero)
+        Self::with_flags(difference, carry, negative, false, zero)
     }
 }
 
@@ -315,6 +318,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::ADC, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::AND, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithY::default()),
@@ -504,6 +508,32 @@ macro_rules! gen_instruction_cycles_and_parser {
             }
         }
     };
+}
+
+// Arithmetic Operations
+
+// ADC
+
+gen_instruction_cycles_and_parser!(mnemonic::ADC, address_mode::Immediate, 0x69, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::Immediate> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(self.address_mode.unwrap());
+        let value = lhs + rhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, value.overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
 }
 
 // Bit-wise Operations

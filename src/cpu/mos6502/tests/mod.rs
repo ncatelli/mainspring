@@ -151,6 +151,52 @@ fn should_cycle_on_adc_absolute_indexed_with_y_operation_without_overflow() {
 }
 
 #[test]
+fn should_cycle_on_adc_indirect_y_indexed_operation_with_overflow() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x71, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0xff).unwrap();
+
+    let state = cpu.run(5).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x7f, state.acc.read());
+    assert_eq!(
+        (
+            state.ps.carry,
+            state.ps.negative,
+            state.ps.overflow,
+            state.ps.zero
+        ),
+        (true, false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_adc_indirect_y_indexed_operation_without_overflow() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x71, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x50).unwrap();
+
+    let state = cpu.run(5).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x60, state.acc.read());
+    assert_eq!(
+        (
+            state.ps.carry,
+            state.ps.negative,
+            state.ps.overflow,
+            state.ps.zero
+        ),
+        (false, false, false, false)
+    );
+}
+
+#[test]
 fn should_cycle_on_adc_immediate_operation_with_overflow() {
     let cpu = generate_test_cpu_with_instructions(vec![0x69, 0xff])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80));
@@ -166,6 +212,52 @@ fn should_cycle_on_adc_immediate_operation_with_overflow() {
             state.ps.zero
         ),
         (true, false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_adc_x_indexed_indirect_operation_with_overflow() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x61, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0xff).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x7f, state.acc.read());
+    assert_eq!(
+        (
+            state.ps.carry,
+            state.ps.negative,
+            state.ps.overflow,
+            state.ps.zero
+        ),
+        (true, false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_adc_x_indexed_indirect_operation_without_overflow() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x61, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0x50).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x60, state.acc.read());
+    assert_eq!(
+        (
+            state.ps.carry,
+            state.ps.negative,
+            state.ps.overflow,
+            state.ps.zero
+        ),
+        (false, false, false, false)
     );
 }
 

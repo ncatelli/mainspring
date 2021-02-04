@@ -188,8 +188,11 @@ pub struct BEQ;
 
 generate_mnemonic_parser_and_offset!(BEQ, 0xf0);
 
+// Branch on positive. Follows branch when the negative flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BPL;
+
+generate_mnemonic_parser_and_offset!(BPL, 0x10);
 
 /// Branch on negative. Follows branch when the negative flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

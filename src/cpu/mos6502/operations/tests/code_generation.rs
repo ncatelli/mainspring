@@ -62,6 +62,31 @@ fn should_generate_immediate_address_mode_adc_machine_code() {
     );
 }
 
+#[test]
+fn should_generate_zeropage_address_mode_adc_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80));
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+    let op: Operation = Instruction::new(mnemonic::ADC, address_mode::ZeroPage(0xff)).into();
+
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x7f)
+            ]
+        ),
+        mc
+    );
+}
+
 // AND
 
 #[test]

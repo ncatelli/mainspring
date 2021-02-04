@@ -348,6 +348,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
         parcel::one_of(vec![
             inst_to_operation!(mnemonic::ADC, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::ADC, address_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::ADC, address_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::AND, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithY::default()),
@@ -573,6 +574,31 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::Immedi
     fn generate(self, cpu: &MOS6502) -> MOps {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.address_mode.unwrap());
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::ADC, address_mode::ZeroPage, 0x65, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = add_index_to_zeropage_address(self.address_mode.unwrap(), 0);
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, addr, 0);
 
         // calculate overflow
         let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);

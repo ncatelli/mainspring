@@ -191,8 +191,11 @@ generate_mnemonic_parser_and_offset!(BEQ, 0xf0);
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BPL;
 
+/// Branch on negative. Follows branch when the negative flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BMI;
+
+generate_mnemonic_parser_and_offset!(BMI, 30);
 
 /// Branch on Overflow clear. Follows branch when overflow flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

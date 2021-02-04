@@ -131,7 +131,7 @@ fn should_cycle_on_and_zeropage_indexed_with_x_operation() {
 }
 
 #[test]
-fn bcc_implied_operation_should_jump_when_zero_set() {
+fn bcc_relative_operation_should_jump_when_zero_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x90, 0x08]);
     cpu.ps.carry = false;
 
@@ -141,7 +141,7 @@ fn bcc_implied_operation_should_jump_when_zero_set() {
 }
 
 #[test]
-fn bcc_implied_operation_should_incur_penalty_at_page_boundary() {
+fn bcc_relative_operation_should_incur_penalty_at_page_boundary() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x90, 0xf8]);
     cpu.ps.carry = false;
 
@@ -151,7 +151,7 @@ fn bcc_implied_operation_should_incur_penalty_at_page_boundary() {
 }
 
 #[test]
-fn bcc_implied_operation_should_not_jump_when_zero_unset() {
+fn bcc_relative_operation_should_not_jump_when_zero_unset() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x90, 0x08]);
     cpu.ps.carry = true;
 
@@ -160,7 +160,7 @@ fn bcc_implied_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
-fn bcs_implied_operation_should_jump_when_zero_set() {
+fn bcs_relative_operation_should_jump_when_zero_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb0, 0x08]);
     cpu.ps.carry = true;
 
@@ -170,7 +170,7 @@ fn bcs_implied_operation_should_jump_when_zero_set() {
 }
 
 #[test]
-fn bcs_implied_operation_should_incur_penalty_at_page_boundary() {
+fn bcs_relative_operation_should_incur_penalty_at_page_boundary() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb0, 0xf8]);
     cpu.ps.carry = true;
 
@@ -180,7 +180,7 @@ fn bcs_implied_operation_should_incur_penalty_at_page_boundary() {
 }
 
 #[test]
-fn bcs_implied_operation_should_not_jump_when_zero_unset() {
+fn bcs_relative_operation_should_not_jump_when_zero_unset() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb0, 0x08]);
     cpu.ps.carry = false;
 
@@ -189,7 +189,7 @@ fn bcs_implied_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
-fn beq_implied_operation_should_jump_when_zero_set() {
+fn beq_relative_operation_should_jump_when_zero_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf0, 0x08]);
     cpu.ps.zero = true;
 
@@ -199,7 +199,7 @@ fn beq_implied_operation_should_jump_when_zero_set() {
 }
 
 #[test]
-fn beq_implied_operation_should_incur_penalty_at_page_boundary() {
+fn beq_relative_operation_should_incur_penalty_at_page_boundary() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf0, 0xf8]);
     cpu.ps.zero = true;
 
@@ -209,7 +209,7 @@ fn beq_implied_operation_should_incur_penalty_at_page_boundary() {
 }
 
 #[test]
-fn beq_implied_operation_should_not_jump_when_zero_unset() {
+fn beq_relative_operation_should_not_jump_when_zero_unset() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf0, 0x08]);
     cpu.ps.zero = false;
 
@@ -218,7 +218,36 @@ fn beq_implied_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
-fn bne_implied_operation_should_jump_when_zero_set() {
+fn bmi_relative_operation_should_jump_when_zero_set() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x30, 0x08]);
+    cpu.ps.negative = true;
+
+    // 3 cycles with branch penalty
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6008, state.pc.read());
+}
+
+#[test]
+fn bmi_relative_operation_should_incur_penalty_at_page_boundary() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x30, 0xf8]);
+    cpu.ps.negative = true;
+
+    // 4 cycles with branch penalty
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x5ff8, state.pc.read());
+}
+
+#[test]
+fn bmi_relative_operation_should_not_jump_when_zero_unset() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x30, 0x08]);
+    cpu.ps.negative = false;
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+}
+
+#[test]
+fn bne_relative_operation_should_jump_when_zero_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd0, 0x08]);
     cpu.ps.zero = false;
 
@@ -228,7 +257,7 @@ fn bne_implied_operation_should_jump_when_zero_set() {
 }
 
 #[test]
-fn bne_implied_operation_should_incur_penalty_at_page_boundary() {
+fn bne_relative_operation_should_incur_penalty_at_page_boundary() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd0, 0xf8]);
     cpu.ps.zero = false;
 
@@ -238,7 +267,7 @@ fn bne_implied_operation_should_incur_penalty_at_page_boundary() {
 }
 
 #[test]
-fn bne_implied_operation_should_not_jump_when_zero_unset() {
+fn bne_relative_operation_should_not_jump_when_zero_unset() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd0, 0x08]);
     cpu.ps.zero = true;
 
@@ -247,7 +276,7 @@ fn bne_implied_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
-fn bvc_implied_operation_should_jump_when_overflow_set() {
+fn bvc_relative_operation_should_jump_when_overflow_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x50, 0x08]);
     cpu.ps.overflow = false;
 
@@ -257,7 +286,7 @@ fn bvc_implied_operation_should_jump_when_overflow_set() {
 }
 
 #[test]
-fn bvc_implied_operation_should_incur_penalty_at_page_boundary() {
+fn bvc_relative_operation_should_incur_penalty_at_page_boundary() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x50, 0xf8]);
     cpu.ps.overflow = false;
 
@@ -267,7 +296,7 @@ fn bvc_implied_operation_should_incur_penalty_at_page_boundary() {
 }
 
 #[test]
-fn bvc_implied_operation_should_not_jump_when_overflow_unset() {
+fn bvc_relative_operation_should_not_jump_when_overflow_unset() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x50, 0x08]);
     cpu.ps.overflow = true;
 
@@ -276,7 +305,7 @@ fn bvc_implied_operation_should_not_jump_when_overflow_unset() {
 }
 
 #[test]
-fn bvs_implied_operation_should_jump_when_overflow_set() {
+fn bvs_relative_operation_should_jump_when_overflow_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x70, 0x08]);
     cpu.ps.overflow = true;
 
@@ -286,7 +315,7 @@ fn bvs_implied_operation_should_jump_when_overflow_set() {
 }
 
 #[test]
-fn bvs_implied_operation_should_incur_penalty_at_page_boundary() {
+fn bvs_relative_operation_should_incur_penalty_at_page_boundary() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x70, 0xf8]);
     cpu.ps.overflow = true;
 
@@ -296,7 +325,7 @@ fn bvs_implied_operation_should_incur_penalty_at_page_boundary() {
 }
 
 #[test]
-fn bvs_implied_operation_should_not_jump_when_overflow_unset() {
+fn bvs_relative_operation_should_not_jump_when_overflow_unset() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x70, 0x08]);
     cpu.ps.overflow = false;
 

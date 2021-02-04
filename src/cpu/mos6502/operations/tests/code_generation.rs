@@ -370,6 +370,61 @@ fn should_generate_beq_machine_code_with_no_jump() {
     assert_eq!(MOps::new(2, 2, vec![]), mc);
 }
 
+// BMI
+
+#[test]
+fn should_generate_bvs_machine_code_with_branch_penalty() {
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+    cpu.ps.negative = true;
+
+    let op: Operation = Instruction::new(mnemonic::BMI, address_mode::Relative(8)).into();
+    let mc = op.generate(&cpu);
+
+    // pc - relative address - inst size
+    let pc = cpu.pc.read() + 8 - 2;
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_bvs_machine_code_with_branch_and_page_penalty() {
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+    cpu.ps.negative = true;
+
+    let op: Operation = Instruction::new(mnemonic::BMI, address_mode::Relative(-8)).into();
+    let mc = op.generate(&cpu);
+
+    // pc - relative address - inst size
+    let pc = cpu.pc.read() - 8 - 2;
+
+    assert_eq!(
+        MOps::new(
+            2,
+            4,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_bvs_machine_code_with_no_jump() {
+    let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
+    cpu.ps.negative = false;
+
+    let op: Operation = Instruction::new(mnemonic::BMI, address_mode::Relative(-8)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(MOps::new(2, 2, vec![]), mc);
+}
+
 // BNE
 
 #[test]

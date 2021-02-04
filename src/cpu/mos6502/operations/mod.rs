@@ -516,9 +516,9 @@ macro_rules! bit_is_set {
 }
 
 /// This method returns a boolean representing if the addition of two bytes
-/// results in a twos-complimentary overflow. Could be represented by the
-/// following formula (!LHS7 & !RHS7 & C6) || (LHS7 & RHS7 & !C6).
-fn is_an_overflowing_add(lhs: u8, rhs: u8, carry: bool) -> bool {
+/// results in a twos-complement overflow. Could be represented by the following
+/// formula (!LHS7 & !RHS7 & C6) || (LHS7 & RHS7 & !C6).
+fn is_twos_complement_overflowing_add(lhs: u8, rhs: u8, carry: bool) -> bool {
     (!bit_is_set!(lhs, 7) && !bit_is_set!(rhs, 7) && carry)
         || (bit_is_set!(lhs, 7) && bit_is_set!(rhs, 7) && !carry)
 }
@@ -534,7 +534,7 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::Immedi
         let value = lhs + rhs;
 
         // calculate overflow
-        let overflow = is_an_overflowing_add(lhs.unwrap(), rhs.unwrap(), cpu.ps.carry);
+        let overflow = is_twos_complement_overflowing_add(lhs.unwrap(), rhs.unwrap(), cpu.ps.carry);
 
         MOps::new(
             self.offset(),

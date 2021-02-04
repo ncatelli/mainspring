@@ -315,6 +315,7 @@ struct OperationParser;
 impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Operation> {
         parcel::one_of(vec![
+            inst_to_operation!(mnemonic::ADC, address_mode::Immediate::default()),
             inst_to_operation!(mnemonic::AND, address_mode::Absolute::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithX::default()),
             inst_to_operation!(mnemonic::AND, address_mode::AbsoluteIndexedWithY::default()),
@@ -504,6 +505,49 @@ macro_rules! gen_instruction_cycles_and_parser {
             }
         }
     };
+}
+
+// Arithmetic Operations
+
+macro_rules! bit_is_set {
+    ($value:expr, $place:expr) => {
+        (($value >> $place) & 1) == 1
+    };
+}
+
+/// This method returns a boolean representing if the addition of two bytes
+/// results in a twos-complement overflow. Could be represented by the following
+/// formula (!LHS7 & !RHS7 & C6) || (LHS7 & RHS7 & !C6).
+fn is_twos_complement_overflowing_add(lhs: u8, rhs: u8, carry: bool) -> bool {
+    (!bit_is_set!(lhs, 7) && !bit_is_set!(rhs, 7) && carry)
+        || (bit_is_set!(lhs, 7) && bit_is_set!(rhs, 7) && !carry)
+}
+
+// ADC
+
+gen_instruction_cycles_and_parser!(mnemonic::ADC, address_mode::Immediate, 0x69, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, address_mode::Immediate> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(self.address_mode.unwrap());
+        let value = lhs + rhs;
+
+        // calculate overflow
+        let overflow = is_twos_complement_overflowing_add(lhs.unwrap(), rhs.unwrap(), cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
 }
 
 // Bit-wise Operations

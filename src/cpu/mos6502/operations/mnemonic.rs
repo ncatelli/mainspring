@@ -74,7 +74,7 @@ generate_mnemonic_parser_and_offset!(STY, 0x8c, 0x84, 0x94);
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ADC;
 
-generate_mnemonic_parser_and_offset!(ADC, 0x69);
+generate_mnemonic_parser_and_offset!(ADC, 0x6d, 0x7d, 0x79, 0x71, 0x69, 0x61, 0x65, 0x75);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SBC;

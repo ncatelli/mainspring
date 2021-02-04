@@ -27,6 +27,46 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
 }
 
 #[test]
+fn should_cycle_on_adc_absolute_operation_with_overflow() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x6d, 0xff, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80));
+    cpu.address_map.write(0x00ff, 0xff).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x7f, state.acc.read());
+    assert_eq!(
+        (
+            state.ps.carry,
+            state.ps.negative,
+            state.ps.overflow,
+            state.ps.zero
+        ),
+        (true, false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_adc_absolute_operation_without_overflow() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x6d, 0xff, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10));
+    cpu.address_map.write(0x00ff, 0x50).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x60, state.acc.read());
+    assert_eq!(
+        (
+            state.ps.carry,
+            state.ps.negative,
+            state.ps.overflow,
+            state.ps.zero
+        ),
+        (false, false, false, false)
+    );
+}
+
+#[test]
 fn should_cycle_on_adc_immediate_operation_with_overflow() {
     let cpu = generate_test_cpu_with_instructions(vec![0x69, 0xff])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80));

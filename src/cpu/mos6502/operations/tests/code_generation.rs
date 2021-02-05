@@ -2587,6 +2587,261 @@ fn should_generate_implied_addressing_mode_plp_machine_code() {
     )
 }
 
+// SBC
+
+#[test]
+fn should_generate_absolute_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+
+    cpu.address_map.write(0x00ff, 0xb0).unwrap();
+    let op: Operation = Instruction::new(mnemonic::SBC, addressing_mode::Absolute(0x00ff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_x_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x00ff, 0xb0).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::SBC, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
+
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_y_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x00ff, 0xb0).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::SBC, addressing_mode::AbsoluteIndexedWithY(0x00fa)).into();
+
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_indirect_y_indexed_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x00, 0xfa).unwrap();
+    cpu.address_map.write(0x01, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0xb0).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::SBC, addressing_mode::IndirectYIndexed(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            5,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_immediate_addressing_mode_sbc_machine_code() {
+    let cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+
+    let op: Operation = Instruction::new(mnemonic::SBC, addressing_mode::Immediate(0xb0)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_x_indexed_indirect_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x05, 0xff).unwrap();
+    cpu.address_map.write(0x06, 0x00).unwrap();
+    cpu.address_map.write(0xff, 0xb0).unwrap(); // indirect addr
+
+    let op: Operation =
+        Instruction::new(mnemonic::SBC, addressing_mode::XIndexedIndirect(0x00)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            6,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x00ff, 0xb0).unwrap();
+    let op: Operation = Instruction::new(mnemonic::SBC, addressing_mode::ZeroPage(0xff)).into();
+
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_indexed_with_x_addressing_mode_sbc_machine_code() {
+    let mut cpu = MOS6502::default()
+        .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x50))
+        .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0xff, 0xb0).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::SBC, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
+
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0xa0)
+            ]
+        ),
+        mc
+    );
+}
+
 // SEC
 
 #[test]

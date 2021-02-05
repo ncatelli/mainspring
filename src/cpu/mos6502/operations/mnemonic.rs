@@ -76,8 +76,11 @@ pub struct ADC;
 
 generate_mnemonic_parser_and_offset!(ADC, 0x6d, 0x7d, 0x79, 0x71, 0x69, 0x61, 0x65, 0x75);
 
+/// subtract memory from Accumulator with borrow.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SBC;
+
+generate_mnemonic_parser_and_offset!(SBC, 0xed, 0xfd, 0xf9, 0xf1, 0xe9, 0xe1, 0xe5, 0xf5);
 
 /// Increment Memory by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

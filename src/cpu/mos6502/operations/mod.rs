@@ -63,6 +63,14 @@ trait AddTwosComplement<Rhs = Self> {
     fn twos_complement_add(self, rhs: Rhs, carry: bool) -> (Self::Output, bool);
 }
 
+/// This Trait provides twos-complement subtraction.
+trait SubTwosComplement<Rhs = Self> {
+    type Output;
+
+    /// subtracts the left and right hand sides returning a cary using twos complement
+    fn twos_complement_sub(self, rhs: Rhs, carry: bool) -> (Self::Output, bool);
+}
+
 /// Represents a response that will yield a result that might or might not
 /// result in wrapping, overflow or negative values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -125,6 +133,7 @@ impl std::ops::Add for Operand<u8> {
 impl AddTwosComplement for Operand<u8> {
     type Output = Self;
 
+    #[allow(clippy::nonminimal_bool)]
     fn twos_complement_add(self, other: Self, carry: bool) -> (Self::Output, bool) {
         let sum = self + other;
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
@@ -145,6 +154,16 @@ impl std::ops::Sub for Operand<u8> {
         let zero = difference == 0;
 
         Self::with_flags(difference, carry, negative, zero)
+    }
+}
+
+impl SubTwosComplement for Operand<u8> {
+    type Output = Self;
+
+    fn twos_complement_sub(self, other: Self, carry: bool) -> (Self::Output, bool) {
+        let carry_bit = carry as u8; // 1 if true 0 if false
+        let rhs_ones_complement = Operand::new(255 - other.unwrap()) + Operand::new(carry_bit);
+        self.twos_complement_add(rhs_ones_complement, carry)
     }
 }
 
@@ -355,9 +374,9 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
                 mnemonic::ADC,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_operation!(mnemonic::ADC, addressing_mode::XIndexedIndirect::default()),
-            inst_to_operation!(mnemonic::ADC, addressing_mode::Immediate::default()),
             inst_to_operation!(mnemonic::ADC, addressing_mode::IndirectYIndexed::default()),
+            inst_to_operation!(mnemonic::ADC, addressing_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::ADC, addressing_mode::XIndexedIndirect::default()),
             inst_to_operation!(mnemonic::ADC, addressing_mode::ZeroPage::default()),
             inst_to_operation!(
                 mnemonic::ADC,
@@ -519,6 +538,23 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::PHP, addressing_mode::Implied),
             inst_to_operation!(mnemonic::PLA, addressing_mode::Implied),
             inst_to_operation!(mnemonic::PLP, addressing_mode::Implied),
+            inst_to_operation!(mnemonic::SBC, addressing_mode::Absolute::default()),
+            inst_to_operation!(
+                mnemonic::SBC,
+                addressing_mode::AbsoluteIndexedWithX::default()
+            ),
+            inst_to_operation!(
+                mnemonic::SBC,
+                addressing_mode::AbsoluteIndexedWithY::default()
+            ),
+            inst_to_operation!(mnemonic::SBC, addressing_mode::IndirectYIndexed::default()),
+            inst_to_operation!(mnemonic::SBC, addressing_mode::Immediate::default()),
+            inst_to_operation!(mnemonic::SBC, addressing_mode::XIndexedIndirect::default()),
+            inst_to_operation!(mnemonic::SBC, addressing_mode::ZeroPage::default()),
+            inst_to_operation!(
+                mnemonic::SBC,
+                addressing_mode::ZeroPageIndexedWithX::default()
+            ),
             inst_to_operation!(mnemonic::STA, addressing_mode::Absolute::default()),
             inst_to_operation!(
                 mnemonic::STA,
@@ -867,6 +903,248 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, addressing_mode::Zer
 
         // calculate overflow
         let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// SBC
+
+gen_instruction_cycles_and_parser!(mnemonic::SBC, addressing_mode::Absolute, 0xed, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(
+    mnemonic::SBC,
+    addressing_mode::AbsoluteIndexedWithX,
+    0xFD,
+    4
+);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::AbsoluteIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.addressing_mode.unwrap();
+        let indexed_addr = add_index_to_address(addr, cpu.x.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, indexed_addr, 0);
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
+            1
+        } else {
+            0
+        };
+
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(
+    mnemonic::SBC,
+    addressing_mode::AbsoluteIndexedWithY,
+    0xF9,
+    4
+);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::AbsoluteIndexedWithY> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.addressing_mode.unwrap();
+        let indexed_addr = add_index_to_address(addr, cpu.y.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, indexed_addr, 0);
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
+            1
+        } else {
+            0
+        };
+
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::SBC, addressing_mode::IndirectYIndexed, 0xf1, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::IndirectYIndexed> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let zpage_base_addr = self.addressing_mode.unwrap();
+        let indirect_addr =
+            dereference_indirect_indexed_address(cpu, zpage_base_addr, cpu.y.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(cpu.address_map.read(indirect_addr));
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        // if the branch crosses a page boundary pay a 1 cycle penalty.
+        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
+            1
+        } else {
+            0
+        };
+
+        MOps::new(
+            self.offset(),
+            self.cycles() + branch_penalty,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::SBC, addressing_mode::Immediate, 0xe9, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::Immediate> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(self.addressing_mode.unwrap());
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::SBC, addressing_mode::XIndexedIndirect, 0xe1, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::XIndexedIndirect> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let indirect_addr =
+            dereference_indexed_indirect_address(cpu, self.addressing_mode.unwrap(), cpu.x.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(cpu.address_map.read(indirect_addr));
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::SBC, addressing_mode::ZeroPage, 0xe5, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), 0);
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, addr, 0);
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(
+    mnemonic::SBC,
+    addressing_mode::ZeroPageIndexedWithX,
+    0xf5,
+    4
+);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::ZeroPageIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.addressing_mode.unwrap();
+        let indexed_addr = add_index_to_zeropage_address(addr, cpu.x.read());
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, indexed_addr, 0);
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
 
         MOps::new(
             self.offset(),

@@ -63,6 +63,14 @@ trait AddTwosComplement<Rhs = Self> {
     fn twos_complement_add(self, rhs: Rhs, carry: bool) -> (Self::Output, bool);
 }
 
+/// This Trait provides twos-complement subtraction.
+trait SubTwosComplement<Rhs = Self> {
+    type Output;
+
+    /// subtracts the left and right hand sides returning a cary using twos complement
+    fn twos_complement_sub(self, rhs: Rhs, carry: bool) -> (Self::Output, bool);
+}
+
 /// Represents a response that will yield a result that might or might not
 /// result in wrapping, overflow or negative values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -145,6 +153,18 @@ impl std::ops::Sub for Operand<u8> {
         let zero = difference == 0;
 
         Self::with_flags(difference, carry, negative, zero)
+    }
+}
+
+impl SubTwosComplement for Operand<u8> {
+    type Output = Self;
+
+    fn twos_complement_sub(self, other: Self, carry: bool) -> (Self::Output, bool) {
+        let rhs_ones_complement =
+            Operand::new(255 - other.unwrap()) + Operand::new(if carry { 1 } else { 0 });
+        let (difference, overflow) = self.twos_complement_add(rhs_ones_complement, carry);
+
+        (difference, overflow)
     }
 }
 
@@ -519,6 +539,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::PHP, addressing_mode::Implied),
             inst_to_operation!(mnemonic::PLA, addressing_mode::Implied),
             inst_to_operation!(mnemonic::PLP, addressing_mode::Implied),
+            inst_to_operation!(mnemonic::SBC, addressing_mode::Immediate::default()),
             inst_to_operation!(mnemonic::STA, addressing_mode::Absolute::default()),
             inst_to_operation!(
                 mnemonic::STA,
@@ -867,6 +888,32 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ADC, addressing_mode::Zer
 
         // calculate overflow
         let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// SBC
+
+gen_instruction_cycles_and_parser!(mnemonic::SBC, addressing_mode::Immediate, 0xe9, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::SBC, addressing_mode::Immediate> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = Operand::new(self.addressing_mode.unwrap());
+
+        // calculate overflow
+        let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
 
         MOps::new(
             self.offset(),

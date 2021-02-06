@@ -184,7 +184,7 @@ impl<'a> Parser<'a, &'a [u8], Relative> for Relative {
 }
 
 impl Relative {
-    /// Unpacks the enclosed address from a Relative addressmode into a
+    /// Unpacks the enclosed address from a Relative addressing mode into a
     /// corresponding i8 address.
     pub fn unwrap(self) -> i8 {
         self.into()
@@ -211,6 +211,20 @@ impl<'a> Parser<'a, &'a [u8], Indirect> for Indirect {
         parcel::take_n(any_byte(), 2)
             .map(|b| Indirect(u16::from_le_bytes([b[0], b[1]])))
             .parse(input)
+    }
+}
+
+impl Indirect {
+    /// Unpacks the enclosed address from a Indirect addressing mode into a
+    /// corresponding u16 address.
+    pub fn unwrap(self) -> u16 {
+        self.into()
+    }
+}
+
+impl From<Indirect> for u16 {
+    fn from(src: Indirect) -> Self {
+        src.0
     }
 }
 

@@ -2,8 +2,20 @@ extern crate parcel;
 use crate::cpu::{Cyclable, Offset};
 use parcel::{parsers::byte::any_byte, MatchStatus, ParseResult, Parser};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Accumulator;
+
+impl Offset for Accumulator {
+    fn offset(&self) -> usize {
+        0
+    }
+}
+
+impl<'a> Parser<'a, &'a [u8], Accumulator> for Accumulator {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Accumulator> {
+        Ok(MatchStatus::Match((input, Accumulator)))
+    }
+}
 
 /// Implied address addressing mode. This is signified by no addressing mode
 /// arguments. An example instruction with an implied addressing mode would be.

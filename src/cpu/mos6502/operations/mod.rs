@@ -167,6 +167,18 @@ impl std::ops::BitXor for Operand<u8> {
     }
 }
 
+impl std::ops::Shr for Operand<u8> {
+    type Output = Self;
+
+    fn shr(self, other: Self) -> Self::Output {
+        let (lhs, rhs) = (self.unwrap(), other.unwrap());
+        let carry = bit_is_set!(lhs, 0); // if the lsb is set shift to carry
+        let value = Operand::new(lhs >> rhs);
+
+        Operand::with_flags(value.unwrap(), carry, value.negative, value.zero)
+    }
+}
+
 // addressing mode Unpackers
 
 /// Provides a wrapper around the operation of unpacking an addressing mode and
@@ -487,6 +499,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
                 mnemonic::LDY,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
+            inst_to_operation!(mnemonic::LSR, addressing_mode::Accumulator),
             inst_to_operation!(mnemonic::NOP, addressing_mode::Implied),
             inst_to_operation!(mnemonic::ORA, addressing_mode::Absolute::default()),
             inst_to_operation!(
@@ -1548,6 +1561,27 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::EOR, addressing_mode::Zer
             self.offset(),
             self.cycles(),
             vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// LSR
+
+gen_instruction_cycles_and_parser!(mnemonic::LSR, addressing_mode::Accumulator, 0x4a, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::Accumulator> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = Operand::new(cpu.acc.read()) >> Operand::new(1u8);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),

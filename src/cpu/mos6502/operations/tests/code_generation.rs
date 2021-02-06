@@ -1751,8 +1751,6 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
 
 #[test]
 fn should_generate_absolute_addressing_mode_jsr_machine_code() {
-    use std::num::Wrapping;
-
     let cpu = MOS6502::default();
     let addr = 0x0100;
     let op: Operation = Instruction::new(mnemonic::JSR, addressing_mode::Absolute(addr)).into();
@@ -1760,7 +1758,7 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
 
     let sph: u16 = 0x0100 + cpu.sp.read() as u16;
     let spl: u16 = 0x0100 + (cpu.sp.read() - 1) as u16;
-    let [pcl, pch] = (Wrapping(cpu.pc.read()) + Wrapping(2)).0.to_le_bytes();
+    let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
 
     assert_eq!(
         MOps::new(
@@ -2257,6 +2255,30 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ldy_machine_code() {
                     ByteRegisters::Y,
                     0xff // value at 0x05 in memory should be 0xff
                 )
+            ]
+        ),
+        mc
+    );
+}
+
+// LSR
+
+#[test]
+fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
+    let cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55));
+    let op: Operation = Instruction::new(mnemonic::LSR, addressing_mode::Accumulator).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            2,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x2a)
             ]
         ),
         mc

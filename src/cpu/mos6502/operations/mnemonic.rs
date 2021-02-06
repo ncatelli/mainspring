@@ -285,8 +285,11 @@ pub struct JMP;
 
 generate_mnemonic_parser_and_offset!(JMP, 0x4c, 0x6c);
 
+/// Jump to a new location saving the return address.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct JSR;
+
+generate_mnemonic_parser_and_offset!(JSR, 0x20);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct RTS;

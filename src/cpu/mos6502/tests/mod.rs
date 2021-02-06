@@ -1487,6 +1487,23 @@ fn should_cycle_on_jmp_indirect_operation() {
 }
 
 #[test]
+fn should_cycle_on_jsr_absolute_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x20, 0x50, 0x60]);
+
+    let sph = 0x1ffu16;
+    let spl = 0x1feu16;
+    let stack_base = 0x0100u16;
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6050, state.pc.read());
+    assert_eq!(0x01fd, stack_base.wrapping_add(state.sp.read() as u16));
+    assert_eq!(
+        (0x02, 0x60),
+        (state.address_map.read(spl), state.address_map.read(sph))
+    )
+}
+
+#[test]
 fn should_cycle_on_lda_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa9, 0xff, 0xa9, 0x0f]);
 

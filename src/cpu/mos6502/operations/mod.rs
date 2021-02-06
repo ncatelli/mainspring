@@ -477,6 +477,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::INY, addressing_mode::Implied),
             inst_to_operation!(mnemonic::JMP, addressing_mode::Absolute::default()),
             inst_to_operation!(mnemonic::JMP, addressing_mode::Indirect::default()),
+            inst_to_operation!(mnemonic::JSR, addressing_mode::Absolute::default()),
             inst_to_operation!(mnemonic::LDA, addressing_mode::Absolute::default()),
             inst_to_operation!(
                 mnemonic::LDA,
@@ -2603,13 +2604,14 @@ gen_instruction_cycles_and_parser!(mnemonic::JMP, addressing_mode::Absolute, 0x4
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, addressing_mode::Absolute> {
     fn generate(self, _: &MOS6502) -> MOps {
-        let addressing_mode::Absolute(addr) = self.addressing_mode;
+        let addr = self.addressing_mode.unwrap();
+
         MOps::new(
             self.offset(),
             self.cycles(),
             vec![gen_write_16bit_register_microcode!(
                 WordRegisters::PC,
-                addr - self.offset() as u16
+                addr.wrapping_sub(self.offset() as u16)
             )],
         )
     }
@@ -2619,17 +2621,50 @@ gen_instruction_cycles_and_parser!(mnemonic::JMP, addressing_mode::Indirect, 0x6
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, addressing_mode::Indirect> {
     fn generate(self, cpu: &MOS6502) -> MOps {
-        let addressing_mode::Indirect(indirect_addr) = self.addressing_mode;
+        let indirect_addr = self.addressing_mode.unwrap();
         let lsb = cpu.address_map.read(indirect_addr);
         let msb = cpu.address_map.read(indirect_addr + 1);
         let addr = u16::from_le_bytes([lsb, msb]);
+
         MOps::new(
             self.offset(),
             self.cycles(),
             vec![gen_write_16bit_register_microcode!(
                 WordRegisters::PC,
-                addr - self.offset() as u16
+                addr.wrapping_sub(self.offset() as u16)
             )],
+        )
+    }
+}
+
+// JSR
+
+gen_instruction_cycles_and_parser!(mnemonic::JSR, addressing_mode::Absolute, 0x20, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::JSR, addressing_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.addressing_mode.unwrap();
+
+        // grab the stack pointer and stack pointer - 1 for storing the PC
+        let sph: u16 = stack_pointer_from_byte_value(cpu.sp.read());
+        let spl: u16 = 0x0100 + cpu.sp.read().wrapping_sub(1) as u16;
+
+        // Add 2 to the program counter and grab as little-endian bytes.
+        let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_write_memory_microcode!(sph, pch),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_memory_microcode!(spl, pcl),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_16bit_register_microcode!(
+                    WordRegisters::PC,
+                    addr.wrapping_sub(self.offset() as u16)
+                ),
+            ],
         )
     }
 }

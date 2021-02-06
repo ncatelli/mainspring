@@ -1714,25 +1714,13 @@ fn should_generate_absolute_addressing_mode_jmp_machine_code() {
         MOps::new(
             3,
             3,
-            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            vec![gen_write_16bit_register_microcode!(
                 WordRegisters::PC,
                 addr - 3
-            ))]
+            )]
         ),
         mc
     );
-
-    assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![
-                Microcode::Write16bitRegister(Write16bitRegister::new(WordRegisters::PC, addr - 3)),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
-            ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
 }
 
 #[test]
@@ -1750,31 +1738,44 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
         MOps::new(
             3,
             5,
-            vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            vec![gen_write_16bit_register_microcode!(
                 WordRegisters::PC,
                 indirect_addr - 3
-            )),]
+            )]
         ),
         mc
     );
+}
 
-    // validate mops -> vector looks correct
+// JSR
+
+#[test]
+fn should_generate_absolute_addressing_mode_jsr_machine_code() {
+    use std::num::Wrapping;
+
+    let cpu = MOS6502::default();
+    let addr = 0x0100;
+    let op: Operation = Instruction::new(mnemonic::JSR, addressing_mode::Absolute(addr)).into();
+    let mc = op.generate(&cpu);
+
+    let sph: u16 = 0x0100 + cpu.sp.read() as u16;
+    let spl: u16 = 0x0100 + (cpu.sp.read() - 1) as u16;
+    let [pcl, pch] = (Wrapping(cpu.pc.read()) + Wrapping(2)).0.to_le_bytes();
+
     assert_eq!(
-        vec![
-            vec![],
-            vec![],
-            vec![],
-            vec![],
+        MOps::new(
+            3,
+            6,
             vec![
-                Microcode::Write16bitRegister(Write16bitRegister::new(
-                    WordRegisters::PC,
-                    indirect_addr - 3
-                )),
-                gen_inc_16bit_register_microcode!(WordRegisters::PC, 3)
+                gen_write_memory_microcode!(sph, pch),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_memory_microcode!(spl, pcl),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, addr - 3)
             ]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
+        ),
+        mc
+    );
 }
 
 // LDA

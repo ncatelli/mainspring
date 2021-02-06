@@ -467,6 +467,78 @@ fn should_cycle_on_and_zeropage_indexed_with_x_operation() {
 }
 
 #[test]
+fn should_cycle_on_asl_absolute_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x0e, 0xff, 0x00]);
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x54, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_asl_absolute_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x1e, 0xfa, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(7).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x54, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_asl_accumulator_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x0a])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xaa));
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0x54, state.acc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_asl_zeropage_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x06, 0xff]);
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(5).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x54, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_asl_zeropage_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x16, 0xfa])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x54, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
 fn bcc_relative_operation_should_jump_when_zero_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x90, 0x08]);
     cpu.ps.carry = false;

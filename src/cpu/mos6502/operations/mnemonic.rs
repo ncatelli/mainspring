@@ -128,8 +128,11 @@ pub struct LSR;
 
 generate_mnemonic_parser_and_offset!(LSR, 0x4e, 0x5e, 0x4a, 0x46, 0x56);
 
+/// Rotate one bit left (Memory or Accumulator).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ROL;
+
+generate_mnemonic_parser_and_offset!(ROL, 0x2e, 0x3e, 0x2a, 0x26, 0x36);
 
 /// Rotate one bit right (Memory or Accumulator)
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

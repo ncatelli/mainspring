@@ -1,4 +1,7 @@
-use crate::address_map::Addressable;
+use crate::address_map::{
+    memory::{Memory, ReadOnly},
+    Addressable,
+};
 use crate::cpu::{
     mos6502::{
         microcode::*,
@@ -863,6 +866,51 @@ fn should_generate_bpl_machine_code_with_no_jump() {
     let mc = op.generate(&cpu);
 
     assert_eq!(MOps::new(2, 2, vec![]), mc);
+}
+
+// BRK
+
+#[test]
+fn should_generate_implied_addressing_mode_brk_machine_code() {
+    let cpu = MOS6502::default()
+        .reset()
+        .unwrap()
+        .with_ps_register({
+            let mut ps = ProcessorStatus::default();
+            ps.brk = false;
+            ps
+        })
+        .with_pc_register(ProgramCounter::with_value(0x1234))
+        .register_address_space(
+            0xfffe..=0xffff,
+            Memory::<ReadOnly>::new(0xfffe, 0xffff).load(vec![0x78, 0x56]),
+        )
+        .unwrap();
+
+    let op: Operation = Instruction::new(mnemonic::BRK, addressing_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    // expect unused flag to be set only for status register on stack.
+    let expected_ps_on_stack = ProcessorStatus::with_value(0b00100000);
+
+    assert_eq!(
+        MOps::new(
+            0, // PC controlled by the instruction
+            7,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Break, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),
+                gen_write_memory_microcode!(0x01ff, 0x35), // PC (LL + 1)
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_memory_microcode!(0x01fe, 0x12), // PC (HH)
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_memory_microcode!(0x01fd, u8::from(expected_ps_on_stack)), // PS Register
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, 0x5678),
+            ]
+        ),
+        mc
+    );
 }
 
 // BVC
@@ -2502,15 +2550,6 @@ fn should_generate_implied_addressing_mode_nop_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(MOps::new(1, 2, vec![]), mc);
-
-    // validate mops -> vector looks correct
-    assert_eq!(
-        vec![
-            vec![],
-            vec![gen_inc_16bit_register_microcode!(WordRegisters::PC, 1)]
-        ],
-        Into::<Vec<Vec<Microcode>>>::into(mc)
-    )
 }
 
 // ORA

@@ -1,7 +1,7 @@
 extern crate parcel;
 use crate::address_map::{page::Page, Addressable};
 use crate::cpu::{
-    mos6502::{microcode::Microcode, register::*, Generate, MOS6502},
+    mos6502::{microcode::Microcode, register::*, Generate, IRQ_VECTOR_HH, IRQ_VECTOR_LL, MOS6502},
     register::Register,
     Cyclable, Offset,
 };
@@ -456,6 +456,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::BMI, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BNE, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BPL, addressing_mode::Relative::default()),
+            inst_to_operation!(mnemonic::BRK, addressing_mode::Implied::default()),
             inst_to_operation!(mnemonic::BVC, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BVS, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::CLC, addressing_mode::Implied),
@@ -3643,16 +3644,6 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDY, addressing_mode::Zer
     }
 }
 
-// NOP
-
-gen_instruction_cycles_and_parser!(mnemonic::NOP, addressing_mode::Implied, 0xea, 2);
-
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, addressing_mode::Implied> {
-    fn generate(self, _: &MOS6502) -> MOps {
-        MOps::new(self.offset(), self.cycles(), vec![])
-    }
-}
-
 // PHA
 
 gen_instruction_cycles_and_parser!(mnemonic::PHA, addressing_mode::Implied, 0x48, 3);
@@ -4144,5 +4135,56 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::TYA, addressing_mode::Imp
                 gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
+    }
+}
+
+// Misc
+
+// BRK
+
+gen_instruction_cycles_and_parser!(mnemonic::BRK, addressing_mode::Implied, 0x00, 7);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BRK, addressing_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let ps = cpu.ps.read();
+
+        let sp_pcl: u16 = stack_pointer_from_byte_value(cpu.sp.read());
+        let sp_pch: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_sub(1));
+        let sp_ps: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_sub(2));
+
+        // Add 1 to the program counter and grab as little-endian bytes.
+        let [pcl, pch] = cpu.pc.read().wrapping_add(1).to_le_bytes();
+
+        // Grab IRQ/BRK vector
+        let irq_vector = u16::from_le_bytes([
+            cpu.address_map.read(IRQ_VECTOR_LL),
+            cpu.address_map.read(IRQ_VECTOR_HH),
+        ]);
+
+        MOps::new(
+            0, // manually modified in the instruction
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Break, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),
+                gen_write_memory_microcode!(sp_pcl, pcl),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_memory_microcode!(sp_pch, pch),
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_memory_microcode!(sp_ps, ps), // PS Register
+                gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, irq_vector),
+            ],
+        )
+    }
+}
+
+// NOP
+
+gen_instruction_cycles_and_parser!(mnemonic::NOP, addressing_mode::Implied, 0xea, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::NOP, addressing_mode::Implied> {
+    fn generate(self, _: &MOS6502) -> MOps {
+        MOps::new(self.offset(), self.cycles(), vec![])
     }
 }

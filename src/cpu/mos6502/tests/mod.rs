@@ -1893,6 +1893,18 @@ fn should_cycle_on_plp_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_rts_implied_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x60])
+        .with_sp_register(register::StackPointer::with_value(0xfd));
+    cpu.address_map.write(0x01ff, 0x60).unwrap();
+    cpu.address_map.write(0x01fe, 0x02).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0xff, state.sp.read());
+    assert_eq!(0x6003, state.pc.read());
+}
+
+#[test]
 fn should_cycle_on_sbc_absolute_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xed, 0xff, 0x00])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))

@@ -291,8 +291,11 @@ pub struct JSR;
 
 generate_mnemonic_parser_and_offset!(JSR, 0x20);
 
+/// Return from subroutine.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct RTS;
+
+generate_mnemonic_parser_and_offset!(RTS, 0x60);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct RTI;

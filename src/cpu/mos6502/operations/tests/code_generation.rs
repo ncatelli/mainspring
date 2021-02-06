@@ -2588,6 +2588,30 @@ fn should_generate_implied_addressing_mode_plp_machine_code() {
     )
 }
 
+// RTS
+
+#[test]
+fn should_generate_implied_addressing_mode_rts_machine_code() {
+    let mut cpu = MOS6502::default().with_sp_register(StackPointer::with_value(0xfd));
+    cpu.address_map.write(0x01fe, 0x02).unwrap();
+    cpu.address_map.write(0x01ff, 0x60).unwrap();
+
+    let op: Operation = Instruction::new(mnemonic::RTS, addressing_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            6,
+            vec![
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 2),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, 0x6002)
+            ]
+        ),
+        mc
+    );
+}
+
 // SBC
 
 #[test]

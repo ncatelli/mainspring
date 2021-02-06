@@ -122,8 +122,11 @@ generate_mnemonic_parser_and_offset!(DEY, 0x88);
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ASL;
 
+/// Shift one bit right (Memory or Accumulator).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LSR;
+
+generate_mnemonic_parser_and_offset!(LSR, 0x4a);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ROL;

@@ -1733,6 +1733,20 @@ fn should_cycle_on_ldy_zeropage_indexed_with_x_operation() {
 }
 
 #[test]
+fn should_cycle_on_lsr_accumulator_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x4a])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x55));
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0x2a, state.acc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
 fn should_cycle_on_nop_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![]);
     let state = cpu.run(3).unwrap();

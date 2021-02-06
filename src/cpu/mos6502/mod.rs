@@ -98,8 +98,8 @@ impl MOS6502 {
     /// emulates the reset process of the CPU.
     pub fn reset(self) -> StepState<Self> {
         let mut cpu = MOS6502::with_addressmap(self.address_map);
-        let lsb: u8 = cpu.address_map.read(0x7ffc);
-        let msb: u8 = cpu.address_map.read(0x7ffd);
+        let lsb: u8 = cpu.address_map.read(0xfffc);
+        let msb: u8 = cpu.address_map.read(0xfffd);
 
         cpu.pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
         cpu.sp = StackPointer::default();

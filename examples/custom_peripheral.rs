@@ -61,16 +61,16 @@ impl Addressable<u16> for VIA {
 fn main() {
     // A small rom that loops over write 01010101 and 10101010 to port a where
     // it is output. this will loop endlessly until stopped.
-    let rom = Memory::<ReadOnly>::new(0x7fea, 0x7fff).load(vec![
+    let rom = Memory::<ReadOnly>::new(0xffea, 0xffff).load(vec![
         0xa9, 0xff, 0x8d, 0x02, 0x80, 0xa9, 0x55, 0x8d, 0x00, 0x80, 0xa9, 0xaa, 0x8d, 0x00, 0x80,
-        0x4c, 0xef, 0x7f, 0xea, 0x7f, 0x00, 0x00,
+        0x4c, 0xef, 0xff, 0xea, 0xff, 0x00, 0x00,
     ]);
 
     let via = VIA::new(0x8000);
     let cpu = MOS6502::default()
         // Registers the address space and the rom as addressable memory with
         // the cpu. This accepts any implementation of the Addressable trait.
-        .register_address_space(0x7fea..=0x7fff, rom)
+        .register_address_space(0xffea..=0xffff, rom)
         // Registration can fail, this unwraps the result.
         .unwrap()
         .register_address_space(0x8000..=0x8003, via)

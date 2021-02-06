@@ -1,5 +1,5 @@
 extern crate parcel;
-use crate::address_map::Addressable;
+use crate::address_map::{page::Page, Addressable};
 use crate::cpu::{
     mos6502::{microcode::Microcode, register::*, Generate, MOS6502},
     register::Register,
@@ -14,36 +14,6 @@ pub mod mnemonic;
 
 #[cfg(test)]
 mod tests;
-
-/// Page represents an 8-bit memory page for the purpose of determining if an
-/// address falls within the space of a page.
-struct Page {
-    inner: std::ops::RangeInclusive<u16>,
-}
-
-impl Page {
-    #[allow(unused)]
-    fn new(start: u16, end: u16) -> Self {
-        Self { inner: start..=end }
-    }
-
-    /// Returns true if the passed address falls within the range of the page.
-    fn contains(&self, addr: u16) -> bool {
-        self.inner.contains(&addr)
-    }
-}
-
-impl From<u16> for Page {
-    fn from(addr: u16) -> Self {
-        let page_size = 0xff;
-        let upper_page_bound: u16 = addr + (page_size - (addr % (page_size + 1)));
-        let lower_page_bound: u16 = upper_page_bound - page_size;
-
-        Self {
-            inner: lower_page_bound..=upper_page_bound,
-        }
-    }
-}
 
 /// Takes two numerical values returning whether the bit is set for a specific
 /// place.

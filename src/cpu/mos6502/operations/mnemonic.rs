@@ -119,8 +119,12 @@ pub struct DEY;
 generate_mnemonic_parser_and_offset!(DEY, 0x88);
 
 // Shift and Rotate
+
+/// Shift one bit left (Memory or Accumulator)
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ASL;
+
+generate_mnemonic_parser_and_offset!(ASL, 0x0e, 0x1e, 0x0a, 0x06, 0x16);
 
 /// Shift one bit right (Memory or Accumulator).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

@@ -1733,6 +1733,35 @@ fn should_cycle_on_ldy_zeropage_indexed_with_x_operation() {
 }
 
 #[test]
+fn should_cycle_on_lsr_absolute_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x4e, 0xff, 0x00]);
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x2a, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_lsr_absolute_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x5e, 0xfa, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(7).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0x2a, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
 fn should_cycle_on_lsr_accumulator_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x4a])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x55));
@@ -1740,6 +1769,35 @@ fn should_cycle_on_lsr_accumulator_operation() {
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
     assert_eq!(0x2a, state.acc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_lsr_zeropage_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x46, 0xff]);
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(5).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x2a, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (true, false, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_lsr_zeropage_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x56, 0xfa])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0x2a, state.address_map.read(0x00ff));
     assert_eq!(
         (state.ps.carry, state.ps.negative, state.ps.zero),
         (true, false, false)

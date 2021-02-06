@@ -1965,6 +1965,101 @@ fn should_cycle_on_plp_implied_operation() {
 }
 
 #[test]
+fn should_cycle_on_ror_absolute_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x6e, 0xff, 0x00]).with_ps_register({
+        let mut ps = register::ProcessorStatus::default();
+        ps.carry = true;
+        ps
+    });
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xd5, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_ror_absolute_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x7e, 0xfa, 0x00])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = register::ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(7).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xd5, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_ror_accumulator_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x6a])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xaa))
+        .with_ps_register({
+            let mut ps = register::ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+
+    let state = cpu.run(2).unwrap();
+    assert_eq!(0x6001, state.pc.read());
+    assert_eq!(0xd5, state.acc.read());
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_ror_zeropage_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x66, 0xff]).with_ps_register({
+        let mut ps = register::ProcessorStatus::default();
+        ps.carry = true;
+        ps
+    });
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(5).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xd5, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, true, false)
+    );
+}
+
+#[test]
+fn should_cycle_on_ror_zeropage_indexed_with_x_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x76, 0xfa])
+        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_ps_register({
+            let mut ps = register::ProcessorStatus::default();
+            ps.carry = true;
+            ps
+        });
+    cpu.address_map.write(0x00ff, 0xaa).unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xd5, state.address_map.read(0x00ff));
+    assert_eq!(
+        (state.ps.carry, state.ps.negative, state.ps.zero),
+        (false, true, false)
+    );
+}
+
+#[test]
 fn should_cycle_on_rts_implied_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x60])
         .with_sp_register(register::StackPointer::with_value(0xfd));

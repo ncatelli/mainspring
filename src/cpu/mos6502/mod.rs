@@ -181,6 +181,9 @@ impl CPU<MOS6502> for StepState<MOS6502> {
     fn run(self, cycles: usize) -> StepState<MOS6502> {
         match self {
             StepState::Ready(cpu) => cpu.run(cycles),
+            StepState::NotReady(remaining, cpu) if cycles < remaining => {
+                StepState::NotReady(0, cpu)
+            }
             StepState::NotReady(remaining, cpu) => cpu.run(cycles - remaining),
         }
     }

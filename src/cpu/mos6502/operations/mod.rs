@@ -1569,6 +1569,27 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::EOR, addressing_mode::Zer
     }
 }
 
+// LSR
+
+gen_instruction_cycles_and_parser!(mnemonic::LSR, addressing_mode::Accumulator, 0x4a, 2);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::Accumulator> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let value = Operand::new(cpu.acc.read()) >> Operand::new(1u8);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
 // ORA
 
 gen_instruction_cycles_and_parser!(mnemonic::ORA, addressing_mode::Absolute, 0x0d, 4);
@@ -3073,27 +3094,6 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LDY, addressing_mode::Zer
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
-            ],
-        )
-    }
-}
-
-// LSR
-
-gen_instruction_cycles_and_parser!(mnemonic::LSR, addressing_mode::Accumulator, 0x4a, 2);
-
-impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::Accumulator> {
-    fn generate(self, cpu: &MOS6502) -> MOps {
-        let value = Operand::new(cpu.acc.read()) >> Operand::new(1u8);
-
-        MOps::new(
-            self.offset(),
-            self.cycles(),
-            vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
             ],
         )
     }

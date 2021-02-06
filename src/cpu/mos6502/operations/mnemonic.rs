@@ -126,7 +126,7 @@ pub struct ASL;
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct LSR;
 
-generate_mnemonic_parser_and_offset!(LSR, 0x4a);
+generate_mnemonic_parser_and_offset!(LSR, 0x4e, 0x5e, 0x4a, 0x46, 0x56);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ROL;

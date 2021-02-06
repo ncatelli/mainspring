@@ -2264,6 +2264,52 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ldy_machine_code() {
 // LSR
 
 #[test]
+fn should_generate_absolute_addressing_mode_lsr_machine_code() {
+    let mut cpu = MOS6502::default();
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation = Instruction::new(mnemonic::LSR, addressing_mode::Absolute(0x00ff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            6,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_memory_microcode!(0x00ff, 0x2a)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_absolute_indexed_with_x_addressing_mode_lsr_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::LSR, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            7,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_memory_microcode!(0x00ff, 0x2a)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
 fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55));
@@ -2279,6 +2325,52 @@ fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
                 gen_write_8bit_register_microcode!(ByteRegisters::ACC, 0x2a)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_addressing_mode_lsr_machine_code() {
+    let mut cpu = MOS6502::default();
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation = Instruction::new(mnemonic::LSR, addressing_mode::ZeroPage(0xff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            5,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_memory_microcode!(0x00ff, 0x2a)
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_indexed_with_x_addressing_mode_lsr_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation =
+        Instruction::new(mnemonic::LSR, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            6,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+                gen_write_memory_microcode!(0x00ff, 0x2a)
             ]
         ),
         mc

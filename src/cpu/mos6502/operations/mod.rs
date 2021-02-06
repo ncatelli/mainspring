@@ -499,7 +499,17 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
                 mnemonic::LDY,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
+            inst_to_operation!(mnemonic::LSR, addressing_mode::Absolute::default()),
+            inst_to_operation!(
+                mnemonic::LSR,
+                addressing_mode::AbsoluteIndexedWithX::default()
+            ),
             inst_to_operation!(mnemonic::LSR, addressing_mode::Accumulator),
+            inst_to_operation!(mnemonic::LSR, addressing_mode::ZeroPage::default()),
+            inst_to_operation!(
+                mnemonic::LSR,
+                addressing_mode::ZeroPageIndexedWithX::default()
+            ),
             inst_to_operation!(mnemonic::NOP, addressing_mode::Implied),
             inst_to_operation!(mnemonic::ORA, addressing_mode::Absolute::default()),
             inst_to_operation!(
@@ -1571,6 +1581,53 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::EOR, addressing_mode::Zer
 
 // LSR
 
+gen_instruction_cycles_and_parser!(mnemonic::LSR, addressing_mode::Absolute, 0x4e, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.addressing_mode.unwrap();
+        let value = dereference_address_to_operand(cpu, addr, 0) >> Operand::new(1u8);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_memory_microcode!(addr, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(
+    mnemonic::LSR,
+    addressing_mode::AbsoluteIndexedWithX,
+    0x5e,
+    7
+);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::AbsoluteIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let index = cpu.x.read();
+        let addr = self.addressing_mode.unwrap();
+        let indexed_addr = add_index_to_address(addr, index);
+        let value = dereference_address_to_operand(cpu, addr, index) >> Operand::new(1u8);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+            ],
+        )
+    }
+}
+
 gen_instruction_cycles_and_parser!(mnemonic::LSR, addressing_mode::Accumulator, 0x4a, 2);
 
 impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::Accumulator> {
@@ -1585,6 +1642,52 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::Acc
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_8bit_register_microcode!(ByteRegisters::ACC, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::LSR, addressing_mode::ZeroPage, 0x46, 5);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = self.addressing_mode.unwrap() as u16;
+        let value = dereference_address_to_operand(cpu, addr, 0) >> Operand::new(1u8);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_memory_microcode!(addr, value.unwrap()),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(
+    mnemonic::LSR,
+    addressing_mode::ZeroPageIndexedWithX,
+    0x56,
+    6
+);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::LSR, addressing_mode::ZeroPageIndexedWithX> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let index = cpu.x.read();
+        let indexed_addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), index);
+        let value = dereference_address_to_operand(cpu, indexed_addr, 0) >> Operand::new(1u8);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
             ],
         )
     }

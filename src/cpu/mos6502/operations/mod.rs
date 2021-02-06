@@ -539,6 +539,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::PHP, addressing_mode::Implied),
             inst_to_operation!(mnemonic::PLA, addressing_mode::Implied),
             inst_to_operation!(mnemonic::PLP, addressing_mode::Implied),
+            inst_to_operation!(mnemonic::RTS, addressing_mode::Implied),
             inst_to_operation!(mnemonic::SBC, addressing_mode::Absolute::default()),
             inst_to_operation!(
                 mnemonic::SBC,
@@ -2647,7 +2648,7 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JSR, addressing_mode::Abs
 
         // grab the stack pointer and stack pointer - 1 for storing the PC
         let sph: u16 = stack_pointer_from_byte_value(cpu.sp.read());
-        let spl: u16 = 0x0100 + cpu.sp.read().wrapping_sub(1) as u16;
+        let spl: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_sub(1));
 
         // Add 2 to the program counter and grab as little-endian bytes.
         let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
@@ -3181,6 +3182,30 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::PLP, addressing_mode::Imp
             vec![
                 gen_inc_8bit_register_microcode!(ByteRegisters::SP, 1),
                 gen_write_8bit_register_microcode!(ByteRegisters::PS, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// RTS
+
+gen_instruction_cycles_and_parser!(mnemonic::RTS, addressing_mode::Implied, 0x60, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::RTS, addressing_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        // grab the stack pointer and stack pointer - 1 for storing the PC
+        let spl: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(1));
+        let sph: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(2));
+
+        let (lsb, hsb) = (cpu.address_map.read(spl), cpu.address_map.read(sph));
+        let ret_addr = u16::from_le_bytes([lsb, hsb]);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 2),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, ret_addr),
             ],
         )
     }

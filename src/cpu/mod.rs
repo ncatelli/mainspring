@@ -20,35 +20,34 @@ pub trait CPU<T> {
 /// Stores state between run invocations. The remaining field signifies noop cycles
 /// between instructions. This is to function as a placeholder when a run
 /// invocation returns while inbetween multi-cycle instructions.
-#[derive(Clone)]
-pub struct StepState<T> {
-    remaining: usize, // Remaining cycles in operation
-    cpu: T,
+pub enum StepState<T> {
+    NotReady(usize, T),
+    Ready(T),
 }
 
 impl<T> StepState<T> {
-    pub fn new(cycle: usize, cpu: T) -> Self {
-        Self {
-            remaining: cycle - 1,
-            cpu,
+    pub fn new(cycle: usize, state: T) -> Self {
+        match cycle {
+            0 | 1 => Self::Ready(state),
+            _ => Self::NotReady(cycle - 1, state),
         }
     }
 
     /// Decrements the cycle count left on StepState by 1.
     pub fn decrement(self) -> Self {
-        let remaining = self.remaining - 1;
-        Self {
-            remaining,
-            cpu: self.cpu,
+        match self {
+            ss @ Self::Ready(_) => ss,
+            Self::NotReady(1, state) => Self::Ready(state),
+            Self::NotReady(0, state) => Self::Ready(state),
+            Self::NotReady(cycles, state) => Self::NotReady(cycles - 1, state),
         }
     }
 
-    pub fn ready(&self) -> bool {
-        self.remaining == 0
-    }
-
     pub fn unwrap(self) -> T {
-        self.cpu
+        match self {
+            Self::Ready(state) => state,
+            Self::NotReady(_, state) => state,
+        }
     }
 }
 
@@ -60,7 +59,10 @@ impl<T> From<T> for StepState<T> {
 
 impl<T> From<StepState<T>> for (usize, T) {
     fn from(stepstate: StepState<T>) -> Self {
-        (stepstate.remaining, stepstate.cpu)
+        match stepstate {
+            StepState::Ready(state) => (0, state),
+            StepState::NotReady(cycles, state) => (cycles, state),
+        }
     }
 }
 

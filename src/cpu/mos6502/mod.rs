@@ -16,6 +16,9 @@ pub mod microcode;
 #[cfg(test)]
 mod tests;
 
+const RESET_VECTOR_LL: u16 = 0xfffc;
+const RESET_VECTOR_HH: u16 = 0xfffd;
+
 pub mod register;
 use register::{
     ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, ProgramStatusFlags,
@@ -98,8 +101,8 @@ impl MOS6502 {
     /// emulates the reset process of the CPU.
     pub fn reset(self) -> StepState<Self> {
         let mut cpu = MOS6502::with_addressmap(self.address_map);
-        let lsb: u8 = cpu.address_map.read(0xfffc);
-        let msb: u8 = cpu.address_map.read(0xfffd);
+        let lsb: u8 = cpu.address_map.read(RESET_VECTOR_LL);
+        let msb: u8 = cpu.address_map.read(RESET_VECTOR_HH);
 
         cpu.pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
         cpu.sp = StackPointer::default();

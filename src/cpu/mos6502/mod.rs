@@ -16,8 +16,13 @@ pub mod microcode;
 #[cfg(test)]
 mod tests;
 
-const RESET_VECTOR_LL: u16 = 0xfffc;
-const RESET_VECTOR_HH: u16 = 0xfffd;
+// Address vectors
+pub const NMI_VECTOR_LL: u16 = 0xfffa;
+pub const NMI_VECTOR_HH: u16 = 0xfffb;
+pub const RESET_VECTOR_LL: u16 = 0xfffc;
+pub const RESET_VECTOR_HH: u16 = 0xfffd;
+pub const IRQ_VECTOR_LL: u16 = 0xfffe;
+pub const IRQ_VECTOR_HH: u16 = 0xffff;
 
 pub mod register;
 use register::{

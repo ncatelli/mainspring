@@ -1,7 +1,7 @@
 extern crate parcel;
 use crate::address_map::{page::Page, Addressable};
 use crate::cpu::{
-    mos6502::{microcode::Microcode, register::*, Generate, MOS6502},
+    mos6502::{microcode::Microcode, register::*, Generate, IRQ_VECTOR_HH, IRQ_VECTOR_LL, MOS6502},
     register::Register,
     Cyclable, Offset,
 };
@@ -14,9 +14,6 @@ pub mod mnemonic;
 
 #[cfg(test)]
 mod tests;
-
-const IRQ_VECTOR_LL: u16 = 0xfffe;
-const IRQ_VECTOR_HH: u16 = 0xffff;
 
 /// Takes two numerical values returning whether the bit is set for a specific
 /// place.

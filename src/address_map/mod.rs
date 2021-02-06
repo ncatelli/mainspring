@@ -3,6 +3,7 @@ use std::fmt;
 use std::{cmp::Eq, fmt::Debug, hash::Hash, ops::RangeInclusive};
 
 pub mod memory;
+pub mod page;
 
 #[cfg(test)]
 mod tests;

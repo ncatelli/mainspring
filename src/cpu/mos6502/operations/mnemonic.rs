@@ -350,8 +350,12 @@ pub struct CLV;
 generate_mnemonic_parser_and_offset!(CLV, 0xb8);
 
 // Misc
+
+/// Force Break
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BRK;
+
+generate_mnemonic_parser_and_offset!(BRK, 0x00);
 
 /// Represents a `nop` instruction, only implemented for the implied address
 /// mode and functions as a "No Instruction".

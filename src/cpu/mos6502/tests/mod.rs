@@ -713,6 +713,24 @@ fn bpl_relative_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
+fn should_cycle_on_brk_implied_operation() {
+    let cpu = generate_test_cpu_with_instructions(vec![0x00, 0x12])
+        .with_ps_register({
+            let mut ps = register::ProcessorStatus::default();
+            ps.brk = false;
+            ps
+        })
+        .register_address_space(
+            0xfffe..=0xffff,
+            Memory::<ReadOnly>::new(0xfffe, 0xffff).load(vec![0x78, 0x56]),
+        )
+        .unwrap();
+    let state = cpu.run(7).unwrap();
+    assert_eq!(0x5678, state.pc.read());
+    assert_eq!((true, true), (state.ps.brk, state.ps.interrupt_disable))
+}
+
+#[test]
 fn bvc_relative_operation_should_jump_when_overflow_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x50, 0x08]);
     cpu.ps.overflow = false;

@@ -2245,6 +2245,34 @@ fn should_cycle_on_ror_zeropage_indexed_with_x_operation() {
 }
 
 #[test]
+fn should_cycle_on_rti_implied_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x40])
+        .with_sp_register(register::StackPointer::with_value(0xfc))
+        .with_ps_register({
+            let mut ps = register::ProcessorStatus::default();
+            ps.brk = true;
+            ps.interrupt_disable = true;
+            ps
+        });
+
+    cpu.address_map.write(0x01ff, 0x12).unwrap();
+    cpu.address_map.write(0x01fe, 0x34).unwrap();
+    cpu.address_map
+        .write(0x01fd, {
+            let mut ps = register::ProcessorStatus::default();
+            ps.brk = false;
+            ps.interrupt_disable = false;
+            u8::from(ps)
+        })
+        .unwrap();
+
+    let state = cpu.run(6).unwrap();
+    assert_eq!(0xff, state.sp.read());
+    assert_eq!(0x1235, state.pc.read());
+    assert_eq!((false, false), (state.ps.brk, state.ps.interrupt_disable));
+}
+
+#[test]
 fn should_cycle_on_rts_implied_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x60])
         .with_sp_register(register::StackPointer::with_value(0xfd));

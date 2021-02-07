@@ -548,12 +548,12 @@ fn should_generate_bcc_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BCC, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -569,12 +569,12 @@ fn should_generate_bcc_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BCC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -590,7 +590,16 @@ fn should_generate_bcc_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BCC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BCS
@@ -603,12 +612,12 @@ fn should_generate_bcs_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BCS, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -624,12 +633,12 @@ fn should_generate_bcs_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BCS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -645,7 +654,16 @@ fn should_generate_bcs_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BCS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BEQ
@@ -658,12 +676,12 @@ fn should_generate_beq_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BEQ, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -679,12 +697,12 @@ fn should_generate_beq_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BEQ, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -700,7 +718,16 @@ fn should_generate_beq_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BEQ, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BMI
@@ -713,12 +740,12 @@ fn should_generate_bmi_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BMI, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc + relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -734,12 +761,12 @@ fn should_generate_bmi_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BMI, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -755,7 +782,16 @@ fn should_generate_bmi_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BMI, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BNE
@@ -768,12 +804,12 @@ fn should_generate_bne_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BNE, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc + relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -789,12 +825,12 @@ fn should_generate_bne_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BNE, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -810,7 +846,16 @@ fn should_generate_bne_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BNE, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BPL
@@ -823,12 +868,12 @@ fn should_generate_bpl_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BPL, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc + relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -844,12 +889,12 @@ fn should_generate_bpl_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BPL, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -865,7 +910,16 @@ fn should_generate_bpl_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BPL, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BRK
@@ -923,12 +977,12 @@ fn should_generate_bvc_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BVC, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc + relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -944,12 +998,12 @@ fn should_generate_bvc_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BVC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -965,7 +1019,16 @@ fn should_generate_bvc_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BVC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // BVS
@@ -978,12 +1041,12 @@ fn should_generate_bvs_machine_code_with_branch_penalty() {
     let op: Operation = Instruction::new(mnemonic::BVS, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() + 8 - 2;
+    // pc + relative address
+    let pc = cpu.pc.read() + 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -999,12 +1062,12 @@ fn should_generate_bvs_machine_code_with_branch_and_page_penalty() {
     let op: Operation = Instruction::new(mnemonic::BVS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    // pc - relative address - inst size
-    let pc = cpu.pc.read() - 8 - 2;
+    // pc - relative address
+    let pc = cpu.pc.read() - 8;
 
     assert_eq!(
         MOps::new(
-            2,
+            0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
         ),
@@ -1020,7 +1083,16 @@ fn should_generate_bvs_machine_code_with_no_jump() {
     let op: Operation = Instruction::new(mnemonic::BVS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(2, 2, vec![]), mc);
+    let pc = cpu.pc.read() + 2;
+
+    assert_eq!(
+        MOps::new(
+            0,
+            2,
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
+        ),
+        mc
+    );
 }
 
 // CLC
@@ -1876,12 +1948,9 @@ fn should_generate_absolute_addressing_mode_jmp_machine_code() {
 
     assert_eq!(
         MOps::new(
+            0,
             3,
-            3,
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                addr - 3
-            )]
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)]
         ),
         mc
     );
@@ -1900,11 +1969,11 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
 
     assert_eq!(
         MOps::new(
-            3,
+            0, // offset modified directly by operation
             5,
             vec![gen_write_16bit_register_microcode!(
                 WordRegisters::PC,
-                indirect_addr - 3
+                indirect_addr
             )]
         ),
         mc
@@ -1926,14 +1995,14 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
 
     assert_eq!(
         MOps::new(
-            3,
+            0, // offset modified directly by instruction
             6,
             vec![
                 gen_write_memory_microcode!(sph, pch),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
                 gen_write_memory_microcode!(spl, pcl),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
-                gen_write_16bit_register_microcode!(WordRegisters::PC, addr - 3)
+                gen_write_16bit_register_microcode!(WordRegisters::PC, addr)
             ]
         ),
         mc

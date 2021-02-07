@@ -2360,10 +2360,14 @@ fn branch_on_case(
         vec![gen_write_16bit_register_microcode!(
             WordRegisters::PC,
             // handle for underflow
-            (Wrapping(jmp_on_eq) - Wrapping(inst_offset as u16)).0
+            jmp_on_eq
         )]
     } else {
-        vec![]
+        vec![gen_write_16bit_register_microcode!(
+            WordRegisters::PC,
+            // handle for underflow
+            cpu.pc.read().overflowing_add(inst_offset as u16).0
+        )]
     };
 
     // if the branch is true and that branch crosses a page boundary pay a 1 cycle penalty.
@@ -2373,7 +2377,7 @@ fn branch_on_case(
         _ => 0,
     };
 
-    MOps::new(inst_offset, cycles + branch_penalty, mc)
+    MOps::new(0, cycles + branch_penalty, mc)
 }
 
 // BCC
@@ -3157,12 +3161,9 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, addressing_mode::Abs
         let addr = self.addressing_mode.unwrap();
 
         MOps::new(
-            self.offset(),
+            0,
             self.cycles(),
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                addr.wrapping_sub(self.offset() as u16)
-            )],
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)],
         )
     }
 }
@@ -3177,12 +3178,9 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, addressing_mode::Ind
         let addr = u16::from_le_bytes([lsb, msb]);
 
         MOps::new(
-            self.offset(),
+            0,
             self.cycles(),
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                addr.wrapping_sub(self.offset() as u16)
-            )],
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)],
         )
     }
 }
@@ -3203,17 +3201,14 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JSR, addressing_mode::Abs
         let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
 
         MOps::new(
-            self.offset(),
+            0,
             self.cycles(),
             vec![
                 gen_write_memory_microcode!(sph, pch),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
                 gen_write_memory_microcode!(spl, pcl),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
-                gen_write_16bit_register_microcode!(
-                    WordRegisters::PC,
-                    addr.wrapping_sub(self.offset() as u16)
-                ),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, addr),
             ],
         )
     }

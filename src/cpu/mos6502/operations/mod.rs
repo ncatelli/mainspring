@@ -2360,10 +2360,14 @@ fn branch_on_case(
         vec![gen_write_16bit_register_microcode!(
             WordRegisters::PC,
             // handle for underflow
-            (Wrapping(jmp_on_eq) - Wrapping(inst_offset as u16)).0
+            jmp_on_eq
         )]
     } else {
-        vec![]
+        vec![gen_write_16bit_register_microcode!(
+            WordRegisters::PC,
+            // handle for underflow
+            cpu.pc.read().overflowing_add(inst_offset as u16).0
+        )]
     };
 
     // if the branch is true and that branch crosses a page boundary pay a 1 cycle penalty.
@@ -2373,7 +2377,7 @@ fn branch_on_case(
         _ => 0,
     };
 
-    MOps::new(inst_offset, cycles + branch_penalty, mc)
+    MOps::new(0, cycles + branch_penalty, mc)
 }
 
 // BCC

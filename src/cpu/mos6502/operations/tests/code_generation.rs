@@ -794,6 +794,52 @@ fn should_generate_bmi_machine_code_with_no_jump() {
     );
 }
 
+// BIT
+
+#[test]
+fn should_generate_absolute_addressing_mode_bit_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation = Instruction::new(mnemonic::BIT, addressing_mode::Absolute(0x00ff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            3,
+            4,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+            ]
+        ),
+        mc
+    );
+}
+
+#[test]
+fn should_generate_zeropage_addressing_mode_bit_machine_code() {
+    let mut cpu =
+        MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+    let op: Operation = Instruction::new(mnemonic::BIT, addressing_mode::ZeroPage(0xff)).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            2,
+            3,
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, false),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, true),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, false),
+            ]
+        ),
+        mc
+    );
+}
+
 // BNE
 
 #[test]

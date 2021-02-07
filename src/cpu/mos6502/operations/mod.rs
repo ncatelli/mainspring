@@ -454,6 +454,8 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
             inst_to_operation!(mnemonic::BCS, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BEQ, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BMI, addressing_mode::Relative::default()),
+            inst_to_operation!(mnemonic::BIT, addressing_mode::Absolute::default()),
+            inst_to_operation!(mnemonic::BIT, addressing_mode::ZeroPage::default()),
             inst_to_operation!(mnemonic::BNE, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BPL, addressing_mode::Relative::default()),
             inst_to_operation!(mnemonic::BRK, addressing_mode::Implied::default()),
@@ -1570,6 +1572,53 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::ASL, addressing_mode::Zer
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
                 gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// BIT
+
+gen_instruction_cycles_and_parser!(mnemonic::BIT, addressing_mode::Absolute, 0x2c, 4);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BIT, addressing_mode::Absolute> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
+        let negative = bit_is_set!(rhs.unwrap(), 7);
+        let overflow = bit_is_set!(rhs.unwrap(), 6);
+        let value = lhs & rhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+            ],
+        )
+    }
+}
+
+gen_instruction_cycles_and_parser!(mnemonic::BIT, addressing_mode::ZeroPage, 0x24, 3);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::BIT, addressing_mode::ZeroPage> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), 0);
+        let lhs = Operand::new(cpu.acc.read());
+        let rhs = dereference_address_to_operand(cpu, addr, 0);
+        let negative = bit_is_set!(rhs.unwrap(), 7);
+        let overflow = bit_is_set!(rhs.unwrap(), 6);
+        let value = lhs & rhs;
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_flag_set_microcode!(ProgramStatusFlags::Negative, negative),
+                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
+                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
             ],
         )
     }

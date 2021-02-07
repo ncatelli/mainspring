@@ -27,7 +27,7 @@ pub const IRQ_VECTOR_HH: u16 = 0xffff;
 pub mod register;
 use register::{
     ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, ProgramStatusFlags,
-    StackPointer,
+    StackPointer, WordRegisters,
 };
 
 pub mod operations;
@@ -112,6 +112,29 @@ impl MOS6502 {
         cpu.pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
         cpu.sp = StackPointer::default();
         StepState::new(6, cpu)
+    }
+
+    /// emulates the reset process of the CPU, exporting the options as a MOps type
+    pub fn reset_as_mops(&self) -> operations::MOps {
+        let lsb: u8 = self.address_map.read(RESET_VECTOR_LL);
+        let msb: u8 = self.address_map.read(RESET_VECTOR_HH);
+        let pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
+
+        operations::MOps::new(
+            0,
+            6,
+            vec![
+                gen_write_8bit_register_microcode!(
+                    ByteRegisters::PS,
+                    ProcessorStatus::default().read()
+                ),
+                gen_write_8bit_register_microcode!(
+                    ByteRegisters::SP,
+                    StackPointer::default().read()
+                ),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, pc.read()),
+            ],
+        )
     }
 
     /// Provides a wrapper to update a general-purpose register in a way that

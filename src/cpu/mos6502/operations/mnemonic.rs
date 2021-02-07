@@ -310,8 +310,11 @@ pub struct RTS;
 
 generate_mnemonic_parser_and_offset!(RTS, 0x60);
 
+/// Return from interrupt.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct RTI;
+
+generate_mnemonic_parser_and_offset!(RTI, 0x40);
 
 // Set and Clear
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

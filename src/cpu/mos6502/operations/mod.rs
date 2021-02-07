@@ -624,6 +624,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
                 mnemonic::ROR,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
+            inst_to_operation!(mnemonic::RTI, addressing_mode::Implied),
             inst_to_operation!(mnemonic::RTS, addressing_mode::Implied),
             inst_to_operation!(mnemonic::SBC, addressing_mode::Absolute::default()),
             inst_to_operation!(
@@ -3716,6 +3717,36 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::PLP, addressing_mode::Imp
             vec![
                 gen_inc_8bit_register_microcode!(ByteRegisters::SP, 1),
                 gen_write_8bit_register_microcode!(ByteRegisters::PS, value.unwrap()),
+            ],
+        )
+    }
+}
+
+// RTI
+
+gen_instruction_cycles_and_parser!(mnemonic::RTI, addressing_mode::Implied, 0x40, 6);
+
+impl Generate<MOS6502, MOps> for Instruction<mnemonic::RTI, addressing_mode::Implied> {
+    fn generate(self, cpu: &MOS6502) -> MOps {
+        // grab the program status
+        let sp_psl: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(1));
+        let sp = cpu.address_map.read(sp_psl);
+
+        // grab the stack pointer and stack pointer - 1 for storing the PC
+        let sp_pcl: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(2));
+        let sp_pch: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(3));
+
+        let (lsb, hsb) = (cpu.address_map.read(sp_pcl), cpu.address_map.read(sp_pch));
+        let ret_addr = u16::from_le_bytes([lsb, hsb]);
+
+        MOps::new(
+            self.offset(),
+            self.cycles(),
+            vec![
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_8bit_register_microcode!(ByteRegisters::PS, sp),
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 2),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, ret_addr),
             ],
         )
     }

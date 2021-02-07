@@ -3202,6 +3202,40 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ror_machine_code() {
     );
 }
 
+// RTI
+
+#[test]
+fn should_generate_implied_addressing_mode_rti_machine_code() {
+    let mut cpu = MOS6502::default().with_sp_register(StackPointer::with_value(0xfc));
+    cpu.address_map.write(0x01ff, 0x12).unwrap();
+    cpu.address_map.write(0x01fe, 0x34).unwrap();
+    cpu.address_map
+        .write(0x01fd, {
+            let mut ps = ProcessorStatus::default();
+            ps.interrupt_disable = false;
+            ps.brk = false;
+            u8::from(ps)
+        })
+        .unwrap();
+
+    let op: Operation = Instruction::new(mnemonic::RTI, addressing_mode::Implied).into();
+    let mc = op.generate(&cpu);
+
+    assert_eq!(
+        MOps::new(
+            1,
+            6,
+            vec![
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 1),
+                gen_write_8bit_register_microcode!(ByteRegisters::PS, 0x20),
+                gen_inc_8bit_register_microcode!(ByteRegisters::SP, 2),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, 0x1234)
+            ]
+        ),
+        mc
+    );
+}
+
 // RTS
 
 #[test]

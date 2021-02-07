@@ -182,8 +182,11 @@ pub struct CPY;
 
 generate_mnemonic_parser_and_offset!(CPY, 0xcc, 0xc0, 0xc4);
 
+// Test Bits in Memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BIT;
+
+generate_mnemonic_parser_and_offset!(BIT, 0x24, 0x2c);
 
 // Branch
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

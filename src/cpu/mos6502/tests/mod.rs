@@ -655,6 +655,36 @@ fn bmi_relative_operation_should_not_jump_when_zero_unset() {
 }
 
 #[test]
+fn should_cycle_on_bit_absolute_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x2c, 0xff, 0x00])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(4).unwrap();
+    assert_eq!(0x6003, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(
+        (false, true, false),
+        (state.ps.negative, state.ps.overflow, state.ps.zero)
+    );
+}
+
+#[test]
+fn should_cycle_on_bit_zeropage_operation() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![0x24, 0xff])
+        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+    cpu.address_map.write(0x00ff, 0x55).unwrap();
+
+    let state = cpu.run(3).unwrap();
+    assert_eq!(0x6002, state.pc.read());
+    assert_eq!(0xff, state.acc.read());
+    assert_eq!(
+        (false, true, false),
+        (state.ps.negative, state.ps.overflow, state.ps.zero)
+    );
+}
+
+#[test]
 fn bne_relative_operation_should_jump_when_zero_set() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd0, 0x08]);
     cpu.ps.zero = false;

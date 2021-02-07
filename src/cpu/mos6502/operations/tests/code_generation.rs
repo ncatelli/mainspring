@@ -1876,12 +1876,9 @@ fn should_generate_absolute_addressing_mode_jmp_machine_code() {
 
     assert_eq!(
         MOps::new(
+            0,
             3,
-            3,
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                addr - 3
-            )]
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)]
         ),
         mc
     );
@@ -1900,11 +1897,11 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
 
     assert_eq!(
         MOps::new(
-            3,
+            0, // offset modified directly by operation
             5,
             vec![gen_write_16bit_register_microcode!(
                 WordRegisters::PC,
-                indirect_addr - 3
+                indirect_addr
             )]
         ),
         mc
@@ -1926,14 +1923,14 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
 
     assert_eq!(
         MOps::new(
-            3,
+            0, // offset modified directly by instruction
             6,
             vec![
                 gen_write_memory_microcode!(sph, pch),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
                 gen_write_memory_microcode!(spl, pcl),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
-                gen_write_16bit_register_microcode!(WordRegisters::PC, addr - 3)
+                gen_write_16bit_register_microcode!(WordRegisters::PC, addr)
             ]
         ),
         mc

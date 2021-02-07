@@ -3157,12 +3157,9 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, addressing_mode::Abs
         let addr = self.addressing_mode.unwrap();
 
         MOps::new(
-            self.offset(),
+            0,
             self.cycles(),
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                addr.wrapping_sub(self.offset() as u16)
-            )],
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)],
         )
     }
 }
@@ -3177,12 +3174,9 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JMP, addressing_mode::Ind
         let addr = u16::from_le_bytes([lsb, msb]);
 
         MOps::new(
-            self.offset(),
+            0,
             self.cycles(),
-            vec![gen_write_16bit_register_microcode!(
-                WordRegisters::PC,
-                addr.wrapping_sub(self.offset() as u16)
-            )],
+            vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)],
         )
     }
 }
@@ -3203,17 +3197,14 @@ impl Generate<MOS6502, MOps> for Instruction<mnemonic::JSR, addressing_mode::Abs
         let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
 
         MOps::new(
-            self.offset(),
+            0,
             self.cycles(),
             vec![
                 gen_write_memory_microcode!(sph, pch),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
                 gen_write_memory_microcode!(spl, pcl),
                 gen_dec_8bit_register_microcode!(ByteRegisters::SP, 1),
-                gen_write_16bit_register_microcode!(
-                    WordRegisters::PC,
-                    addr.wrapping_sub(self.offset() as u16)
-                ),
+                gen_write_16bit_register_microcode!(WordRegisters::PC, addr),
             ],
         )
     }

@@ -7,7 +7,7 @@ use mainspring::prelude::v1::*;
 fn main() {
     // A ReadOnly memory segment containing a small rom consisting of a
     // LDA/STA loop. This will run until stopped. This exists in the address
-    // space inclusively beteen 0xffea and 0xffff.
+    // space inclusively between 0xffea and 0xffff.
     let rom = Memory::<ReadOnly>::new(0xffea, 0xffff).load(vec![
         0xa9, 0x01, 0x8d, 0x00, 0x02, 0xa9, 0x02, 0x8d, 0x01, 0x02, 0xa9, 0x03, 0x8d, 0x02, 0x02,
         0x4c, 0xea, 0xff, 0xea, 0xff, 0x00, 0x00,
@@ -49,7 +49,7 @@ fn main() {
 
     println!(
         "{:?}",
-        // Microcode can then be folded onto a cpu to replay it's state onto a fresh cpu.
+        // Microcode can then be folded onto a cpu to replay its state onto a fresh cpu.
         states.into_iter().fold(cpu.clone(), |c, mc| mc.execute(c))
     );
 }

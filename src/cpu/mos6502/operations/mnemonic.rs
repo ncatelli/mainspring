@@ -1,4 +1,3 @@
-extern crate parcel;
 use crate::cpu::Offset;
 
 macro_rules! generate_mnemonic_parser_and_offset {

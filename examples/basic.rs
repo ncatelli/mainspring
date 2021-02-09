@@ -1,4 +1,3 @@
-extern crate mainspring;
 use mainspring::address_map::memory::{Memory, ReadOnly, ReadWrite};
 use mainspring::cpu::mos6502::MOS6502;
 

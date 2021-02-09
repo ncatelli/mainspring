@@ -4,12 +4,10 @@ use crate::cpu::{
     register::Register,
     Cyclable, Offset,
 };
+use isa_mos6502::{addressing_mode, mnemonic};
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
 use std::num::Wrapping;
-
-pub mod addressing_mode;
-pub mod mnemonic;
 
 #[cfg(test)]
 mod tests;
@@ -691,8 +689,8 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Instruction<M, A>
 where
-    M: Offset + Copy + Debug + PartialEq,
-    A: Offset + Copy + Debug + PartialEq,
+    M: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
+    A: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
 {
     mnemonic: M,
     addressing_mode: A,
@@ -700,8 +698,8 @@ where
 
 impl<M, A> Instruction<M, A>
 where
-    M: Offset + Copy + Debug + PartialEq,
-    A: Offset + Copy + Debug + PartialEq,
+    M: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
+    A: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
 {
     pub fn new(mnemonic: M, addressing_mode: A) -> Self {
         Instruction {
@@ -713,18 +711,18 @@ where
 
 impl<M, A> Offset for Instruction<M, A>
 where
-    M: Offset + Copy + Debug + PartialEq,
-    A: Offset + Copy + Debug + PartialEq,
+    M: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
+    A: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
 {
     fn offset(&self) -> usize {
-        self.mnemonic.offset() + self.addressing_mode.offset()
+        self.mnemonic.byte_size() + self.addressing_mode.byte_size()
     }
 }
 
 impl<M, A> Into<Operation> for Instruction<M, A>
 where
-    M: Offset + Copy + Debug + PartialEq + 'static,
-    A: Offset + Copy + Debug + PartialEq + 'static,
+    M: Copy + Debug + PartialEq + isa_mos6502::ByteSized + 'static,
+    A: Copy + Debug + PartialEq + isa_mos6502::ByteSized + 'static,
     Self: Generate<MOS6502, MOps> + Cyclable + 'static,
 {
     fn into(self) -> Operation {

@@ -1,4 +1,3 @@
-extern crate parcel;
 use crate::address_map::{page::Page, Addressable};
 use crate::cpu::{
     mos6502::{microcode::Microcode, register::*, Generate, IRQ_VECTOR_HH, IRQ_VECTOR_LL, MOS6502},

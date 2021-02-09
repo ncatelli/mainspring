@@ -1,4 +1,3 @@
-extern crate parcel;
 use std::convert::TryFrom;
 use std::ops::RangeInclusive;
 

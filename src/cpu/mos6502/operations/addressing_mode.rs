@@ -1,4 +1,3 @@
-extern crate parcel;
 use crate::cpu::{Cyclable, Offset};
 use parcel::{parsers::byte::any_byte, MatchStatus, ParseResult, Parser};
 

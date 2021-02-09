@@ -1,6 +1,5 @@
 //! A small demonstration example of mainspring showing a basic custom Addressable implementation.
 
-extern crate mainspring;
 use mainspring::address_map::memory::{Memory, ReadOnly};
 use mainspring::cpu::mos6502::MOS6502;
 
@@ -8,7 +7,7 @@ use mainspring::cpu::mos6502::MOS6502;
 use mainspring::prelude::v1::*;
 
 /// VIA functions as an analogy to the 6522 VIA chip. However, only a subset of
-/// functionality has be implemented for this demo. For the case of this example,
+/// functionality has been implemented for this demo. For the case of this example,
 /// all ports are configured in write mode with predefined addresses.
 #[derive(Clone)]
 pub struct VIA {
@@ -81,6 +80,6 @@ fn main() {
         // enclosing cpu.
         .unwrap();
 
-    // runs the program for 40 cycles
+    // Runs the program for 40 cycles.
     cpu.run(40).unwrap();
 }

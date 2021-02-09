@@ -1,4 +1,3 @@
-extern crate mainspring;
 use mainspring::address_map::memory::{Memory, ReadOnly, ReadWrite};
 use mainspring::cpu::mos6502::MOS6502;
 
@@ -8,7 +7,7 @@ use mainspring::prelude::v1::*;
 fn main() {
     // A ReadOnly memory segment containing a small rom consisting of a
     // LDA/STA loop. This will run until stopped. This exists in the address
-    // space inclusively beteen 0xffea and 0xffff.
+    // space inclusively between 0xffea and 0xffff.
     let rom = Memory::<ReadOnly>::new(0xffea, 0xffff).load(vec![
         0xa9, 0x01, 0x8d, 0x00, 0x02, 0xa9, 0x02, 0x8d, 0x01, 0x02, 0xa9, 0x03, 0x8d, 0x02, 0x02,
         0x4c, 0xea, 0xff, 0xea, 0xff, 0x00, 0x00,
@@ -32,7 +31,7 @@ fn main() {
         .unwrap();
 
     // Run the cpu for 1,000,000 cycles, and returns a StepState<MOS6502> which
-    // we unwrap to return a CPU snapshotted at it's state.
+    // is unwrapped to return a CPU snapshot at its current state.
     let state = cpu.run(1_000_000).unwrap();
 
     println!("{:?}", state);

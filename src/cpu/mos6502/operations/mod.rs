@@ -684,33 +684,7 @@ impl<'a> Parser<'a, &'a [u8], Operation> for OperationParser {
     }
 }
 
-/*
-/// Instruction takes a mnemonic and addressing mode as arguments for sizing
-/// and operations.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Instruction<M, A>
-where
-    M: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
-    A: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
-{
-    mnemonic: M,
-    addressing_mode: A,
-}
-
-impl<M, A> Instruction<M, A>
-where
-    M: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
-    A: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
-{
-    pub fn new(mnemonic: M, addressing_mode: A) -> Self {
-        Instruction {
-            mnemonic,
-            addressing_mode,
-        }
-    }
-}*/
-
-impl<M, A> Offset for isa_mos6502::Instruction<M, A>
+impl<M, A> Offset for Instruction<M, A>
 where
     M: Copy + Debug + PartialEq + isa_mos6502::ByteSized,
     A: Copy + Debug + PartialEq + isa_mos6502::ByteSized,

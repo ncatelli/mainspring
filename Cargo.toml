@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 parcel = { git = "https://github.com/ncatelli/parcel", tag = "v1.9.1" }
-isa-mos6502 = { git = "https://github.com/ncatelli/isa-mos6502", branch = "main" }
+isa-mos6502 = { git = "https://github.com/ncatelli/isa-mos6502", tag = "v0.1.0" }

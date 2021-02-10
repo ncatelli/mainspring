@@ -5,7 +5,7 @@ use crate::address_map::{
 use crate::cpu::{
     mos6502::{
         microcode::*,
-        operations::{addressing_mode, mnemonic, Instruction, MOps, Operation},
+        operations::{Instruction, MOps, Operation},
         register::{
             ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
             ProgramStatusFlags, StackPointer, WordRegisters,
@@ -14,6 +14,7 @@ use crate::cpu::{
     },
     register::Register,
 };
+use isa_mos6502::{addressing_mode, mnemonic};
 
 // ADC
 

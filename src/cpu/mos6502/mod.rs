@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::ops::RangeInclusive;
 
 use crate::{
@@ -24,13 +23,13 @@ pub const IRQ_VECTOR_LL: u16 = 0xfffe;
 pub const IRQ_VECTOR_HH: u16 = 0xffff;
 
 pub mod register;
+use parcel::Parser;
 use register::{
     ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter, ProgramStatusFlags,
     StackPointer, WordRegisters,
 };
 
 pub mod operations;
-use operations::Operation;
 
 pub trait Generate<T, U> {
     fn generate(self, cpu: &T) -> U;
@@ -256,7 +255,12 @@ impl Iterator for MOS6502IntoIterator {
         ];
 
         // Parse correct operation
-        let oper: Operation = TryFrom::try_from(&opcodes).unwrap();
+        let oper = match operations::VariantParser.parse(&opcodes) {
+            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
+            _ => Err(format!("No match found for {}", opcodes[0])),
+        }
+        .unwrap();
+
         let mops = oper.generate(&self.state);
 
         // rectify state

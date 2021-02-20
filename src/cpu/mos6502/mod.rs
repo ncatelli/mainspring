@@ -112,13 +112,13 @@ impl MOS6502 {
         StepState::new(6, cpu)
     }
 
-    /// emulates the reset process of the CPU, exporting the options as a MOps type
-    pub fn reset_as_mops(&self) -> operations::MOps {
+    /// emulates the reset process of the CPU, exporting the options as a Operations type
+    pub fn reset_as_mops(&self) -> operations::Operations {
         let lsb: u8 = self.address_map.read(RESET_VECTOR_LL);
         let msb: u8 = self.address_map.read(RESET_VECTOR_HH);
         let pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
 
-        operations::MOps::new(
+        operations::Operations::new(
             0,
             6,
             vec![
@@ -219,7 +219,7 @@ impl CPU<MOS6502> for StepState<MOS6502> {
 }
 
 impl IntoIterator for MOS6502 {
-    type Item = operations::MOps;
+    type Item = operations::Operations;
     type IntoIter = MOS6502IntoIterator;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -244,9 +244,9 @@ impl MOS6502IntoIterator {
 }
 
 impl Iterator for MOS6502IntoIterator {
-    type Item = operations::MOps;
+    type Item = operations::Operations;
 
-    fn next(&mut self) -> Option<operations::MOps> {
+    fn next(&mut self) -> Option<operations::Operations> {
         let pc = self.state.pc.read();
         let opcodes: [u8; 3] = [
             self.state.address_map.read(pc),

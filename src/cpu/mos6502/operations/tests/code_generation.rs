@@ -5,7 +5,7 @@ use crate::address_map::{
 use crate::cpu::{
     mos6502::{
         microcode::*,
-        operations::MOps,
+        operations::Operations,
         register::{
             ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
             ProgramStatusFlags, StackPointer, WordRegisters,
@@ -29,7 +29,7 @@ fn should_generate_absolute_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -56,7 +56,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -83,7 +83,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -112,7 +112,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -136,7 +136,7 @@ fn should_generate_immediate_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -165,7 +165,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -191,7 +191,7 @@ fn should_generate_zeropage_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -218,7 +218,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_adc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -245,7 +245,7 @@ fn should_generate_absolute_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -269,7 +269,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -293,7 +293,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -320,7 +320,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -342,7 +342,7 @@ fn should_generate_immediate_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -369,7 +369,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -392,7 +392,7 @@ fn should_generate_zeropage_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -416,7 +416,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_and_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -440,7 +440,7 @@ fn should_generate_absolute_addressing_mode_asl_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -464,7 +464,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_asl_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -487,7 +487,7 @@ fn should_generate_accumulator_addressing_mode_asl_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -510,7 +510,7 @@ fn should_generate_zeropage_addressing_mode_asl_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -534,7 +534,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_asl_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -563,7 +563,7 @@ fn should_generate_bcc_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -585,7 +585,7 @@ fn should_generate_bcc_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -606,7 +606,7 @@ fn should_generate_bcc_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -630,7 +630,7 @@ fn should_generate_bcs_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -652,7 +652,7 @@ fn should_generate_bcs_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -673,7 +673,7 @@ fn should_generate_bcs_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -697,7 +697,7 @@ fn should_generate_beq_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -719,7 +719,7 @@ fn should_generate_beq_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -740,7 +740,7 @@ fn should_generate_beq_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -764,7 +764,7 @@ fn should_generate_bmi_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -786,7 +786,7 @@ fn should_generate_bmi_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -807,7 +807,7 @@ fn should_generate_bmi_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -828,7 +828,7 @@ fn should_generate_absolute_addressing_mode_bit_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -851,7 +851,7 @@ fn should_generate_zeropage_addressing_mode_bit_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -879,7 +879,7 @@ fn should_generate_bne_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -901,7 +901,7 @@ fn should_generate_bne_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -922,7 +922,7 @@ fn should_generate_bne_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -946,7 +946,7 @@ fn should_generate_bpl_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -968,7 +968,7 @@ fn should_generate_bpl_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -989,7 +989,7 @@ fn should_generate_bpl_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1024,7 +1024,7 @@ fn should_generate_implied_addressing_mode_brk_machine_code() {
     let expected_ps_on_stack = ProcessorStatus::with_value(0b00100000);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0, // PC controlled by the instruction
             7,
             vec![
@@ -1058,7 +1058,7 @@ fn should_generate_bvc_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1080,7 +1080,7 @@ fn should_generate_bvc_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1101,7 +1101,7 @@ fn should_generate_bvc_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1125,7 +1125,7 @@ fn should_generate_bvs_machine_code_with_branch_penalty() {
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1147,7 +1147,7 @@ fn should_generate_bvs_machine_code_with_branch_and_page_penalty() {
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1168,7 +1168,7 @@ fn should_generate_bvs_machine_code_with_no_jump() {
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1188,7 +1188,7 @@ fn should_generate_implied_addressing_mode_clc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),]
@@ -1208,7 +1208,7 @@ fn should_generate_implied_addressing_mode_cld_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, false),]
@@ -1228,7 +1228,7 @@ fn should_generate_implied_addressing_mode_cli_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(
@@ -1251,7 +1251,7 @@ fn should_generate_implied_addressing_mode_clv_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Overflow, false)]
@@ -1275,7 +1275,7 @@ fn should_generate_absolute_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1295,7 +1295,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1315,7 +1315,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1332,7 +1332,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_cmp_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1358,7 +1358,7 @@ fn should_generate_immediate_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 2, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1375,7 +1375,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_cmp_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1401,7 +1401,7 @@ fn should_generate_zeropage_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(2, 3, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 3, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1421,7 +1421,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(2, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 4, expected_mops.clone()), mc);
 }
 
 // CPX
@@ -1434,7 +1434,7 @@ fn should_generate_absolute_addressing_mode_cpx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1456,7 +1456,7 @@ fn should_generate_immediate_addressing_mode_cpx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -1478,7 +1478,7 @@ fn should_generate_zeropage_addressing_mode_cpx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -1501,7 +1501,7 @@ fn should_generate_absolute_addressing_mode_cpy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1523,7 +1523,7 @@ fn should_generate_immediate_addressing_mode_cpy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -1545,7 +1545,7 @@ fn should_generate_zeropage_addressing_mode_cpy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -1569,7 +1569,7 @@ fn should_generate_absolute_addressing_mode_dec_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -1592,7 +1592,7 @@ fn should_generate_absolute_indexed_by_x_addressing_mode_dec_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -1614,7 +1614,7 @@ fn should_generate_zeropage_addressing_mode_dec_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1637,7 +1637,7 @@ fn should_generate_zeropage_indexed_by_x_addressing_mode_dec_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1659,7 +1659,7 @@ fn should_generate_implied_addressing_mode_dex_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -1681,7 +1681,7 @@ fn should_generate_implied_addressing_mode_dey_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -1706,7 +1706,7 @@ fn should_generate_absolute_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1730,7 +1730,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1754,7 +1754,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1781,7 +1781,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1803,7 +1803,7 @@ fn should_generate_immediate_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -1830,7 +1830,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1853,7 +1853,7 @@ fn should_generate_zeropage_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -1877,7 +1877,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_eor_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -1901,7 +1901,7 @@ fn should_generate_absolute_addressing_mode_inc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -1924,7 +1924,7 @@ fn should_generate_absolute_indexed_by_x_addressing_mode_inc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -1946,7 +1946,7 @@ fn should_generate_zeropage_addressing_mode_inc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1969,7 +1969,7 @@ fn should_generate_zeropage_indexed_by_x_addressing_mode_inc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1991,7 +1991,7 @@ fn should_generate_implied_addressing_mode_inx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -2013,7 +2013,7 @@ fn should_generate_implied_addressing_mode_iny_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -2037,7 +2037,7 @@ fn should_generate_absolute_addressing_mode_jmp_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)]
@@ -2058,7 +2058,7 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0, // offset modified directly by operation
             5,
             vec![gen_write_16bit_register_microcode!(
@@ -2085,7 +2085,7 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
     let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0, // offset modified directly by instruction
             6,
             vec![
@@ -2110,7 +2110,7 @@ fn should_generate_immediate_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2131,7 +2131,7 @@ fn should_generate_zeropage_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2172,7 +2172,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2212,7 +2212,7 @@ fn should_generate_absolute_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2248,7 +2248,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2284,7 +2284,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2325,7 +2325,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -2351,7 +2351,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_lda_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -2374,7 +2374,7 @@ fn should_generate_absolute_addressing_mode_ldx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2395,7 +2395,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_ldx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2416,7 +2416,7 @@ fn should_generate_immediate_addressing_mode_ldx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2437,7 +2437,7 @@ fn should_generate_zeropage_addressing_mode_ldx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2463,7 +2463,7 @@ fn should_generate_zeropage_indexed_with_y_addressing_mode_ldx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2489,7 +2489,7 @@ fn should_generate_absolute_addressing_mode_ldy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2510,7 +2510,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ldy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2531,7 +2531,7 @@ fn should_generate_immediate_addressing_mode_ldy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2552,7 +2552,7 @@ fn should_generate_zeropage_addressing_mode_ldy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2578,7 +2578,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ldy_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2605,7 +2605,7 @@ fn should_generate_absolute_addressing_mode_lsr_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -2629,7 +2629,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lsr_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -2652,7 +2652,7 @@ fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -2675,7 +2675,7 @@ fn should_generate_zeropage_addressing_mode_lsr_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -2699,7 +2699,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lsr_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -2721,7 +2721,7 @@ fn should_generate_implied_addressing_mode_nop_machine_code() {
     let op: InstructionVariant = Instruction::new(mnemonic::NOP, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(1, 2, vec![]), mc);
+    assert_eq!(Operations::new(1, 2, vec![]), mc);
 }
 
 // ORA
@@ -2736,7 +2736,7 @@ fn should_generate_absolute_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2760,7 +2760,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2784,7 +2784,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2811,7 +2811,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -2833,7 +2833,7 @@ fn should_generate_immediate_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2860,7 +2860,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -2883,7 +2883,7 @@ fn should_generate_zeropage_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2907,7 +2907,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ora_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2932,7 +2932,7 @@ fn should_generate_implied_addressing_mode_pha_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             3,
             vec![
@@ -2957,7 +2957,7 @@ fn should_generate_implied_addressing_mode_php_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             3,
             vec![
@@ -3045,7 +3045,7 @@ fn should_generate_absolute_addressing_mode_rol_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -3074,7 +3074,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_rol_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -3102,7 +3102,7 @@ fn should_generate_accumulator_addressing_mode_rol_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3129,7 +3129,7 @@ fn should_generate_zeropage_addressing_mode_rol_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -3158,7 +3158,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_rol_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -3187,7 +3187,7 @@ fn should_generate_absolute_addressing_mode_ror_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -3216,7 +3216,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ror_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -3244,7 +3244,7 @@ fn should_generate_accumulator_addressing_mode_ror_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3271,7 +3271,7 @@ fn should_generate_zeropage_addressing_mode_ror_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -3300,7 +3300,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ror_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -3334,7 +3334,7 @@ fn should_generate_implied_addressing_mode_rti_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             6,
             vec![
@@ -3360,7 +3360,7 @@ fn should_generate_implied_addressing_mode_rts_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             6,
             vec![
@@ -3390,7 +3390,7 @@ fn should_generate_absolute_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -3422,7 +3422,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -3454,7 +3454,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -3488,7 +3488,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -3518,7 +3518,7 @@ fn should_generate_immediate_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -3552,7 +3552,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -3583,7 +3583,7 @@ fn should_generate_zeropage_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -3615,7 +3615,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_sbc_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -3641,7 +3641,7 @@ fn should_generate_implied_addressing_mode_sec_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),]
@@ -3661,7 +3661,7 @@ fn should_generate_implied_addressing_mode_sed_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, true),]
@@ -3681,7 +3681,7 @@ fn should_generate_implied_addressing_mode_sei_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),]
@@ -3700,7 +3700,7 @@ fn should_generate_absolute_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00))]
@@ -3719,7 +3719,7 @@ fn should_generate_absolute_with_x_index_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             5,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
@@ -3752,7 +3752,7 @@ fn should_generate_absolute_with_y_index_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             5,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
@@ -3788,7 +3788,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![Microcode::WriteMemory(WriteMemory::new(0xff, 0xff))]
@@ -3810,7 +3810,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![Microcode::WriteMemory(WriteMemory::new(0xff, 0xff))]
@@ -3827,7 +3827,7 @@ fn should_generate_zeropage_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x00))]
@@ -3846,7 +3846,7 @@ fn should_generate_zeropage_with_x_index_addressing_mode_sta_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
@@ -3863,7 +3863,7 @@ fn should_generate_absolute_addressing_mode_stx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x55))]
@@ -3880,7 +3880,7 @@ fn should_generate_zeropage_addressing_mode_stx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x55))]
@@ -3899,7 +3899,7 @@ fn should_generate_zeropage_with_y_index_addressing_mode_stx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0x55))]
@@ -3916,7 +3916,7 @@ fn should_generate_absolute_addressing_mode_sty_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x55))]
@@ -3933,7 +3933,7 @@ fn should_generate_zeropage_addressing_mode_sty_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x55))]
@@ -3952,7 +3952,7 @@ fn should_generate_zeropage_with_x_index_addressing_mode_sty_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0x55))]
@@ -3969,7 +3969,7 @@ fn should_generate_implied_addressing_mode_tax_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3990,7 +3990,7 @@ fn should_generate_implied_addressing_mode_tay_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -4010,7 +4010,7 @@ fn should_generate_implied_addressing_mode_tsx_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -4030,7 +4030,7 @@ fn should_generate_implied_addressing_mode_txa_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -4050,7 +4050,7 @@ fn should_generate_implied_addressing_mode_txs_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_write_8bit_register_microcode!(ByteRegisters::SP, 0x00)]
@@ -4066,7 +4066,7 @@ fn should_generate_implied_addressing_mode_tya_machine_code() {
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![

@@ -5,7 +5,7 @@ use crate::address_map::{
 use crate::cpu::{
     mos6502::{
         microcode::*,
-        operations::{Instruction, MOps, Operation},
+        operations::Operations,
         register::{
             ByteRegisters, GPRegister, GeneralPurpose, ProcessorStatus, ProgramCounter,
             ProgramStatusFlags, StackPointer, WordRegisters,
@@ -14,7 +14,7 @@ use crate::cpu::{
     },
     register::Register,
 };
-use isa_mos6502::{addressing_mode, mnemonic};
+use isa_mos6502::{addressing_mode, mnemonic, Instruction, InstructionVariant};
 
 // ADC
 
@@ -23,12 +23,13 @@ fn should_generate_absolute_addressing_mode_adc_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ADC, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ADC, addressing_mode::Absolute(0x00ff)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -49,13 +50,13 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_adc_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ADC, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -76,13 +77,13 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_adc_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ADC, addressing_mode::AbsoluteIndexedWithY(0x00fa)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -106,12 +107,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_adc_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xff).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ADC, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -130,11 +131,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_adc_machine_code() {
 fn should_generate_immediate_addressing_mode_adc_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80));
-    let op: Operation = Instruction::new(mnemonic::ADC, addressing_mode::Immediate(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ADC, addressing_mode::Immediate(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -158,12 +160,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_adc_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xff).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ADC, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -183,12 +185,13 @@ fn should_generate_zeropage_addressing_mode_adc_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ADC, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ADC, addressing_mode::ZeroPage(0xff)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -209,13 +212,13 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_adc_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x80))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0xff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ADC, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -237,11 +240,12 @@ fn should_generate_absolute_addressing_mode_and_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::AND, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::AND, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -260,12 +264,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_and_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::AND, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -284,12 +288,12 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_and_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::AND, addressing_mode::AbsoluteIndexedWithY(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -311,12 +315,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_and_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::AND, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -333,11 +337,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_and_machine_code() {
 fn should_generate_immediate_addressing_mode_and_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::AND, addressing_mode::Immediate(0x55)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::AND, addressing_mode::Immediate(0x55)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -359,12 +364,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_and_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::AND, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -382,11 +387,12 @@ fn should_generate_zeropage_addressing_mode_and_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::AND, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::AND, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -405,12 +411,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_and_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::AND, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -429,11 +435,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_and_machine_code() {
 fn should_generate_absolute_addressing_mode_asl_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ASL, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ASL, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -452,12 +459,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_asl_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ASL, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -475,11 +482,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_asl_machine_code() {
 fn should_generate_accumulator_addressing_mode_asl_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xaa));
-    let op: Operation = Instruction::new(mnemonic::ASL, addressing_mode::Accumulator).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ASL, addressing_mode::Accumulator).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -497,11 +505,12 @@ fn should_generate_accumulator_addressing_mode_asl_machine_code() {
 fn should_generate_zeropage_addressing_mode_asl_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ASL, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ASL, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -520,12 +529,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_asl_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ASL, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -546,14 +555,15 @@ fn should_generate_bcc_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.carry = false;
 
-    let op: Operation = Instruction::new(mnemonic::BCC, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BCC, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -567,14 +577,15 @@ fn should_generate_bcc_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.carry = false;
 
-    let op: Operation = Instruction::new(mnemonic::BCC, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BCC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -588,13 +599,14 @@ fn should_generate_bcc_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.carry = true;
 
-    let op: Operation = Instruction::new(mnemonic::BCC, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BCC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -610,14 +622,15 @@ fn should_generate_bcs_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.carry = true;
 
-    let op: Operation = Instruction::new(mnemonic::BCS, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BCS, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -631,14 +644,15 @@ fn should_generate_bcs_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.carry = true;
 
-    let op: Operation = Instruction::new(mnemonic::BCS, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BCS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -652,13 +666,14 @@ fn should_generate_bcs_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.carry = false;
 
-    let op: Operation = Instruction::new(mnemonic::BCS, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BCS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -674,14 +689,15 @@ fn should_generate_beq_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.zero = true;
 
-    let op: Operation = Instruction::new(mnemonic::BEQ, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BEQ, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -695,14 +711,15 @@ fn should_generate_beq_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.zero = true;
 
-    let op: Operation = Instruction::new(mnemonic::BEQ, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BEQ, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -716,13 +733,14 @@ fn should_generate_beq_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.zero = false;
 
-    let op: Operation = Instruction::new(mnemonic::BEQ, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BEQ, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -738,14 +756,15 @@ fn should_generate_bmi_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.negative = true;
 
-    let op: Operation = Instruction::new(mnemonic::BMI, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BMI, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc + relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -759,14 +778,15 @@ fn should_generate_bmi_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.negative = true;
 
-    let op: Operation = Instruction::new(mnemonic::BMI, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BMI, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -780,13 +800,14 @@ fn should_generate_bmi_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.negative = false;
 
-    let op: Operation = Instruction::new(mnemonic::BMI, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BMI, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -802,11 +823,12 @@ fn should_generate_absolute_addressing_mode_bit_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::BIT, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BIT, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -824,11 +846,12 @@ fn should_generate_zeropage_addressing_mode_bit_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::BIT, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BIT, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -848,14 +871,15 @@ fn should_generate_bne_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.zero = false;
 
-    let op: Operation = Instruction::new(mnemonic::BNE, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BNE, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc + relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -869,14 +893,15 @@ fn should_generate_bne_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.zero = false;
 
-    let op: Operation = Instruction::new(mnemonic::BNE, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BNE, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -890,13 +915,14 @@ fn should_generate_bne_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.zero = true;
 
-    let op: Operation = Instruction::new(mnemonic::BNE, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BNE, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -912,14 +938,15 @@ fn should_generate_bpl_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.negative = false;
 
-    let op: Operation = Instruction::new(mnemonic::BPL, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BPL, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc + relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -933,14 +960,15 @@ fn should_generate_bpl_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.negative = false;
 
-    let op: Operation = Instruction::new(mnemonic::BPL, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BPL, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -954,13 +982,14 @@ fn should_generate_bpl_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.negative = true;
 
-    let op: Operation = Instruction::new(mnemonic::BPL, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BPL, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -988,14 +1017,14 @@ fn should_generate_implied_addressing_mode_brk_machine_code() {
         )
         .unwrap();
 
-    let op: Operation = Instruction::new(mnemonic::BRK, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::BRK, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     // expect unused flag to be set only for status register on stack.
     let expected_ps_on_stack = ProcessorStatus::with_value(0b00100000);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0, // PC controlled by the instruction
             7,
             vec![
@@ -1021,14 +1050,15 @@ fn should_generate_bvc_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.overflow = false;
 
-    let op: Operation = Instruction::new(mnemonic::BVC, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BVC, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc + relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1042,14 +1072,15 @@ fn should_generate_bvc_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.overflow = false;
 
-    let op: Operation = Instruction::new(mnemonic::BVC, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BVC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1063,13 +1094,14 @@ fn should_generate_bvc_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.overflow = true;
 
-    let op: Operation = Instruction::new(mnemonic::BVC, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BVC, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1085,14 +1117,15 @@ fn should_generate_bvs_machine_code_with_branch_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.overflow = true;
 
-    let op: Operation = Instruction::new(mnemonic::BVS, addressing_mode::Relative(8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BVS, addressing_mode::Relative(8)).into();
     let mc = op.generate(&cpu);
 
     // pc + relative address
     let pc = cpu.pc.read() + 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1106,14 +1139,15 @@ fn should_generate_bvs_machine_code_with_branch_and_page_penalty() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.overflow = true;
 
-    let op: Operation = Instruction::new(mnemonic::BVS, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BVS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     // pc - relative address
     let pc = cpu.pc.read() - 8;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             4,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1127,13 +1161,14 @@ fn should_generate_bvs_machine_code_with_no_jump() {
     let mut cpu = MOS6502::default().with_pc_register(ProgramCounter::with_value(0x6000));
     cpu.ps.overflow = false;
 
-    let op: Operation = Instruction::new(mnemonic::BVS, addressing_mode::Relative(-8)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::BVS, addressing_mode::Relative(-8)).into();
     let mc = op.generate(&cpu);
 
     let pc = cpu.pc.read() + 2;
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             2,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, pc)]
@@ -1149,11 +1184,11 @@ fn should_generate_implied_addressing_mode_clc_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.carry = true;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::CLC, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::CLC, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, false),]
@@ -1169,11 +1204,11 @@ fn should_generate_implied_addressing_mode_cld_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.carry = true;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::CLD, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::CLD, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, false),]
@@ -1189,11 +1224,11 @@ fn should_generate_implied_addressing_mode_cli_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.interrupt_disable = true;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::CLI, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::CLI, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(
@@ -1212,11 +1247,11 @@ fn should_generate_implied_addressing_mode_clv_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.overflow = true;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::CLV, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::CLV, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Overflow, false)]
@@ -1231,7 +1266,7 @@ fn should_generate_implied_addressing_mode_clv_machine_code() {
 fn should_generate_absolute_addressing_mode_cmp_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CMP, addressing_mode::Absolute::default()).into();
     let mc = op.generate(&cpu);
     let expected_mops = vec![
@@ -1240,7 +1275,7 @@ fn should_generate_absolute_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1248,7 +1283,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_cmp_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
-    let op: Operation = Instruction::new(
+    let op: InstructionVariant = Instruction::new(
         mnemonic::CMP,
         addressing_mode::AbsoluteIndexedWithX::default(),
     )
@@ -1260,7 +1295,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1268,7 +1303,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_cmp_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
-    let op: Operation = Instruction::new(
+    let op: InstructionVariant = Instruction::new(
         mnemonic::CMP,
         addressing_mode::AbsoluteIndexedWithY::default(),
     )
@@ -1280,7 +1315,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1292,12 +1327,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_cmp_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CMP, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1314,7 +1349,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_cmp_machine_code() {
 fn should_generate_immediate_addressing_mode_cmp_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CMP, addressing_mode::Immediate::default()).into();
     let mc = op.generate(&cpu);
     let expected_mops = vec![
@@ -1323,7 +1358,7 @@ fn should_generate_immediate_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(2, 2, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 2, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1335,12 +1370,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_cmp_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CMP, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1357,7 +1392,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_cmp_machine_code() {
 fn should_generate_zeropage_addressing_mode_cmp_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CMP, addressing_mode::ZeroPage::default()).into();
     let mc = op.generate(&cpu);
     let expected_mops = vec![
@@ -1366,7 +1401,7 @@ fn should_generate_zeropage_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(2, 3, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 3, expected_mops.clone()), mc);
 }
 
 #[test]
@@ -1374,7 +1409,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_cmp_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
-    let op: Operation = Instruction::new(
+    let op: InstructionVariant = Instruction::new(
         mnemonic::CMP,
         addressing_mode::ZeroPageIndexedWithX::default(),
     )
@@ -1386,7 +1421,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_cmp_machine_code() {
         gen_flag_set_microcode!(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(MOps::new(2, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 4, expected_mops.clone()), mc);
 }
 
 // CPX
@@ -1394,12 +1429,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_cmp_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_cpx_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CPX, addressing_mode::Absolute::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1416,12 +1451,12 @@ fn should_generate_absolute_addressing_mode_cpx_machine_code() {
 fn should_generate_immediate_addressing_mode_cpx_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CPX, addressing_mode::Immediate::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -1438,12 +1473,12 @@ fn should_generate_immediate_addressing_mode_cpx_machine_code() {
 fn should_generate_zeropage_addressing_mode_cpx_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CPX, addressing_mode::ZeroPage::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -1461,12 +1496,12 @@ fn should_generate_zeropage_addressing_mode_cpx_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_cpy_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CPY, addressing_mode::Absolute::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1483,12 +1518,12 @@ fn should_generate_absolute_addressing_mode_cpy_machine_code() {
 fn should_generate_immediate_addressing_mode_cpy_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CPY, addressing_mode::Immediate::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -1505,12 +1540,12 @@ fn should_generate_immediate_addressing_mode_cpy_machine_code() {
 fn should_generate_zeropage_addressing_mode_cpy_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x00));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::CPY, addressing_mode::ZeroPage::default()).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -1529,11 +1564,12 @@ fn should_generate_zeropage_addressing_mode_cpy_machine_code() {
 fn should_generate_absolute_addressing_mode_dec_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x01ff, 0x05).unwrap();
-    let op: Operation = Instruction::new(mnemonic::DEC, addressing_mode::Absolute(0x01ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::DEC, addressing_mode::Absolute(0x01ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -1551,12 +1587,12 @@ fn should_generate_absolute_indexed_by_x_addressing_mode_dec_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x01ff, 0x05).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::DEC, addressing_mode::AbsoluteIndexedWithX(0x01fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -1573,11 +1609,12 @@ fn should_generate_absolute_indexed_by_x_addressing_mode_dec_machine_code() {
 fn should_generate_zeropage_addressing_mode_dec_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0xff, 0x05).unwrap();
-    let op: Operation = Instruction::new(mnemonic::DEC, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::DEC, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1595,12 +1632,12 @@ fn should_generate_zeropage_indexed_by_x_addressing_mode_dec_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0xff, 0x05).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::DEC, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1618,11 +1655,11 @@ fn should_generate_zeropage_indexed_by_x_addressing_mode_dec_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_dex_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::DEX, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::DEX, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -1640,11 +1677,11 @@ fn should_generate_implied_addressing_mode_dex_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_dey_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::DEY, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::DEY, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -1664,11 +1701,12 @@ fn should_generate_absolute_addressing_mode_eor_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::EOR, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::EOR, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1687,12 +1725,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_eor_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::EOR, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1711,12 +1749,12 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_eor_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::EOR, addressing_mode::AbsoluteIndexedWithY(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -1738,12 +1776,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_eor_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::EOR, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1760,11 +1798,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_eor_machine_code() {
 fn should_generate_immediate_addressing_mode_eor_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::EOR, addressing_mode::Immediate(0x55)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::EOR, addressing_mode::Immediate(0x55)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -1786,12 +1825,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_eor_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::EOR, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1809,11 +1848,12 @@ fn should_generate_zeropage_addressing_mode_eor_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::EOR, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::EOR, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -1832,12 +1872,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_eor_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::EOR, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -1856,11 +1896,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_eor_machine_code() {
 fn should_generate_absolute_addressing_mode_inc_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x01ff, 0x05).unwrap();
-    let op: Operation = Instruction::new(mnemonic::INC, addressing_mode::Absolute(0x01ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::INC, addressing_mode::Absolute(0x01ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -1878,12 +1919,12 @@ fn should_generate_absolute_indexed_by_x_addressing_mode_inc_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x01ff, 0x05).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::INC, addressing_mode::AbsoluteIndexedWithX(0x01fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -1900,11 +1941,12 @@ fn should_generate_absolute_indexed_by_x_addressing_mode_inc_machine_code() {
 fn should_generate_zeropage_addressing_mode_inc_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0xff, 0x05).unwrap();
-    let op: Operation = Instruction::new(mnemonic::INC, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::INC, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -1922,12 +1964,12 @@ fn should_generate_zeropage_indexed_by_x_addressing_mode_inc_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0xff, 0x05).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::INC, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -1945,11 +1987,11 @@ fn should_generate_zeropage_indexed_by_x_addressing_mode_inc_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_inx_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x12));
-    let op: Operation = Instruction::new(mnemonic::INX, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::INX, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -1967,11 +2009,11 @@ fn should_generate_implied_addressing_mode_inx_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_iny_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x12));
-    let op: Operation = Instruction::new(mnemonic::INY, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::INY, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -1990,11 +2032,12 @@ fn should_generate_implied_addressing_mode_iny_machine_code() {
 fn should_generate_absolute_addressing_mode_jmp_machine_code() {
     let cpu = MOS6502::default();
     let addr = 0x0100;
-    let op: Operation = Instruction::new(mnemonic::JMP, addressing_mode::Absolute(addr)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::JMP, addressing_mode::Absolute(addr)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0,
             3,
             vec![gen_write_16bit_register_microcode!(WordRegisters::PC, addr)]
@@ -2010,12 +2053,12 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
     let indirect_addr = 0x0150;
     cpu.address_map.write(base_addr, 0x50).unwrap();
     cpu.address_map.write(base_addr + 1, 0x01).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::JMP, addressing_mode::Indirect(base_addr)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0, // offset modified directly by operation
             5,
             vec![gen_write_16bit_register_microcode!(
@@ -2033,7 +2076,8 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
 fn should_generate_absolute_addressing_mode_jsr_machine_code() {
     let cpu = MOS6502::default();
     let addr = 0x0100;
-    let op: Operation = Instruction::new(mnemonic::JSR, addressing_mode::Absolute(addr)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::JSR, addressing_mode::Absolute(addr)).into();
     let mc = op.generate(&cpu);
 
     let sph: u16 = 0x0100 + cpu.sp.read() as u16;
@@ -2041,7 +2085,7 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
     let [pcl, pch] = cpu.pc.read().wrapping_add(2).to_le_bytes();
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             0, // offset modified directly by instruction
             6,
             vec![
@@ -2061,11 +2105,12 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
 #[test]
 fn should_generate_immediate_addressing_mode_lda_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDA, addressing_mode::Immediate(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDA, addressing_mode::Immediate(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2081,11 +2126,12 @@ fn should_generate_immediate_addressing_mode_lda_machine_code() {
 #[test]
 fn should_generate_zeropage_addressing_mode_lda_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDA, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDA, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2121,12 +2167,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lda_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDA, addressing_mode::ZeroPageIndexedWithX(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2161,11 +2207,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lda_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_lda_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDA, addressing_mode::Absolute(0x0100)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDA, addressing_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2196,12 +2243,12 @@ fn should_generate_absolute_addressing_mode_lda_machine_code() {
 #[test]
 fn should_generate_absolute_indexed_with_x_addressing_mode_lda_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDA, addressing_mode::AbsoluteIndexedWithX(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2232,12 +2279,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lda_machine_code() {
 #[test]
 fn should_generate_absolute_indexed_with_y_addressing_mode_lda_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDA, addressing_mode::AbsoluteIndexedWithY(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2273,12 +2320,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_lda_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDA, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -2299,12 +2346,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_lda_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xea).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDA, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -2322,11 +2369,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_lda_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_ldx_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDX, addressing_mode::Absolute(0x0100)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDX, addressing_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2342,12 +2390,12 @@ fn should_generate_absolute_addressing_mode_ldx_machine_code() {
 #[test]
 fn should_generate_absolute_indexed_with_y_addressing_mode_ldx_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDX, addressing_mode::AbsoluteIndexedWithY(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2363,11 +2411,12 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_ldx_machine_code() {
 #[test]
 fn should_generate_immediate_addressing_mode_ldx_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDX, addressing_mode::Immediate(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDX, addressing_mode::Immediate(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2383,11 +2432,12 @@ fn should_generate_immediate_addressing_mode_ldx_machine_code() {
 #[test]
 fn should_generate_zeropage_addressing_mode_ldx_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDX, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDX, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2408,12 +2458,12 @@ fn should_generate_zeropage_indexed_with_y_addressing_mode_ldx_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDX, addressing_mode::ZeroPageIndexedWithY(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2434,11 +2484,12 @@ fn should_generate_zeropage_indexed_with_y_addressing_mode_ldx_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_ldy_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDY, addressing_mode::Absolute(0x0100)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDY, addressing_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2454,12 +2505,12 @@ fn should_generate_absolute_addressing_mode_ldy_machine_code() {
 #[test]
 fn should_generate_absolute_indexed_with_x_addressing_mode_ldy_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDY, addressing_mode::AbsoluteIndexedWithX(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2475,11 +2526,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ldy_machine_code() {
 #[test]
 fn should_generate_immediate_addressing_mode_ldy_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDY, addressing_mode::Immediate(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDY, addressing_mode::Immediate(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2495,11 +2547,12 @@ fn should_generate_immediate_addressing_mode_ldy_machine_code() {
 #[test]
 fn should_generate_zeropage_addressing_mode_ldy_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::LDY, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LDY, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2520,12 +2573,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ldy_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LDY, addressing_mode::ZeroPageIndexedWithX(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2547,11 +2600,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ldy_machine_code() {
 fn should_generate_absolute_addressing_mode_lsr_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::LSR, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LSR, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -2570,12 +2624,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lsr_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LSR, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -2593,11 +2647,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lsr_machine_code() {
 fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55));
-    let op: Operation = Instruction::new(mnemonic::LSR, addressing_mode::Accumulator).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LSR, addressing_mode::Accumulator).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -2615,11 +2670,12 @@ fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
 fn should_generate_zeropage_addressing_mode_lsr_machine_code() {
     let mut cpu = MOS6502::default();
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::LSR, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::LSR, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -2638,12 +2694,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lsr_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::LSR, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -2662,10 +2718,10 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lsr_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_nop_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::NOP, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::NOP, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
-    assert_eq!(MOps::new(1, 2, vec![]), mc);
+    assert_eq!(Operations::new(1, 2, vec![]), mc);
 }
 
 // ORA
@@ -2675,11 +2731,12 @@ fn should_generate_absolute_addressing_mode_ora_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ORA, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ORA, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2698,12 +2755,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ora_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ORA, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2722,12 +2779,12 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_ora_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ORA, addressing_mode::AbsoluteIndexedWithY(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -2749,12 +2806,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_ora_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ORA, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -2771,11 +2828,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_ora_machine_code() {
 fn should_generate_immediate_addressing_mode_ora_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::ORA, addressing_mode::Immediate(0x55)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ORA, addressing_mode::Immediate(0x55)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -2797,12 +2855,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_ora_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ORA, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -2820,11 +2878,12 @@ fn should_generate_zeropage_addressing_mode_ora_machine_code() {
     let mut cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ORA, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ORA, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -2843,12 +2902,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ora_machine_code() {
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ORA, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -2869,11 +2928,11 @@ fn should_generate_implied_addressing_mode_pha_machine_code() {
         .reset()
         .unwrap()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::PHA, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::PHA, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             3,
             vec![
@@ -2894,11 +2953,11 @@ fn should_generate_implied_addressing_mode_php_machine_code() {
         .reset()
         .unwrap()
         .with_ps_register(ProcessorStatus::with_value(0x55));
-    let op: Operation = Instruction::new(mnemonic::PHP, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::PHP, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             3,
             vec![
@@ -2922,7 +2981,7 @@ fn should_generate_implied_addressing_mode_pla_machine_code() {
         .with_sp_register(StackPointer::with_value(0xfe));
     cpu.address_map.write(0x01ff, 0xff).unwrap();
 
-    let op: Operation = Instruction::new(mnemonic::PLA, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::PLA, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
@@ -2953,7 +3012,7 @@ fn should_generate_implied_addressing_mode_plp_machine_code() {
         .with_sp_register(StackPointer::with_value(0xfe));
     cpu.address_map.write(0x01ff, 0x55).unwrap();
 
-    let op: Operation = Instruction::new(mnemonic::PLP, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::PLP, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
@@ -2981,11 +3040,12 @@ fn should_generate_absolute_addressing_mode_rol_machine_code() {
         ps
     });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ROL, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ROL, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -3009,12 +3069,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_rol_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ROL, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -3037,11 +3097,12 @@ fn should_generate_accumulator_addressing_mode_rol_machine_code() {
             ps.carry = true;
             ps
         });
-    let op: Operation = Instruction::new(mnemonic::ROL, addressing_mode::Accumulator).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ROL, addressing_mode::Accumulator).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3063,11 +3124,12 @@ fn should_generate_zeropage_addressing_mode_rol_machine_code() {
         ps
     });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ROL, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ROL, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -3091,12 +3153,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_rol_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ROL, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -3120,11 +3182,12 @@ fn should_generate_absolute_addressing_mode_ror_machine_code() {
         ps
     });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ROR, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ROR, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             6,
             vec![
@@ -3148,12 +3211,12 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ror_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ROR, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             7,
             vec![
@@ -3176,11 +3239,12 @@ fn should_generate_accumulator_addressing_mode_ror_machine_code() {
             ps.carry = true;
             ps
         });
-    let op: Operation = Instruction::new(mnemonic::ROR, addressing_mode::Accumulator).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ROR, addressing_mode::Accumulator).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3202,11 +3266,12 @@ fn should_generate_zeropage_addressing_mode_ror_machine_code() {
         ps
     });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation = Instruction::new(mnemonic::ROR, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::ROR, addressing_mode::ZeroPage(0xff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -3230,12 +3295,12 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ror_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::ROR, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -3265,11 +3330,11 @@ fn should_generate_implied_addressing_mode_rti_machine_code() {
         })
         .unwrap();
 
-    let op: Operation = Instruction::new(mnemonic::RTI, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::RTI, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             6,
             vec![
@@ -3291,11 +3356,11 @@ fn should_generate_implied_addressing_mode_rts_machine_code() {
     cpu.address_map.write(0x01fe, 0x02).unwrap();
     cpu.address_map.write(0x01ff, 0x60).unwrap();
 
-    let op: Operation = Instruction::new(mnemonic::RTS, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::RTS, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             6,
             vec![
@@ -3320,11 +3385,12 @@ fn should_generate_absolute_addressing_mode_sbc_machine_code() {
         });
 
     cpu.address_map.write(0x00ff, 0xb0).unwrap();
-    let op: Operation = Instruction::new(mnemonic::SBC, addressing_mode::Absolute(0x00ff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::SBC, addressing_mode::Absolute(0x00ff)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -3350,13 +3416,13 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_sbc_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xb0).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::SBC, addressing_mode::AbsoluteIndexedWithX(0x00fa)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -3382,13 +3448,13 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_sbc_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xb0).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::SBC, addressing_mode::AbsoluteIndexedWithY(0x00fa)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![
@@ -3417,12 +3483,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_sbc_machine_code() {
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xb0).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::SBC, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             5,
             vec![
@@ -3447,11 +3513,12 @@ fn should_generate_immediate_addressing_mode_sbc_machine_code() {
             ps
         });
 
-    let op: Operation = Instruction::new(mnemonic::SBC, addressing_mode::Immediate(0xb0)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::SBC, addressing_mode::Immediate(0xb0)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             2,
             vec![
@@ -3480,12 +3547,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_sbc_machine_code() {
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xb0).unwrap(); // indirect addr
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::SBC, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![
@@ -3510,12 +3577,13 @@ fn should_generate_zeropage_addressing_mode_sbc_machine_code() {
             ps
         });
     cpu.address_map.write(0x00ff, 0xb0).unwrap();
-    let op: Operation = Instruction::new(mnemonic::SBC, addressing_mode::ZeroPage(0xff)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::SBC, addressing_mode::ZeroPage(0xff)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![
@@ -3541,13 +3609,13 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_sbc_machine_code() {
             ps
         });
     cpu.address_map.write(0xff, 0xb0).unwrap();
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::SBC, addressing_mode::ZeroPageIndexedWithX(0xfa)).into();
 
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![
@@ -3569,11 +3637,11 @@ fn should_generate_implied_addressing_mode_sec_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.carry = false;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::SEC, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::SEC, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, true),]
@@ -3589,11 +3657,11 @@ fn should_generate_implied_addressing_mode_sed_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.decimal = false;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::SED, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::SED, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, true),]
@@ -3609,11 +3677,11 @@ fn should_generate_implied_addressing_mode_sei_machine_code() {
     let mut ps = ProcessorStatus::new();
     ps.interrupt_disable = false;
     let cpu = MOS6502::default().with_ps_register(ps);
-    let op: Operation = Instruction::new(mnemonic::SEI, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::SEI, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),]
@@ -3627,11 +3695,12 @@ fn should_generate_implied_addressing_mode_sei_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_sta_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::STA, addressing_mode::Absolute(0x0100)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::STA, addressing_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x00))]
@@ -3645,12 +3714,12 @@ fn should_generate_absolute_with_x_index_addressing_mode_sta_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STA, addressing_mode::AbsoluteIndexedWithX(0x0000)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             5,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
@@ -3678,12 +3747,12 @@ fn should_generate_absolute_with_y_index_addressing_mode_sta_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STA, addressing_mode::AbsoluteIndexedWithY(0x0000)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             5,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
@@ -3714,12 +3783,12 @@ fn should_generate_indirect_y_indexed_addressing_mode_sta_machine_code() {
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STA, addressing_mode::IndirectYIndexed(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![Microcode::WriteMemory(WriteMemory::new(0xff, 0xff))]
@@ -3736,12 +3805,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_sta_machine_code() {
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
 
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STA, addressing_mode::XIndexedIndirect(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             6,
             vec![Microcode::WriteMemory(WriteMemory::new(0xff, 0xff))]
@@ -3753,11 +3822,12 @@ fn should_generate_x_indexed_indirect_addressing_mode_sta_machine_code() {
 #[test]
 fn should_generate_zeropage_addressing_mode_sta_machine_code() {
     let cpu = MOS6502::default();
-    let op: Operation = Instruction::new(mnemonic::STA, addressing_mode::ZeroPage(0x01)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::STA, addressing_mode::ZeroPage(0x01)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x00))]
@@ -3771,12 +3841,12 @@ fn should_generate_zeropage_with_x_index_addressing_mode_sta_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff))
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STA, addressing_mode::ZeroPageIndexedWithX(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0xff))]
@@ -3788,11 +3858,12 @@ fn should_generate_zeropage_with_x_index_addressing_mode_sta_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_stx_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x55));
-    let op: Operation = Instruction::new(mnemonic::STX, addressing_mode::Absolute(0x0100)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::STX, addressing_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x55))]
@@ -3804,11 +3875,12 @@ fn should_generate_absolute_addressing_mode_stx_machine_code() {
 #[test]
 fn should_generate_zeropage_addressing_mode_stx_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x55));
-    let op: Operation = Instruction::new(mnemonic::STX, addressing_mode::ZeroPage(0x01)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::STX, addressing_mode::ZeroPage(0x01)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x55))]
@@ -3822,12 +3894,12 @@ fn should_generate_zeropage_with_y_index_addressing_mode_stx_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x55))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x05));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STX, addressing_mode::ZeroPageIndexedWithY(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0x55))]
@@ -3839,11 +3911,12 @@ fn should_generate_zeropage_with_y_index_addressing_mode_stx_machine_code() {
 #[test]
 fn should_generate_absolute_addressing_mode_sty_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x55));
-    let op: Operation = Instruction::new(mnemonic::STY, addressing_mode::Absolute(0x0100)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::STY, addressing_mode::Absolute(0x0100)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             3,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x0100, 0x55))]
@@ -3855,11 +3928,12 @@ fn should_generate_absolute_addressing_mode_sty_machine_code() {
 #[test]
 fn should_generate_zeropage_addressing_mode_sty_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x55));
-    let op: Operation = Instruction::new(mnemonic::STY, addressing_mode::ZeroPage(0x01)).into();
+    let op: InstructionVariant =
+        Instruction::new(mnemonic::STY, addressing_mode::ZeroPage(0x01)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             3,
             vec![Microcode::WriteMemory(WriteMemory::new(0x01, 0x55))]
@@ -3873,12 +3947,12 @@ fn should_generate_zeropage_with_x_index_addressing_mode_sty_machine_code() {
     let cpu = MOS6502::default()
         .with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x05))
         .with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0x55));
-    let op: Operation =
+    let op: InstructionVariant =
         Instruction::new(mnemonic::STY, addressing_mode::ZeroPageIndexedWithX(0x00)).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             2,
             4,
             vec![Microcode::WriteMemory(WriteMemory::new(0x05, 0x55))]
@@ -3891,11 +3965,11 @@ fn should_generate_zeropage_with_x_index_addressing_mode_sty_machine_code() {
 fn should_generate_implied_addressing_mode_tax_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::TAX, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::TAX, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3912,11 +3986,11 @@ fn should_generate_implied_addressing_mode_tax_machine_code() {
 fn should_generate_implied_addressing_mode_tay_machine_code() {
     let cpu =
         MOS6502::default().with_gp_register(GPRegister::ACC, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::TAY, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::TAY, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3932,11 +4006,11 @@ fn should_generate_implied_addressing_mode_tay_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_tsx_machine_code() {
     let cpu = MOS6502::default().with_sp_register(StackPointer::default());
-    let op: Operation = Instruction::new(mnemonic::TSX, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::TSX, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3952,11 +4026,11 @@ fn should_generate_implied_addressing_mode_tsx_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_txa_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::TXA, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::TXA, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![
@@ -3972,11 +4046,11 @@ fn should_generate_implied_addressing_mode_txa_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_txs_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::X, GeneralPurpose::with_value(0x00));
-    let op: Operation = Instruction::new(mnemonic::TXS, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::TXS, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![gen_write_8bit_register_microcode!(ByteRegisters::SP, 0x00)]
@@ -3988,11 +4062,11 @@ fn should_generate_implied_addressing_mode_txs_machine_code() {
 #[test]
 fn should_generate_implied_addressing_mode_tya_machine_code() {
     let cpu = MOS6502::default().with_gp_register(GPRegister::Y, GeneralPurpose::with_value(0xff));
-    let op: Operation = Instruction::new(mnemonic::TYA, addressing_mode::Implied).into();
+    let op: InstructionVariant = Instruction::new(mnemonic::TYA, addressing_mode::Implied).into();
     let mc = op.generate(&cpu);
 
     assert_eq!(
-        MOps::new(
+        Operations::new(
             1,
             2,
             vec![

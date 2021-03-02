@@ -12,12 +12,14 @@ use std::num::Wrapping;
 #[cfg(test)]
 mod tests;
 
-/// Takes two numerical values returning whether the bit is set for a specific
-/// place.
-macro_rules! bit_is_set {
-    ($value:expr, $place:expr) => {
-        (($value >> $place) & 1) == 1
-    };
+/// bit_is_set takes a u8 value and a u8 representing the bit place returning a
+/// bool if the place is set. This defaults to false if it is out of range.
+const fn bit_is_set(value: u8, place: u8) -> bool {
+    if place > 7 {
+        false
+    } else {
+        ((value >> place) & 1) == 1
+    }
 }
 
 /// This Trait provides addition that that signifies the overflow of a twos complement number.
@@ -124,8 +126,8 @@ impl AddTwosComplement for Operand<u8> {
     fn twos_complement_add(self, other: Self, carry: bool) -> (Self::Output, bool) {
         let sum = self + other;
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let overflow = (!bit_is_set!(lhs, 7) && !bit_is_set!(rhs, 7) && carry)
-            || (bit_is_set!(lhs, 7) && bit_is_set!(rhs, 7) && !carry);
+        let overflow = (!bit_is_set(lhs, 7) && !bit_is_set(rhs, 7) && carry)
+            || (bit_is_set(lhs, 7) && bit_is_set(rhs, 7) && !carry);
 
         (sum, overflow)
     }
@@ -190,7 +192,7 @@ impl Rol for Operand<u8> {
     fn rol(self, other: Self, carry: bool) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
         let carry_in = carry as u8; // bool translates to 1 or 0 emulating 0th bit.
-        let carry_out = bit_is_set!(lhs, 7);
+        let carry_out = bit_is_set(lhs, 7);
         let shifted = Operand::new(lhs << rhs | carry_in);
 
         Operand::with_flags(shifted.unwrap(), carry_out, shifted.negative, shifted.zero)
@@ -203,7 +205,7 @@ impl Ror for Operand<u8> {
     fn ror(self, other: Self, carry: bool) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
         let carry_in = (carry as u8) << 7;
-        let carry_out = bit_is_set!(lhs, 0);
+        let carry_out = bit_is_set(lhs, 0);
         let shifted = Operand::new(lhs >> rhs | carry_in);
 
         Operand::with_flags(shifted.unwrap(), carry_out, shifted.negative, shifted.zero)
@@ -215,7 +217,7 @@ impl std::ops::Shl for Operand<u8> {
 
     fn shl(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let carry = bit_is_set!(lhs, 7); // if the msb is set, shift to carry
+        let carry = bit_is_set(lhs, 7); // if the msb is set, shift to carry
         let value = Operand::new(lhs << rhs);
 
         Operand::with_flags(value.unwrap(), carry, value.negative, value.zero)
@@ -227,7 +229,7 @@ impl std::ops::Shr for Operand<u8> {
 
     fn shr(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let carry = bit_is_set!(lhs, 0); // if the lsb is set, shift to carry
+        let carry = bit_is_set(lhs, 0); // if the lsb is set, shift to carry
         let value = Operand::new(lhs >> rhs);
 
         Operand::with_flags(value.unwrap(), carry, value.negative, value.zero)
@@ -1915,8 +1917,8 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BIT, addressing_mod
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
-        let negative = bit_is_set!(rhs.unwrap(), 7);
-        let overflow = bit_is_set!(rhs.unwrap(), 6);
+        let negative = bit_is_set(rhs.unwrap(), 7);
+        let overflow = bit_is_set(rhs.unwrap(), 6);
         let value = lhs & rhs;
 
         Operations::new(
@@ -1936,8 +1938,8 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BIT, addressing_mod
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, addr, 0);
-        let negative = bit_is_set!(rhs.unwrap(), 7);
-        let overflow = bit_is_set!(rhs.unwrap(), 6);
+        let negative = bit_is_set(rhs.unwrap(), 7);
+        let overflow = bit_is_set(rhs.unwrap(), 6);
         let value = lhs & rhs;
 
         Operations::new(

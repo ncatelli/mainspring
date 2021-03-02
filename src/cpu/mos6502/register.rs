@@ -108,10 +108,14 @@ impl Default for StackPointer {
     }
 }
 
-macro_rules! bit_is_set {
-    ($value:expr, $place:expr) => {
-        (($value >> $place) & 1) == 1
-    };
+/// bit_is_set takes a u8 value and a u8 representing the bit place returning a
+/// bool if the place is set. This defaults to false if it is out of range.
+const fn bit_is_set(value: u8, place: u8) -> bool {
+    if place > 7 {
+        false
+    } else {
+        ((value >> place) & 1) == 1
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -160,20 +164,22 @@ impl Register<u8, u8> for ProcessorStatus {
     fn with_value(value: u8) -> Self {
         // check if each bit is set
         Self {
-            negative: bit_is_set!(value, 7),
-            overflow: bit_is_set!(value, 6),
-            unused: bit_is_set!(value, 5),
-            brk: bit_is_set!(value, 4),
-            decimal: bit_is_set!(value, 3),
-            interrupt_disable: bit_is_set!(value, 2),
-            zero: bit_is_set!(value, 1),
-            carry: bit_is_set!(value, 0),
+            negative: bit_is_set(value, 7),
+            overflow: bit_is_set(value, 6),
+            unused: bit_is_set(value, 5),
+            brk: bit_is_set(value, 4),
+            decimal: bit_is_set(value, 3),
+            interrupt_disable: bit_is_set(value, 2),
+            zero: bit_is_set(value, 1),
+            carry: bit_is_set(value, 0),
         }
     }
 }
 
 impl From<ProcessorStatus> for u8 {
     fn from(src: ProcessorStatus) -> u8 {
+        // Convert a bool to a u8 (0 or 1) and shift it to it's corresponding
+        //place.
         let mut ps: u8 = 0;
         ps |= (src.negative as u8) << 7;
         ps |= (src.overflow as u8) << 6;

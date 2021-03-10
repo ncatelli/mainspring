@@ -1,6 +1,7 @@
 //! A small demonstration example of mainspring showing a basic custom Addressable implementation.
 
 use mainspring::address_map::memory::{Memory, ReadOnly};
+use mainspring::cpu::mos6502::microcode::Microcode;
 use mainspring::cpu::mos6502::MOS6502;
 
 #[allow(unused)]
@@ -80,6 +81,12 @@ fn main() {
         // enclosing cpu.
         .unwrap();
 
-    // Runs the program for 40 cycles.
-    cpu.run(40).unwrap();
+    // Runs the program for 80 cycles.
+    cpu.clone()
+        .into_iter()
+        .map(Into::<Vec<Vec<Microcode>>>::into)
+        .flatten()
+        .take(80)
+        .flatten()
+        .for_each(drop)
 }

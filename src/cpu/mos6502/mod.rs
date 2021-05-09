@@ -270,7 +270,7 @@ impl Iterator for MOS6502IntoIterator {
         // rectify state
         let microcode_steps: Vec<Vec<microcode::Microcode>> = mops.clone().into();
         self.state = microcode_steps
-            .into_iter()
+            .iter()
             .flatten()
             .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
 

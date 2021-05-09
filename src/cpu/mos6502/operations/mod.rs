@@ -870,6 +870,33 @@ macro_rules! inst_to_variant {
 /// Provides a wrapper type for parsing byte slices into an InstructionVariant.
 pub struct VariantParser;
 
+impl<'a> Parser<'a, &'a [u8], InstructionVariant> for VariantParser {
+    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], InstructionVariant> {
+        let preparse_input = &input[0..];
+        let byte_input: Vec<(usize, u8)> = input.iter().take(3).copied().map(|v| (0, v)).collect();
+
+        match VariantParser.parse(&byte_input[..]) {
+            Ok(parcel::MatchStatus::Match {
+                span: _,
+                remainder: _,
+                inner,
+            }) => {
+                let byte_size = inner.offset();
+                Ok(parcel::MatchStatus::Match {
+                    span: 0..byte_size,
+                    remainder: &preparse_input[0..byte_size],
+                    inner,
+                })
+            }
+            Ok(parcel::MatchStatus::NoMatch(_)) => {
+                Ok(parcel::MatchStatus::NoMatch(&preparse_input))
+            }
+
+            Err(e) => Err(e),
+        }
+    }
+}
+
 impl<'a> Parser<'a, &'a [(usize, u8)], InstructionVariant> for VariantParser {
     fn parse(
         &self,

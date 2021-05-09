@@ -248,20 +248,20 @@ impl Iterator for MOS6502IntoIterator {
 
     fn next(&mut self) -> Option<operations::Operations> {
         let pc = self.state.pc.read();
-        let opcodes: [(usize, u8); 3] = [
-            (0, self.state.address_map.read(pc)),
-            (1, self.state.address_map.read(pc + 1)),
-            (2, self.state.address_map.read(pc + 2)),
+        let opcodes: [u8; 3] = [
+            self.state.address_map.read(pc),
+            self.state.address_map.read(pc + 1),
+            self.state.address_map.read(pc + 2),
         ];
 
         // Parse correct operation
-        let oper = match operations::VariantParser.parse(&opcodes) {
+        let oper = match operations::VariantParser.parse(&opcodes[..]) {
             Ok(parcel::MatchStatus::Match {
                 span: _,
                 remainder: _,
                 inner: op,
             }) => Ok(op),
-            _ => Err(format!("No match found for {}", opcodes[0].1)),
+            _ => Err(format!("No match found for {}", opcodes[0])),
         }
         .unwrap();
 

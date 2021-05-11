@@ -345,500 +345,500 @@ impl From<Operations> for Vec<Vec<Microcode>> {
 impl Generate<MOS6502, Operations> for InstructionVariant {
     fn generate(self, cpu: &MOS6502) -> Operations {
         match self {
-            InstructionVariant::ADCAbsolute(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::AdcAbsolute(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::ADCAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::AdcAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ADCAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::AdcAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::ADCIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::AdcIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::ADCImmediate(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::AdcImmediate(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::ADCXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::AdcXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::ADCZeroPage(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::AdcZeroPage(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::ADCZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::ADC, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::AdcZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Adc, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ANDAbsolute(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::AndAbsolute(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::ANDAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::AndAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ANDAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::AndAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::ANDIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::AndIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::ANDImmediate(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::AndImmediate(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::ANDXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::AndXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::ANDZeroPage(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::AndZeroPage(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::ANDZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::AND, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::AndZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::And, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ASLAbsolute(am) => {
-                Instruction::new(mnemonic::ASL, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::AslAbsolute(am) => {
+                Instruction::new(mnemonic::Asl, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::ASLAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::ASL, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::AslAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Asl, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ASLAccumulator => {
-                Instruction::new(mnemonic::ASL, addressing_mode::Accumulator).generate(cpu)
+            InstructionVariant::AslAccumulator => {
+                Instruction::new(mnemonic::Asl, addressing_mode::Accumulator).generate(cpu)
             }
-            InstructionVariant::ASLZeroPage(am) => {
-                Instruction::new(mnemonic::ASL, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::AslZeroPage(am) => {
+                Instruction::new(mnemonic::Asl, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::ASLZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::ASL, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::AslZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Asl, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::BCCRelative(am) => {
-                Instruction::new(mnemonic::BCC, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BccRelative(am) => {
+                Instruction::new(mnemonic::Bcc, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BCSRelative(am) => {
-                Instruction::new(mnemonic::BCS, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BcsRelative(am) => {
+                Instruction::new(mnemonic::Bcs, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BEQRelative(am) => {
-                Instruction::new(mnemonic::BEQ, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BeqRelative(am) => {
+                Instruction::new(mnemonic::Beq, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BMIRelative(am) => {
-                Instruction::new(mnemonic::BMI, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BmiRelative(am) => {
+                Instruction::new(mnemonic::Bmi, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BITAbsolute(am) => {
-                Instruction::new(mnemonic::BIT, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::BitAbsolute(am) => {
+                Instruction::new(mnemonic::Bit, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::BITZeroPage(am) => {
-                Instruction::new(mnemonic::BIT, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::BitZeroPage(am) => {
+                Instruction::new(mnemonic::Bit, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::BNERelative(am) => {
-                Instruction::new(mnemonic::BNE, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BneRelative(am) => {
+                Instruction::new(mnemonic::Bne, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BPLRelative(am) => {
-                Instruction::new(mnemonic::BPL, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BplRelative(am) => {
+                Instruction::new(mnemonic::Bpl, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BRKImplied => {
-                Instruction::new(mnemonic::BRK, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::BrkImplied => {
+                Instruction::new(mnemonic::Brk, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::BVCRelative(am) => {
-                Instruction::new(mnemonic::BVC, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BvcRelative(am) => {
+                Instruction::new(mnemonic::Bvc, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::BVSRelative(am) => {
-                Instruction::new(mnemonic::BVS, addressing_mode::Relative(am)).generate(cpu)
+            InstructionVariant::BvsRelative(am) => {
+                Instruction::new(mnemonic::Bvs, addressing_mode::Relative(am)).generate(cpu)
             }
-            InstructionVariant::CLCImplied => {
-                Instruction::new(mnemonic::CLC, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::ClcImplied => {
+                Instruction::new(mnemonic::Clc, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::CLDImplied => {
-                Instruction::new(mnemonic::CLD, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::CldImplied => {
+                Instruction::new(mnemonic::Cld, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::CLIImplied => {
-                Instruction::new(mnemonic::CLI, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::CliImplied => {
+                Instruction::new(mnemonic::Cli, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::CLVImplied => {
-                Instruction::new(mnemonic::CLV, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::ClvImplied => {
+                Instruction::new(mnemonic::Clv, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::CMPAbsolute(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::CmpAbsolute(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::CMPAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::CmpAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::CMPAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::CmpAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::CMPIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::CmpIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::CMPImmediate(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::CmpImmediate(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::CMPXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::CmpXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::CMPZeroPage(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::CmpZeroPage(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::CMPZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::CMP, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::CmpZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Cmp, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::CPXAbsolute(am) => {
-                Instruction::new(mnemonic::CPX, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::CpxAbsolute(am) => {
+                Instruction::new(mnemonic::Cpx, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::CPXImmediate(am) => {
-                Instruction::new(mnemonic::CPX, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::CpxImmediate(am) => {
+                Instruction::new(mnemonic::Cpx, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::CPXZeroPage(am) => {
-                Instruction::new(mnemonic::CPX, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::CpxZeroPage(am) => {
+                Instruction::new(mnemonic::Cpx, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::CPYAbsolute(am) => {
-                Instruction::new(mnemonic::CPY, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::CpyAbsolute(am) => {
+                Instruction::new(mnemonic::Cpy, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::CPYImmediate(am) => {
-                Instruction::new(mnemonic::CPY, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::CpyImmediate(am) => {
+                Instruction::new(mnemonic::Cpy, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::CPYZeroPage(am) => {
-                Instruction::new(mnemonic::CPY, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::CpyZeroPage(am) => {
+                Instruction::new(mnemonic::Cpy, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::DECAbsolute(am) => {
-                Instruction::new(mnemonic::DEC, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::DecAbsolute(am) => {
+                Instruction::new(mnemonic::Dec, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::DECAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::DEC, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::DecAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Dec, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::DECZeroPage(am) => {
-                Instruction::new(mnemonic::DEC, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::DecZeroPage(am) => {
+                Instruction::new(mnemonic::Dec, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::DECZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::DEC, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::DecZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Dec, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::DEXImplied => {
-                Instruction::new(mnemonic::DEX, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::DexImplied => {
+                Instruction::new(mnemonic::Dex, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::DEYImplied => {
-                Instruction::new(mnemonic::DEY, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::DeyImplied => {
+                Instruction::new(mnemonic::Dey, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::EORAbsolute(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::EorAbsolute(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::EORAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::EorAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::EORAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::EorAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::EORIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::EorIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::EORImmediate(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::EorImmediate(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::EORXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::EorXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::EORZeroPage(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::EorZeroPage(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::EORZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::EOR, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::EorZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Eor, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::INCAbsolute(am) => {
-                Instruction::new(mnemonic::INC, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::IncAbsolute(am) => {
+                Instruction::new(mnemonic::Inc, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::INCAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::INC, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::IncAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Inc, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::INCZeroPage(am) => {
-                Instruction::new(mnemonic::INC, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::IncZeroPage(am) => {
+                Instruction::new(mnemonic::Inc, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::INCZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::INC, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::IncZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Inc, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::INXImplied => {
-                Instruction::new(mnemonic::INX, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::InxImplied => {
+                Instruction::new(mnemonic::Inx, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::INYImplied => {
-                Instruction::new(mnemonic::INY, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::InyImplied => {
+                Instruction::new(mnemonic::Iny, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::JMPAbsolute(am) => {
-                Instruction::new(mnemonic::JMP, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::JmpAbsolute(am) => {
+                Instruction::new(mnemonic::Jmp, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::JMPIndirect(am) => {
-                Instruction::new(mnemonic::JMP, addressing_mode::Indirect(am)).generate(cpu)
+            InstructionVariant::JmpIndirect(am) => {
+                Instruction::new(mnemonic::Jmp, addressing_mode::Indirect(am)).generate(cpu)
             }
-            InstructionVariant::JSRAbsolute(am) => {
-                Instruction::new(mnemonic::JSR, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::JsrAbsolute(am) => {
+                Instruction::new(mnemonic::Jsr, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::LDAAbsolute(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::LdaAbsolute(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::LDAAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::LdaAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::LDAAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::LdaAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::LDAIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::LdaIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::LDAImmediate(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::LdaImmediate(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::LDAXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::LdaXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::LDAZeroPage(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::LdaZeroPage(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::LDAZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::LDA, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::LdaZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Lda, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::LDXAbsolute(am) => {
-                Instruction::new(mnemonic::LDX, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::LdxAbsolute(am) => {
+                Instruction::new(mnemonic::Ldx, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::LDXAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::LDX, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::LdxAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Ldx, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::LDXImmediate(am) => {
-                Instruction::new(mnemonic::LDX, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::LdxImmediate(am) => {
+                Instruction::new(mnemonic::Ldx, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::LDXZeroPage(am) => {
-                Instruction::new(mnemonic::LDX, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::LdxZeroPage(am) => {
+                Instruction::new(mnemonic::Ldx, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::LDXZeroPageIndexedWithY(am) => {
-                Instruction::new(mnemonic::LDX, addressing_mode::ZeroPageIndexedWithY(am))
+            InstructionVariant::LdxZeroPageIndexedWithY(am) => {
+                Instruction::new(mnemonic::Ldx, addressing_mode::ZeroPageIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::LDYAbsolute(am) => {
-                Instruction::new(mnemonic::LDY, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::LdyAbsolute(am) => {
+                Instruction::new(mnemonic::Ldy, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::LDYAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::LDY, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::LdyAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Ldy, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::LDYImmediate(am) => {
-                Instruction::new(mnemonic::LDY, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::LdyImmediate(am) => {
+                Instruction::new(mnemonic::Ldy, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::LDYZeroPage(am) => {
-                Instruction::new(mnemonic::LDY, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::LdyZeroPage(am) => {
+                Instruction::new(mnemonic::Ldy, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::LDYZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::LDY, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::LdyZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Ldy, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::LSRAbsolute(am) => {
-                Instruction::new(mnemonic::LSR, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::LsrAbsolute(am) => {
+                Instruction::new(mnemonic::Lsr, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::LSRAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::LSR, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::LsrAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Lsr, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::LSRAccumulator => {
-                Instruction::new(mnemonic::LSR, addressing_mode::Accumulator).generate(cpu)
+            InstructionVariant::LsrAccumulator => {
+                Instruction::new(mnemonic::Lsr, addressing_mode::Accumulator).generate(cpu)
             }
-            InstructionVariant::LSRZeroPage(am) => {
-                Instruction::new(mnemonic::LSR, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::LsrZeroPage(am) => {
+                Instruction::new(mnemonic::Lsr, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::LSRZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::LSR, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::LsrZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Lsr, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::NOPImplied => {
-                Instruction::new(mnemonic::NOP, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::NopImplied => {
+                Instruction::new(mnemonic::Nop, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::ORAAbsolute(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::OraAbsolute(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::ORAAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::OraAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ORAAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::OraAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::ORAIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::OraIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::ORAImmediate(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::OraImmediate(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::ORAXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::OraXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::ORAZeroPage(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::OraZeroPage(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::ORAZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::ORA, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::OraZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Ora, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::PHAImplied => {
-                Instruction::new(mnemonic::PHA, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::PhaImplied => {
+                Instruction::new(mnemonic::Pha, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::PHPImplied => {
-                Instruction::new(mnemonic::PHP, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::PhpImplied => {
+                Instruction::new(mnemonic::Php, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::PLAImplied => {
-                Instruction::new(mnemonic::PLA, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::PlaImplied => {
+                Instruction::new(mnemonic::Pla, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::PLPImplied => {
-                Instruction::new(mnemonic::PLP, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::PlpImplied => {
+                Instruction::new(mnemonic::Plp, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::ROLAbsolute(am) => {
-                Instruction::new(mnemonic::ROL, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::RolAbsolute(am) => {
+                Instruction::new(mnemonic::Rol, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::ROLAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::ROL, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::RolAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Rol, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::ROLAccumulator => {
-                Instruction::new(mnemonic::ROL, addressing_mode::Accumulator).generate(cpu)
+            InstructionVariant::RolAccumulator => {
+                Instruction::new(mnemonic::Rol, addressing_mode::Accumulator).generate(cpu)
             }
-            InstructionVariant::ROLZeroPage(am) => {
-                Instruction::new(mnemonic::ROL, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::RolZeroPage(am) => {
+                Instruction::new(mnemonic::Rol, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::ROLZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::ROL, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::RolZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Rol, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::RORAbsolute(am) => {
-                Instruction::new(mnemonic::ROR, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::RorAbsolute(am) => {
+                Instruction::new(mnemonic::Ror, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::RORAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::ROR, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::RorAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Ror, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::RORAccumulator => {
-                Instruction::new(mnemonic::ROR, addressing_mode::Accumulator).generate(cpu)
+            InstructionVariant::RorAccumulator => {
+                Instruction::new(mnemonic::Ror, addressing_mode::Accumulator).generate(cpu)
             }
-            InstructionVariant::RORZeroPage(am) => {
-                Instruction::new(mnemonic::ROR, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::RorZeroPage(am) => {
+                Instruction::new(mnemonic::Ror, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::RORZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::ROR, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::RorZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Ror, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::RTIImplied => {
-                Instruction::new(mnemonic::RTI, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::RtiImplied => {
+                Instruction::new(mnemonic::Rti, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::RTSImplied => {
-                Instruction::new(mnemonic::RTS, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::RtsImplied => {
+                Instruction::new(mnemonic::Rts, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::SBCAbsolute(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::SbcAbsolute(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::SBCAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::SbcAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::SBCAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::SbcAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::SBCIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::SbcIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::SBCImmediate(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::Immediate(am)).generate(cpu)
+            InstructionVariant::SbcImmediate(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::Immediate(am)).generate(cpu)
             }
-            InstructionVariant::SBCXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::SbcXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::SBCZeroPage(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::SbcZeroPage(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::SBCZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::SBC, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::SbcZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Sbc, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::STAAbsolute(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::StaAbsolute(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::STAAbsoluteIndexedWithX(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::AbsoluteIndexedWithX(am))
+            InstructionVariant::StaAbsoluteIndexedWithX(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::AbsoluteIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::STAAbsoluteIndexedWithY(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::AbsoluteIndexedWithY(am))
+            InstructionVariant::StaAbsoluteIndexedWithY(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::AbsoluteIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::STAIndirectYIndexed(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::IndirectYIndexed(am)).generate(cpu)
+            InstructionVariant::StaIndirectYIndexed(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::IndirectYIndexed(am)).generate(cpu)
             }
-            InstructionVariant::STAXIndexedIndirect(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::XIndexedIndirect(am)).generate(cpu)
+            InstructionVariant::StaXIndexedIndirect(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::XIndexedIndirect(am)).generate(cpu)
             }
-            InstructionVariant::STAZeroPage(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::StaZeroPage(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::STAZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::STA, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::StaZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Sta, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::STXAbsolute(am) => {
-                Instruction::new(mnemonic::STX, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::StxAbsolute(am) => {
+                Instruction::new(mnemonic::Stx, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::STXZeroPage(am) => {
-                Instruction::new(mnemonic::STX, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::StxZeroPage(am) => {
+                Instruction::new(mnemonic::Stx, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::STXZeroPageIndexedWithY(am) => {
-                Instruction::new(mnemonic::STX, addressing_mode::ZeroPageIndexedWithY(am))
+            InstructionVariant::StxZeroPageIndexedWithY(am) => {
+                Instruction::new(mnemonic::Stx, addressing_mode::ZeroPageIndexedWithY(am))
                     .generate(cpu)
             }
-            InstructionVariant::STYAbsolute(am) => {
-                Instruction::new(mnemonic::STY, addressing_mode::Absolute(am)).generate(cpu)
+            InstructionVariant::StyAbsolute(am) => {
+                Instruction::new(mnemonic::Sty, addressing_mode::Absolute(am)).generate(cpu)
             }
-            InstructionVariant::STYZeroPage(am) => {
-                Instruction::new(mnemonic::STY, addressing_mode::ZeroPage(am)).generate(cpu)
+            InstructionVariant::StyZeroPage(am) => {
+                Instruction::new(mnemonic::Sty, addressing_mode::ZeroPage(am)).generate(cpu)
             }
-            InstructionVariant::STYZeroPageIndexedWithX(am) => {
-                Instruction::new(mnemonic::STY, addressing_mode::ZeroPageIndexedWithX(am))
+            InstructionVariant::StyZeroPageIndexedWithX(am) => {
+                Instruction::new(mnemonic::Sty, addressing_mode::ZeroPageIndexedWithX(am))
                     .generate(cpu)
             }
-            InstructionVariant::SECImplied => {
-                Instruction::new(mnemonic::SEC, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::SecImplied => {
+                Instruction::new(mnemonic::Sec, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::SEDImplied => {
-                Instruction::new(mnemonic::SED, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::SedImplied => {
+                Instruction::new(mnemonic::Sed, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::SEIImplied => {
-                Instruction::new(mnemonic::SEI, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::SeiImplied => {
+                Instruction::new(mnemonic::Sei, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::TAXImplied => {
-                Instruction::new(mnemonic::TAX, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::TaxImplied => {
+                Instruction::new(mnemonic::Tax, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::TAYImplied => {
-                Instruction::new(mnemonic::TAY, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::TayImplied => {
+                Instruction::new(mnemonic::Tay, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::TSXImplied => {
-                Instruction::new(mnemonic::TSX, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::TsxImplied => {
+                Instruction::new(mnemonic::Tsx, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::TXAImplied => {
-                Instruction::new(mnemonic::TXA, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::TxaImplied => {
+                Instruction::new(mnemonic::Txa, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::TXSImplied => {
-                Instruction::new(mnemonic::TXS, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::TxsImplied => {
+                Instruction::new(mnemonic::Txs, addressing_mode::Implied).generate(cpu)
             }
-            InstructionVariant::TYAImplied => {
-                Instruction::new(mnemonic::TYA, addressing_mode::Implied).generate(cpu)
+            InstructionVariant::TyaImplied => {
+                Instruction::new(mnemonic::Tya, addressing_mode::Implied).generate(cpu)
             }
         }
     }
@@ -872,284 +872,314 @@ pub struct VariantParser;
 
 impl<'a> Parser<'a, &'a [u8], InstructionVariant> for VariantParser {
     fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], InstructionVariant> {
+        let preparse_input = &input[0..];
+        let byte_input: Vec<(usize, u8)> = input.iter().take(3).copied().map(|v| (0, v)).collect();
+
+        match VariantParser.parse(&byte_input[..]) {
+            Ok(parcel::MatchStatus::Match {
+                span: _,
+                remainder: _,
+                inner,
+            }) => {
+                let byte_size = inner.offset();
+                Ok(parcel::MatchStatus::Match {
+                    span: 0..byte_size,
+                    remainder: &preparse_input[0..byte_size],
+                    inner,
+                })
+            }
+            Ok(parcel::MatchStatus::NoMatch(_)) => {
+                Ok(parcel::MatchStatus::NoMatch(&preparse_input))
+            }
+
+            Err(e) => Err(e),
+        }
+    }
+}
+
+impl<'a> Parser<'a, &'a [(usize, u8)], InstructionVariant> for VariantParser {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> ParseResult<&'a [(usize, u8)], InstructionVariant> {
         parcel::one_of(vec![
-            inst_to_variant!(mnemonic::ADC, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Adc, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::ADC,
+                mnemonic::Adc,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::ADC,
+                mnemonic::Adc,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::ADC, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::ADC, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::ADC, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::ADC, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Adc, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Adc, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Adc, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Adc, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::ADC,
+                mnemonic::Adc,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::AND, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::And, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::AND,
+                mnemonic::And,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::AND,
+                mnemonic::And,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::AND, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::AND, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::AND, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::AND, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::And, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::And, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::And, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::And, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::AND,
+                mnemonic::And,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::ASL, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Asl, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::ASL,
+                mnemonic::Asl,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::ASL, addressing_mode::Accumulator),
-            inst_to_variant!(mnemonic::ASL, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Asl, addressing_mode::Accumulator),
+            inst_to_variant!(mnemonic::Asl, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::ASL,
+                mnemonic::Asl,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::BCC, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BCS, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BEQ, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BMI, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BIT, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::BIT, addressing_mode::ZeroPage::default()),
-            inst_to_variant!(mnemonic::BNE, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BPL, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BRK, addressing_mode::Implied::default()),
-            inst_to_variant!(mnemonic::BVC, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::BVS, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::CLC, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::CLD, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::CLI, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::CLV, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::CMP, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Bcc, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Bcs, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Beq, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Bmi, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Bit, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Bit, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Bne, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Bpl, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Brk, addressing_mode::Implied::default()),
+            inst_to_variant!(mnemonic::Bvc, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Bvs, addressing_mode::Relative::default()),
+            inst_to_variant!(mnemonic::Clc, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Cld, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Cli, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Clv, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Cmp, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::CMP,
+                mnemonic::Cmp,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::CMP,
+                mnemonic::Cmp,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::CMP, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::CMP, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::CMP, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::CMP, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Cmp, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Cmp, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Cmp, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Cmp, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::CMP,
+                mnemonic::Cmp,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::CPX, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::CPX, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::CPX, addressing_mode::ZeroPage::default()),
-            inst_to_variant!(mnemonic::CPY, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::CPY, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::CPY, addressing_mode::ZeroPage::default()),
-            inst_to_variant!(mnemonic::DEC, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Cpx, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Cpx, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Cpx, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Cpy, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Cpy, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Cpy, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Dec, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::DEC,
+                mnemonic::Dec,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::DEC, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Dec, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::DEC,
+                mnemonic::Dec,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::DEX, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::DEY, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::EOR, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Dex, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Dey, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Eor, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::EOR,
+                mnemonic::Eor,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::EOR,
+                mnemonic::Eor,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::EOR, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::EOR, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::EOR, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::EOR, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Eor, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Eor, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Eor, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Eor, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::EOR,
+                mnemonic::Eor,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::INC, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Inc, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::INC,
+                mnemonic::Inc,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::INC, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Inc, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::INC,
+                mnemonic::Inc,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::INX, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::INY, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::JMP, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::JMP, addressing_mode::Indirect::default()),
-            inst_to_variant!(mnemonic::JSR, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::LDA, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Inx, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Iny, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Jmp, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Jmp, addressing_mode::Indirect::default()),
+            inst_to_variant!(mnemonic::Jsr, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Lda, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::LDA,
+                mnemonic::Lda,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::LDA,
+                mnemonic::Lda,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::LDA, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::LDA, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::LDA, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::LDA, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Lda, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Lda, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Lda, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Lda, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::LDA,
+                mnemonic::Lda,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::LDX, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Ldx, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::LDX,
+                mnemonic::Ldx,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::LDX, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::LDX, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Ldx, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Ldx, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::LDX,
+                mnemonic::Ldx,
                 addressing_mode::ZeroPageIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::LDY, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Ldy, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::LDY,
+                mnemonic::Ldy,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::LDY, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::LDY, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Ldy, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Ldy, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::LDY,
+                mnemonic::Ldy,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::LSR, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Lsr, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::LSR,
+                mnemonic::Lsr,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::LSR, addressing_mode::Accumulator),
-            inst_to_variant!(mnemonic::LSR, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Lsr, addressing_mode::Accumulator),
+            inst_to_variant!(mnemonic::Lsr, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::LSR,
+                mnemonic::Lsr,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::NOP, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::ORA, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Nop, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Ora, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::ORA,
+                mnemonic::Ora,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::ORA,
+                mnemonic::Ora,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::ORA, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::ORA, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::ORA, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::ORA, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Ora, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Ora, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Ora, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Ora, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::ORA,
+                mnemonic::Ora,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::PHA, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::PHP, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::PLA, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::PLP, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::ROL, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Pha, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Php, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Pla, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Plp, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Rol, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::ROL,
+                mnemonic::Rol,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::ROL, addressing_mode::Accumulator),
-            inst_to_variant!(mnemonic::ROL, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Rol, addressing_mode::Accumulator),
+            inst_to_variant!(mnemonic::Rol, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::ROL,
+                mnemonic::Rol,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::ROR, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Ror, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::ROR,
+                mnemonic::Ror,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::ROR, addressing_mode::Accumulator),
-            inst_to_variant!(mnemonic::ROR, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Ror, addressing_mode::Accumulator),
+            inst_to_variant!(mnemonic::Ror, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::ROR,
+                mnemonic::Ror,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::RTI, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::RTS, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::SBC, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Rti, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Rts, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Sbc, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::SBC,
+                mnemonic::Sbc,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::SBC,
+                mnemonic::Sbc,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::SBC, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::SBC, addressing_mode::Immediate::default()),
-            inst_to_variant!(mnemonic::SBC, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::SBC, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Sbc, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Sbc, addressing_mode::Immediate::default()),
+            inst_to_variant!(mnemonic::Sbc, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Sbc, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::SBC,
+                mnemonic::Sbc,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::STA, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Sta, addressing_mode::Absolute::default()),
             inst_to_variant!(
-                mnemonic::STA,
+                mnemonic::Sta,
                 addressing_mode::AbsoluteIndexedWithX::default()
             ),
             inst_to_variant!(
-                mnemonic::STA,
+                mnemonic::Sta,
                 addressing_mode::AbsoluteIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::STA, addressing_mode::IndirectYIndexed::default()),
-            inst_to_variant!(mnemonic::STA, addressing_mode::XIndexedIndirect::default()),
-            inst_to_variant!(mnemonic::STA, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Sta, addressing_mode::IndirectYIndexed::default()),
+            inst_to_variant!(mnemonic::Sta, addressing_mode::XIndexedIndirect::default()),
+            inst_to_variant!(mnemonic::Sta, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::STA,
+                mnemonic::Sta,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::STX, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::STX, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Stx, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Stx, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::STX,
+                mnemonic::Stx,
                 addressing_mode::ZeroPageIndexedWithY::default()
             ),
-            inst_to_variant!(mnemonic::STY, addressing_mode::Absolute::default()),
-            inst_to_variant!(mnemonic::STY, addressing_mode::ZeroPage::default()),
+            inst_to_variant!(mnemonic::Sty, addressing_mode::Absolute::default()),
+            inst_to_variant!(mnemonic::Sty, addressing_mode::ZeroPage::default()),
             inst_to_variant!(
-                mnemonic::STY,
+                mnemonic::Sty,
                 addressing_mode::ZeroPageIndexedWithX::default()
             ),
-            inst_to_variant!(mnemonic::SEC, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::SED, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::SEI, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::TAX, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::TAY, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::TSX, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::TXA, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::TXS, addressing_mode::Implied),
-            inst_to_variant!(mnemonic::TYA, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Sec, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Sed, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Sei, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Tax, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Tay, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Tsx, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Txa, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Txs, addressing_mode::Implied),
+            inst_to_variant!(mnemonic::Tya, addressing_mode::Implied),
         ])
         .parse(input)
     }
@@ -1179,9 +1209,9 @@ where
 
 // Arithmetic Operations
 
-// ADC
+// Adc
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ADC, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Adc, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
@@ -1204,7 +1234,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ADC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ADC, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Adc, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
@@ -1237,7 +1267,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ADC, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Adc, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
@@ -1270,7 +1300,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ADC, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Adc, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let zpage_base_addr = self.addressing_mode.unwrap();
@@ -1303,7 +1333,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ADC, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Adc, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.addressing_mode.unwrap());
@@ -1326,7 +1356,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ADC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ADC, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Adc, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -1351,7 +1381,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ADC, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Adc, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.acc.read());
@@ -1375,7 +1405,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ADC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ADC, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Adc, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
@@ -1400,9 +1430,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// SBC
+// Sbc
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::SBC, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sbc, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
@@ -1425,7 +1455,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::SBC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::SBC, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Sbc, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
@@ -1458,7 +1488,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::SBC, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Sbc, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
@@ -1491,7 +1521,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::SBC, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Sbc, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let zpage_base_addr = self.addressing_mode.unwrap();
@@ -1524,7 +1554,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::SBC, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sbc, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.addressing_mode.unwrap());
@@ -1547,7 +1577,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::SBC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::SBC, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Sbc, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -1572,7 +1602,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::SBC, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sbc, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.acc.read());
@@ -1596,7 +1626,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::SBC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::SBC, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Sbc, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
@@ -1623,9 +1653,9 @@ impl Generate<MOS6502, Operations>
 
 // Bit-wise Operations
 
-// AND
+// And
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::AND, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::And, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
@@ -1644,7 +1674,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::AND, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::AND, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::And, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -1674,7 +1704,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::AND, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::And, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -1704,7 +1734,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::AND, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::And, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let zpage_base_addr = self.addressing_mode.unwrap();
@@ -1733,7 +1763,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::AND, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::And, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.addressing_mode.unwrap());
@@ -1752,7 +1782,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::AND, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::AND, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::And, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -1773,7 +1803,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::AND, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::And, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
@@ -1792,7 +1822,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::AND, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::AND, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::And, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -1813,9 +1843,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// ASL
+// Asl
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ASL, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Asl, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = dereference_address_to_operand(cpu, addr, 0) << Operand::new(1u8);
@@ -1834,7 +1864,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ASL, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ASL, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Asl, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -1855,7 +1885,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ASL, addressing_mode::Accumulator> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Asl, addressing_mode::Accumulator> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.acc.read()) << Operand::new(1u8);
 
@@ -1872,7 +1902,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ASL, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ASL, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Asl, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value = dereference_address_to_operand(cpu, addr, 0) << Operand::new(1u8);
@@ -1891,7 +1921,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ASL, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ASL, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Asl, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -1911,9 +1941,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// BIT
+// Bit
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BIT, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bit, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
@@ -1933,7 +1963,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BIT, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BIT, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bit, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.acc.read());
@@ -1954,9 +1984,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BIT, addressing_mod
     }
 }
 
-// EOR
+// Eor
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::EOR, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Eor, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
@@ -1975,7 +2005,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::EOR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::EOR, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Eor, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2005,7 +2035,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::EOR, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Eor, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -2035,7 +2065,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::EOR, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Eor, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let zpage_base_addr = self.addressing_mode.unwrap();
@@ -2064,7 +2094,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::EOR, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Eor, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.addressing_mode.unwrap());
@@ -2083,7 +2113,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::EOR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::EOR, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Eor, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -2104,7 +2134,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::EOR, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Eor, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
@@ -2123,7 +2153,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::EOR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::EOR, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Eor, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2144,9 +2174,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// LSR
+// Lsr
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LSR, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Lsr, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = dereference_address_to_operand(cpu, addr, 0) >> Operand::new(1u8);
@@ -2165,7 +2195,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LSR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LSR, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Lsr, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2186,7 +2216,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LSR, addressing_mode::Accumulator> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Lsr, addressing_mode::Accumulator> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.acc.read()) >> Operand::new(1u8);
 
@@ -2203,7 +2233,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LSR, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LSR, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Lsr, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value = dereference_address_to_operand(cpu, addr, 0) >> Operand::new(1u8);
@@ -2222,7 +2252,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LSR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LSR, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Lsr, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2242,9 +2272,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// ORA
+// Ora
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ORA, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ora, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
@@ -2263,7 +2293,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ORA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ORA, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Ora, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2293,7 +2323,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ORA, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Ora, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -2323,7 +2353,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ORA, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Ora, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let zpage_base_addr = self.addressing_mode.unwrap();
@@ -2352,7 +2382,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ORA, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ora, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = Operand::new(self.addressing_mode.unwrap());
@@ -2371,7 +2401,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ORA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ORA, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Ora, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -2392,7 +2422,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ORA, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ora, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let lhs = Operand::new(cpu.acc.read());
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
@@ -2411,7 +2441,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ORA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ORA, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Ora, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2432,9 +2462,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// ROL
+// Rol
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROL, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Rol, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let lhs = dereference_address_to_operand(cpu, addr, 0);
@@ -2454,7 +2484,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROL, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ROL, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Rol, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2476,7 +2506,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROL, addressing_mode::Accumulator> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Rol, addressing_mode::Accumulator> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.acc.read()).rol(Operand::new(1u8), cpu.ps.carry);
 
@@ -2493,7 +2523,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROL, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROL, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Rol, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let lhs = dereference_address_to_operand(cpu, addr, 0);
@@ -2513,7 +2543,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROL, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ROL, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Rol, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2534,9 +2564,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// ROR
+// Ror
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROR, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ror, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value =
@@ -2556,7 +2586,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ROR, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Ror, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2578,7 +2608,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROR, addressing_mode::Accumulator> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ror, addressing_mode::Accumulator> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.acc.read()).ror(Operand::new(1u8), cpu.ps.carry);
 
@@ -2595,7 +2625,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROR, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROR, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ror, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value =
@@ -2615,7 +2645,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::ROR, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::ROR, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Ror, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2670,9 +2700,9 @@ fn branch_on_case(
     Operations::new(0, cycles + branch_penalty, mc)
 }
 
-// BCC
+// Bcc
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BCC, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bcc, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2680,9 +2710,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BCC, addressing_mod
     }
 }
 
-// BCS
+// Bcs
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BCS, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bcs, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2690,9 +2720,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BCS, addressing_mod
     }
 }
 
-// BEQ
+// Beq
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BEQ, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Beq, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2700,9 +2730,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BEQ, addressing_mod
     }
 }
 
-// BMI
+// Bmi
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BMI, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bmi, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2710,9 +2740,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BMI, addressing_mod
     }
 }
 
-// BNE
+// Bne
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BNE, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bne, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2720,9 +2750,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BNE, addressing_mod
     }
 }
 
-// BPL
+// Bpl
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BPL, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bpl, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2730,9 +2760,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BPL, addressing_mod
     }
 }
 
-// BVC
+// Bvc
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BVC, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bvc, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2740,9 +2770,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BVC, addressing_mod
     }
 }
 
-// BVS
+// Bvs
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BVS, addressing_mode::Relative> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Bvs, addressing_mode::Relative> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let offset = self.addressing_mode.unwrap();
 
@@ -2750,9 +2780,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BVS, addressing_mod
     }
 }
 
-// CLC
+// Clc
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLC, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Clc, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -2762,9 +2792,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLC, addressing_mod
     }
 }
 
-// CLD
+// Cld
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLD, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cld, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -2774,9 +2804,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLD, addressing_mod
     }
 }
 
-// CLI
+// Cli
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLI, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cli, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -2789,9 +2819,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLI, addressing_mod
     }
 }
 
-// CLV
+// Clv
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLV, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Clv, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -2801,9 +2831,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CLV, addressing_mod
     }
 }
 
-// CMP
+// Cmp
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CMP, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cmp, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.acc.read());
@@ -2823,7 +2853,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CMP, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::CMP, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Cmp, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2854,7 +2884,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::CMP, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Cmp, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -2885,7 +2915,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::CMP, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Cmp, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -2915,7 +2945,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CMP, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cmp, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addressing_mode::Immediate(am_value) = self.addressing_mode;
         let rhs = Operand::new(am_value);
@@ -2936,7 +2966,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CMP, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::CMP, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Cmp, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -2959,7 +2989,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CMP, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cmp, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
         let lhs = Operand::new(cpu.acc.read());
@@ -2979,7 +3009,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CMP, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::CMP, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Cmp, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3001,9 +3031,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// CPX
+// Cpx
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPX, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cpx, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.x.read());
@@ -3022,7 +3052,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPX, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPX, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cpx, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addressing_mode::Immediate(am_value) = self.addressing_mode;
         let rhs = Operand::new(am_value);
@@ -3042,7 +3072,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPX, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPX, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cpx, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
         let lhs = Operand::new(cpu.x.read());
@@ -3061,9 +3091,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPX, addressing_mod
     }
 }
 
-// CPY
+// Cpy
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPY, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cpy, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap(), 0);
         let lhs = Operand::new(cpu.y.read());
@@ -3082,7 +3112,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPY, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPY, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cpy, addressing_mode::Immediate> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addressing_mode::Immediate(am_value) = self.addressing_mode;
         let rhs = Operand::new(am_value);
@@ -3102,7 +3132,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPY, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPY, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Cpy, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let rhs = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
         let lhs = Operand::new(cpu.y.read());
@@ -3121,9 +3151,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::CPY, addressing_mod
     }
 }
 
-// DEC
+// Dec
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEC, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Dec, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = dereference_address_to_operand(cpu, addr, 0) - Operand::new(1);
@@ -3141,7 +3171,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::DEC, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Dec, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3161,7 +3191,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEC, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Dec, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value = dereference_address_to_operand(cpu, addr, 0) - Operand::new(1);
@@ -3179,7 +3209,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::DEC, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Dec, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3199,9 +3229,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// DEX
+// Dex
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEX, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Dex, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.x.read()) - Operand::new(1);
 
@@ -3217,9 +3247,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEX, addressing_mod
     }
 }
 
-// DEY
+// Dey
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEY, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Dey, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.x.read()) - Operand::new(1);
 
@@ -3235,9 +3265,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::DEY, addressing_mod
     }
 }
 
-// INC
+// Inc
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::INC, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Inc, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = dereference_address_to_operand(cpu, addr, 0) + Operand::new(1);
@@ -3255,7 +3285,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::INC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::INC, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Inc, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3275,7 +3305,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::INC, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Inc, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value = dereference_address_to_operand(cpu, addr, 0) + Operand::new(1);
@@ -3293,7 +3323,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::INC, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::INC, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Inc, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3313,9 +3343,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// INX
+// Inx
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::INX, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Inx, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.x.read()) + Operand::new(1);
 
@@ -3331,9 +3361,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::INX, addressing_mod
     }
 }
 
-// INY
+// Iny
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::INY, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Iny, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.y.read()) + Operand::new(1);
 
@@ -3349,9 +3379,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::INY, addressing_mod
     }
 }
 
-// JMP
+// Jmp
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::JMP, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Jmp, addressing_mode::Absolute> {
     fn generate(self, _: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
 
@@ -3363,7 +3393,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::JMP, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::JMP, addressing_mode::Indirect> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Jmp, addressing_mode::Indirect> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr = self.addressing_mode.unwrap();
         let lsb = cpu.address_map.read(indirect_addr);
@@ -3378,9 +3408,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::JMP, addressing_mod
     }
 }
 
-// JSR
+// Jsr
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::JSR, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Jsr, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
 
@@ -3405,9 +3435,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::JSR, addressing_mod
     }
 }
 
-// LDA
+// Lda
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDA, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Lda, addressing_mode::Immediate> {
     fn generate(self, _: &MOS6502) -> Operations {
         let value = Operand::new(self.addressing_mode.unwrap());
 
@@ -3423,7 +3453,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDA, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDA, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Lda, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
 
@@ -3440,7 +3470,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDA, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Lda, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3459,7 +3489,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDA, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Lda, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addressing_mode::Absolute(addr) = self.addressing_mode;
         let value = Operand::new(cpu.address_map.read(addr));
@@ -3476,7 +3506,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDA, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Lda, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3504,7 +3534,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDA, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Lda, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -3532,7 +3562,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDA, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Lda, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let zpage_base_addr = self.addressing_mode.unwrap();
@@ -3560,7 +3590,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDA, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Lda, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -3579,9 +3609,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// LDX
+// Ldx
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDX, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ldx, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = dereference_address_to_operand(cpu, addr, 0);
@@ -3599,7 +3629,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDX, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDX, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Ldx, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -3626,7 +3656,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDX, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ldx, addressing_mode::Immediate> {
     fn generate(self, _: &MOS6502) -> Operations {
         let value = Operand::new(self.addressing_mode.unwrap());
 
@@ -3642,7 +3672,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDX, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDX, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ldx, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
 
@@ -3659,7 +3689,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDX, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDX, addressing_mode::ZeroPageIndexedWithY>
+    for Instruction<mnemonic::Ldx, addressing_mode::ZeroPageIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -3678,9 +3708,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// LDY
+// Ldy
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDY, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ldy, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = dereference_address_to_operand(cpu, addr, 0);
@@ -3698,7 +3728,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDY, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDY, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Ldy, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3725,7 +3755,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDY, addressing_mode::Immediate> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ldy, addressing_mode::Immediate> {
     fn generate(self, _: &MOS6502) -> Operations {
         let value = Operand::new(self.addressing_mode.unwrap());
 
@@ -3741,7 +3771,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDY, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDY, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Ldy, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = dereference_address_to_operand(cpu, self.addressing_mode.unwrap() as u16, 0);
 
@@ -3758,7 +3788,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::LDY, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::LDY, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Ldy, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3777,9 +3807,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// PHA
+// Pha
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::PHA, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Pha, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = cpu.acc.read();
         let sp = cpu.sp.read();
@@ -3795,9 +3825,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::PHA, addressing_mod
     }
 }
 
-// PHP
+// Php
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::PHP, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Php, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = cpu.ps.read();
         let sp = cpu.sp.read();
@@ -3813,9 +3843,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::PHP, addressing_mod
     }
 }
 
-// PLA
+// Pla
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::PLA, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Pla, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let sp = cpu.sp.read().overflowing_add(1).0;
         let value = dereference_address_to_operand(cpu, stack_pointer_from_byte_value(sp), 0);
@@ -3833,9 +3863,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::PLA, addressing_mod
     }
 }
 
-// PLP
+// Plp
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::PLP, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Plp, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let sp = cpu.sp.read().overflowing_add(1).0;
         let value = dereference_address_to_operand(cpu, stack_pointer_from_byte_value(sp), 0);
@@ -3851,9 +3881,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::PLP, addressing_mod
     }
 }
 
-// RTI
+// Rti
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::RTI, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Rti, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         // grab the program status
         let sp_psl: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(1));
@@ -3879,9 +3909,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::RTI, addressing_mod
     }
 }
 
-// RTS
+// Rts
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::RTS, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Rts, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         // grab the stack pointer and stack pointer - 1 for storing the PC
         let spl: u16 = stack_pointer_from_byte_value(cpu.sp.read().wrapping_add(1));
@@ -3901,9 +3931,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::RTS, addressing_mod
     }
 }
 
-// SEC
+// Sec
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::SEC, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sec, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -3913,9 +3943,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::SEC, addressing_mod
     }
 }
 
-// SED
+// Sed
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::SED, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sed, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -3925,9 +3955,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::SED, addressing_mod
     }
 }
 
-// SEI
+// Sei
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::SEI, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sei, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(
             self.offset(),
@@ -3937,9 +3967,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::SEI, addressing_mod
     }
 }
 
-// STA
+// Sta
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::STA, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sta, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addressing_mode::Absolute(addr) = self.addressing_mode;
         let acc_val = cpu.acc.read();
@@ -3952,7 +3982,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::STA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STA, addressing_mode::AbsoluteIndexedWithX>
+    for Instruction<mnemonic::Sta, addressing_mode::AbsoluteIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -3967,7 +3997,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STA, addressing_mode::AbsoluteIndexedWithY>
+    for Instruction<mnemonic::Sta, addressing_mode::AbsoluteIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -3983,7 +4013,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STA, addressing_mode::IndirectYIndexed>
+    for Instruction<mnemonic::Sta, addressing_mode::IndirectYIndexed>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -3998,7 +4028,7 @@ impl Generate<MOS6502, Operations>
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STA, addressing_mode::XIndexedIndirect>
+    for Instruction<mnemonic::Sta, addressing_mode::XIndexedIndirect>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let indirect_addr =
@@ -4012,7 +4042,7 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::STA, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sta, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let acc_val = cpu.acc.read();
@@ -4026,7 +4056,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::STA, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STA, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Sta, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -4041,9 +4071,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// STX
+// Stx
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::STX, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Stx, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = cpu.x.read();
@@ -4055,7 +4085,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::STX, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::STX, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Stx, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value = cpu.x.read();
@@ -4069,7 +4099,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::STX, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STX, addressing_mode::ZeroPageIndexedWithY>
+    for Instruction<mnemonic::Stx, addressing_mode::ZeroPageIndexedWithY>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.y.read();
@@ -4084,9 +4114,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// STY
+// Sty
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::STY, addressing_mode::Absolute> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sty, addressing_mode::Absolute> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap();
         let value = cpu.y.read();
@@ -4098,7 +4128,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::STY, addressing_mod
     }
 }
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::STY, addressing_mode::ZeroPage> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Sty, addressing_mode::ZeroPage> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let addr = self.addressing_mode.unwrap() as u16;
         let value = cpu.y.read();
@@ -4112,7 +4142,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::STY, addressing_mod
 }
 
 impl Generate<MOS6502, Operations>
-    for Instruction<mnemonic::STY, addressing_mode::ZeroPageIndexedWithX>
+    for Instruction<mnemonic::Sty, addressing_mode::ZeroPageIndexedWithX>
 {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let index = cpu.x.read();
@@ -4127,9 +4157,9 @@ impl Generate<MOS6502, Operations>
     }
 }
 
-// TAX
+// Tax
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::TAX, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Tax, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.acc.read());
 
@@ -4145,9 +4175,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::TAX, addressing_mod
     }
 }
 
-// TAY
+// Tay
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::TAY, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Tay, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.acc.read());
 
@@ -4163,9 +4193,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::TAY, addressing_mod
     }
 }
 
-// TSX
+// Tsx
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::TSX, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Tsx, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.sp.read());
 
@@ -4181,9 +4211,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::TSX, addressing_mod
     }
 }
 
-// TXA
+// Txa
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::TXA, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Txa, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.x.read());
 
@@ -4199,9 +4229,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::TXA, addressing_mod
     }
 }
 
-// TSX
+// Tsx
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::TXS, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Txs, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.x.read());
 
@@ -4216,9 +4246,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::TXS, addressing_mod
     }
 }
 
-// TYA
+// Tya
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::TYA, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Tya, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let value = Operand::new(cpu.y.read());
 
@@ -4236,9 +4266,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::TYA, addressing_mod
 
 // Misc
 
-// BRK
+// Brk
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::BRK, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Brk, addressing_mode::Implied> {
     fn generate(self, cpu: &MOS6502) -> Operations {
         let ps = cpu.ps.read();
 
@@ -4249,7 +4279,7 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BRK, addressing_mod
         // Add 1 to the program counter and grab as little-endian bytes.
         let [pcl, pch] = cpu.pc.read().wrapping_add(1).to_le_bytes();
 
-        // Grab IRQ/BRK vector
+        // Grab IRQ/Brk vector
         let irq_vector = u16::from_le_bytes([
             cpu.address_map.read(IRQ_VECTOR_LL),
             cpu.address_map.read(IRQ_VECTOR_HH),
@@ -4273,9 +4303,9 @@ impl Generate<MOS6502, Operations> for Instruction<mnemonic::BRK, addressing_mod
     }
 }
 
-// NOP
+// Nop
 
-impl Generate<MOS6502, Operations> for Instruction<mnemonic::NOP, addressing_mode::Implied> {
+impl Generate<MOS6502, Operations> for Instruction<mnemonic::Nop, addressing_mode::Implied> {
     fn generate(self, _: &MOS6502) -> Operations {
         Operations::new(self.offset(), self.cycles(), vec![])
     }

@@ -50,6 +50,6 @@ fn main() {
     println!(
         "{:?}",
         // Microcode can then be folded onto a cpu to replay its state onto a fresh cpu.
-        states.into_iter().fold(cpu.clone(), |c, mc| mc.execute(c))
+        states.iter().fold(cpu.clone(), |c, mc| mc.execute(c))
     );
 }

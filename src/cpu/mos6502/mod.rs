@@ -255,8 +255,12 @@ impl Iterator for MOS6502IntoIterator {
         ];
 
         // Parse correct operation
-        let oper = match operations::VariantParser.parse(&opcodes) {
-            Ok(parcel::MatchStatus::Match((_, op))) => Ok(op),
+        let oper = match operations::VariantParser.parse(&opcodes[..]) {
+            Ok(parcel::MatchStatus::Match {
+                span: _,
+                remainder: _,
+                inner: op,
+            }) => Ok(op),
             _ => Err(format!("No match found for {}", opcodes[0])),
         }
         .unwrap();
@@ -266,7 +270,7 @@ impl Iterator for MOS6502IntoIterator {
         // rectify state
         let microcode_steps: Vec<Vec<microcode::Microcode>> = mops.clone().into();
         self.state = microcode_steps
-            .into_iter()
+            .iter()
             .flatten()
             .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
 

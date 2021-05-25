@@ -68,4 +68,5 @@ impl<T> From<StepState<T>> for (usize, T) {
 
 #[macro_use]
 pub mod mos6502;
+pub mod chip8;
 pub mod register;

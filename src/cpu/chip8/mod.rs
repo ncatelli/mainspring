@@ -1,9 +1,10 @@
+use crate::address_map::AddressMap;
 mod register;
 
 /// Chip8 represents a CHIP-8 CPU.
 #[derive(Debug, Clone)]
 pub struct Chip8 {
-    address_space: [u8; 0xfff],
+    address_space: AddressMap<u16>,
     v0: register::GeneralPurpose,
     v1: register::GeneralPurpose,
     v2: register::GeneralPurpose,
@@ -53,7 +54,7 @@ impl Chip8 {
 impl Default for Chip8 {
     fn default() -> Self {
         Self {
-            address_space: [0; 0xfff],
+            address_space: AddressMap::default(),
             v0: register::GeneralPurpose::default(),
             v1: register::GeneralPurpose::default(),
             v2: register::GeneralPurpose::default(),

@@ -5,6 +5,8 @@ mod register;
 #[derive(Debug, Clone)]
 pub struct Chip8 {
     address_space: AddressMap<u16>,
+    delay: register::Decrementing,
+    sound: register::Decrementing,
     v0: register::GeneralPurpose,
     v1: register::GeneralPurpose,
     v2: register::GeneralPurpose,
@@ -55,6 +57,8 @@ impl Default for Chip8 {
     fn default() -> Self {
         Self {
             address_space: AddressMap::default(),
+            delay: register::Decrementing::default(),
+            sound: register::Decrementing::default(),
             v0: register::GeneralPurpose::default(),
             v1: register::GeneralPurpose::default(),
             v2: register::GeneralPurpose::default(),

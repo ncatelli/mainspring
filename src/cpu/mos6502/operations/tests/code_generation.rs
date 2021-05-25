@@ -1013,7 +1013,7 @@ fn should_generate_implied_addressing_mode_brk_machine_code() {
         .with_pc_register(ProgramCounter::with_value(0x1234))
         .register_address_space(
             0xfffe..=0xffff,
-            Memory::<ReadOnly>::new(0xfffe, 0xffff).load(vec![0x78, 0x56]),
+            Memory::<ReadOnly, u16, u8>::new(0xfffe, 0xffff).load(vec![0x78, 0x56]),
         )
         .unwrap();
 

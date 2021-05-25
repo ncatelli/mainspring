@@ -7,6 +7,8 @@ use mainspring::cpu::mos6502::MOS6502;
 #[allow(unused)]
 use mainspring::prelude::v1::*;
 
+type Rom = Memory<ReadOnly, u16, u8>;
+
 /// VIA functions as an analogy to the 6522 VIA chip. However, only a subset of
 /// functionality has been implemented for this demo. For the case of this example,
 /// all ports are configured in write mode with predefined addresses.
@@ -61,7 +63,7 @@ impl Addressable<u16, u8> for VIA {
 fn main() {
     // A small rom that loops over write 01010101 and 10101010 to port a where
     // it is output. this will loop endlessly until stopped.
-    let rom = Memory::<ReadOnly>::new(0xffea, 0xffff).load(vec![
+    let rom = Rom::new(0xffea, 0xffff).load(vec![
         0xa9, 0xff, 0x8d, 0x02, 0x80, 0xa9, 0x55, 0x8d, 0x00, 0x80, 0xa9, 0xaa, 0x8d, 0x00, 0x80,
         0x4c, 0xef, 0xff, 0xea, 0xff, 0x00, 0x00,
     ]);

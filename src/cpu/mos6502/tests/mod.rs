@@ -1,12 +1,14 @@
 use crate::address_map::{
-    memory::{Memory, ReadOnly, ReadWrite},
+    memory::{Memory, ReadOnly},
     Addressable,
 };
 use crate::cpu::{
-    mos6502::{register, register::GPRegister, MOS6502},
+    mos6502::{register, register::GPRegister, Ram, MOS6502},
     register::Register,
     CPU,
 };
+
+type Rom = Memory<ReadOnly, u16, u8>;
 
 fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
     let (start_addr, stop_addr) = (0x6000, 0x7000);
@@ -21,7 +23,7 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
         .with_pc_register(register::ProgramCounter::with_value(start_addr))
         .register_address_space(
             start_addr..=stop_addr,
-            Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
+            Rom::new(0x6000, 0x7000).load(nop_sled),
         )
         .unwrap()
 }
@@ -752,7 +754,7 @@ fn should_cycle_on_brk_implied_operation() {
         })
         .register_address_space(
             0xfffe..=0xffff,
-            Memory::<ReadOnly>::new(0xfffe, 0xffff).load(vec![0x78, 0x56]),
+            Rom::new(0xfffe, 0xffff).load(vec![0x78, 0x56]),
         )
         .unwrap();
     let state = cpu.run(7).unwrap();
@@ -1660,10 +1662,7 @@ fn should_cycle_on_lda_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xad, 0x00, 0x02])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1731,10 +1730,7 @@ fn should_cycle_on_ldx_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xae, 0x00, 0x02])
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1794,10 +1790,7 @@ fn should_cycle_on_ldy_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xac, 0x00, 0x02])
         .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2728,10 +2721,7 @@ fn should_cycle_on_sta_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8d, 0x00, 0x02])
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2746,10 +2736,7 @@ fn should_cycle_on_sta_absolute_indexed_with_x_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x9d, 0x00, 0x02])
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x5))
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(5).unwrap();
@@ -2764,10 +2751,7 @@ fn should_cycle_on_sta_absolute_indexed_with_y_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x99, 0x00, 0x02])
         .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x5))
         .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(5).unwrap();
@@ -2832,10 +2816,7 @@ fn should_cycle_on_stx_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8e, 0x00, 0x02])
         .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2872,10 +2853,7 @@ fn should_cycle_on_sty_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8c, 0x00, 0x02])
         .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff))
-        .register_address_space(
-            ram_start..=ram_end,
-            Memory::<ReadWrite>::new(ram_start, ram_end),
-        )
+        .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
     let state = cpu.run(4).unwrap();

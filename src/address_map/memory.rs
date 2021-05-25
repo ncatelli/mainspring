@@ -28,19 +28,26 @@ pub struct ReadWrite;
 /// Represents an addressable segment of memory, be it RAM or ROM.
 #[allow(dead_code)]
 #[derive(Clone)]
-pub struct Memory<T> {
+pub struct Memory<T, O, V> {
     mem_type: PhantomData<T>,
-    start_address: u16,
-    stop_address: u16,
-    inner: Vec<u8>,
+    start_address: O,
+    stop_address: O,
+    inner: Vec<V>,
 }
 
-impl<T> Memory<T> {
+impl<T, O, V> Memory<T, O, V>
+where
+    O: Into<usize> + Copy,
+    V: Default + Clone,
+{
     /// Allocates a new addressable memory module taking both a start and stop
     /// address.
-    pub fn new(start_address: u16, stop_address: u16) -> Self {
+    pub fn new(start_address: O, stop_address: O) -> Self {
         let mut data = Vec::new();
-        data.resize((stop_address - start_address) as usize + 1, 0);
+        data.resize(
+            Into::<usize>::into(stop_address) - Into::<usize>::into(start_address) + 1,
+            <V>::default(),
+        );
         Memory {
             mem_type: PhantomData,
             start_address,
@@ -50,13 +57,13 @@ impl<T> Memory<T> {
     }
 
     /// Dump converts the current state of memroy into a correspnding Vec<u8>.
-    pub fn dump(&self) -> Vec<u8> {
+    pub fn dump(&self) -> Vec<V> {
         self.inner.clone()
     }
 
     /// Load data into memory takes a rom and returns an instance of Memory
     /// with the newly loaded dataset.
-    pub fn load(self, data: Vec<u8>) -> Self {
+    pub fn load(self, data: Vec<V>) -> Self {
         Memory {
             mem_type: self.mem_type,
             start_address: self.start_address,
@@ -66,7 +73,7 @@ impl<T> Memory<T> {
     }
 }
 
-impl Addressable<u16, u8> for Memory<ReadWrite> {
+impl Addressable<u16, u8> for Memory<ReadWrite, u16, u8> {
     /// Reads a single byte at the specified address returning the u8
     /// representation of the value.
     fn read(&self, addr: u16) -> u8 {
@@ -83,7 +90,7 @@ impl Addressable<u16, u8> for Memory<ReadWrite> {
     }
 }
 
-impl Addressable<u16, u8> for Memory<ReadOnly> {
+impl Addressable<u16, u8> for Memory<ReadOnly, u16, u8> {
     /// Reads a single byte at the specified address
     fn read(&self, addr: u16) -> u8 {
         let addr_offset = addr - self.start_address;

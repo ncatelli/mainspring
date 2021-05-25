@@ -39,6 +39,12 @@ pub trait Execute<T> {
     fn execute(self, cpu: T) -> T;
 }
 
+/// Provides an alias for the 16bit addressed RW stack.
+pub type StackMemory = Memory<ReadWrite, u16, u8>;
+
+/// Provides an alias for the 16bit addressable RW RAM.
+pub type Ram = Memory<ReadWrite, u16, u8>;
+
 /// MOS6502 represents the 6502 CPU
 #[derive(Debug, Clone)]
 pub struct MOS6502 {
@@ -172,15 +178,9 @@ impl Default for MOS6502 {
     fn default() -> Self {
         Self {
             address_map: AddressMap::new()
-                .register(
-                    0x0000..=0x00FF,
-                    Box::new(Memory::<ReadWrite>::new(0x0000, 0x00FF)),
-                )
+                .register(0x0000..=0x00FF, Box::new(StackMemory::new(0x00, 0xFF)))
                 .unwrap()
-                .register(
-                    0x0100..=0x01FF,
-                    Box::new(Memory::<ReadWrite>::new(0x0100, 0x01FF)),
-                )
+                .register(0x0100..=0x01FF, Box::new(Ram::new(0x0100, 0x01FF)))
                 .unwrap(),
             acc: GeneralPurpose::default(),
             x: GeneralPurpose::default(),

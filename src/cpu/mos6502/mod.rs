@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 use crate::{
     address_map::{
-        memory::{Memory, ReadWrite},
+        memory::{Memory, ReadOnly, ReadWrite},
         AddressMap, Addressable,
     },
     cpu::{register::Register, StepState, CPU},
@@ -45,6 +45,9 @@ pub type StackMemory = Memory<ReadWrite, u16, u8>;
 /// Provides an alias for the 16bit addressable RW RAM.
 pub type Ram = Memory<ReadWrite, u16, u8>;
 
+/// Provides an alias for the 16bit addressable RO ROM.
+pub type Rom = Memory<ReadOnly, u16, u8>;
+
 /// MOS6502 represents the 6502 CPU
 #[derive(Debug, Clone)]
 pub struct MOS6502 {
@@ -83,7 +86,7 @@ impl MOS6502 {
     ///     memory::{Memory, ReadOnly},
     ///     Addressable,
     /// };
-    /// use mainspring::cpu::mos6502::MOS6502;
+    /// use mainspring::cpu::mos6502::{MOS6502, Rom};
     ///
     /// let (start_addr, stop_addr) = (0x6000, 0x7000);
     /// let nop_sled = [0xea; 0x7000 - 0x6000].to_vec();
@@ -92,7 +95,7 @@ impl MOS6502 {
     ///     MOS6502::default()
     ///         .register_address_space(
     ///             start_addr..=stop_addr,
-    ///             Memory::<ReadOnly>::new(0x6000, 0x7000).load(nop_sled),
+    ///             Rom::new(0x6000, 0x7000).load(nop_sled),
     ///         ).is_ok()
     ///     )
     /// ```

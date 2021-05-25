@@ -42,7 +42,7 @@ pub trait Execute<T> {
 /// MOS6502 represents the 6502 CPU
 #[derive(Debug, Clone)]
 pub struct MOS6502 {
-    address_map: AddressMap<u16>,
+    address_map: AddressMap<u16, u8>,
     pub acc: GeneralPurpose,
     pub x: GeneralPurpose,
     pub y: GeneralPurpose,
@@ -58,7 +58,7 @@ impl MOS6502 {
 
     /// instantiates a new MOS6502 with a provided address_map.
     #[allow(clippy::field_reassign_with_default)]
-    pub fn with_addressmap(am: AddressMap<u16>) -> Self {
+    pub fn with_addressmap(am: AddressMap<u16, u8>) -> Self {
         let mut cpu = Self::default();
         cpu.address_map = am;
         cpu
@@ -93,7 +93,7 @@ impl MOS6502 {
     pub fn register_address_space(
         mut self,
         space: RangeInclusive<u16>,
-        addr_space: impl Addressable<u16> + 'static,
+        addr_space: impl Addressable<u16, u8> + 'static,
     ) -> Result<Self, String> {
         let am = self.address_map;
         self.address_map = am.register(space, Box::new(addr_space))?;

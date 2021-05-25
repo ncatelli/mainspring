@@ -13,33 +13,35 @@ type RegistrationError = String;
 
 /// Addressable implements the trait for addressable memory in an address map.
 /// this can represent IO, RAM, ROM, etc...
-pub trait Addressable<O>: AddressableClone<O>
+pub trait Addressable<O, V>: AddressableClone<O, V>
 where
     O: Into<usize> + Debug + Clone + Copy,
+    V: Debug + Clone + Copy,
 {
-    fn read(&self, offset: O) -> u8;
-    fn write(&mut self, offset: O, data: u8) -> Result<u8, WriteError>;
+    fn read(&self, offset: O) -> V;
+    fn write(&mut self, offset: O, data: V) -> Result<V, WriteError>;
 }
 
-impl<O> Clone for Box<dyn Addressable<O>>
+impl<O, V> Clone for Box<dyn Addressable<O, V>>
 where
     O: Into<usize> + Debug + Clone + Copy,
 {
-    fn clone(&self) -> Box<dyn Addressable<O>> {
+    fn clone(&self) -> Box<dyn Addressable<O, V>> {
         self.clone_box()
     }
 }
 
-pub trait AddressableClone<O> {
-    fn clone_box(&self) -> Box<dyn Addressable<O>>;
+pub trait AddressableClone<O, V> {
+    fn clone_box(&self) -> Box<dyn Addressable<O, V>>;
 }
 
-impl<T, O> AddressableClone<O> for T
+impl<T, O, V> AddressableClone<O, V> for T
 where
-    T: 'static + Addressable<O> + Clone,
+    T: 'static + Addressable<O, V> + Clone,
     O: Into<usize> + Debug + Clone + Copy,
+    V: Debug + Clone + Copy,
 {
-    fn clone_box(&self) -> Box<dyn Addressable<O>> {
+    fn clone_box(&self) -> Box<dyn Addressable<O, V>> {
         Box::new(self.clone())
     }
 }
@@ -49,14 +51,14 @@ where
 /// an implementation Addressable allowing all other components to interact with
 /// it as if it were a bus.
 #[derive(Default, Clone)]
-pub struct AddressMap<O: Into<usize>>
+pub struct AddressMap<O, V>
 where
     O: Into<usize> + Debug + Clone + Copy,
 {
-    inner: HashMap<RangeInclusive<O>, Box<dyn Addressable<O>>>,
+    inner: HashMap<RangeInclusive<O>, Box<dyn Addressable<O, V>>>,
 }
 
-impl<O> fmt::Debug for AddressMap<O>
+impl<O, V> fmt::Debug for AddressMap<O, V>
 where
     O: Into<usize> + Debug + Clone + Copy,
 {
@@ -66,7 +68,7 @@ where
     }
 }
 
-impl<O> AddressMap<O>
+impl<O, V> AddressMap<O, V>
 where
     O: Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
 {
@@ -81,8 +83,8 @@ where
     pub fn register(
         mut self,
         range: RangeInclusive<O>,
-        addr_space: Box<dyn Addressable<O>>,
-    ) -> Result<AddressMap<O>, RegistrationError> {
+        addr_space: Box<dyn Addressable<O, V>>,
+    ) -> Result<AddressMap<O, V>, RegistrationError> {
         self.inner
             .keys()
             .map(|key| {
@@ -104,23 +106,24 @@ where
     }
 }
 
-impl<T> Addressable<T> for AddressMap<T>
+impl<O, V> Addressable<O, V> for AddressMap<O, V>
 where
-    T: 'static + Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
+    O: 'static + Into<usize> + Hash + PartialOrd + Eq + Debug + Clone + Copy,
+    V: 'static + Default + Debug + Clone + Copy,
 {
     /// Reads a single byte at the specified address
-    fn read(&self, addr: T) -> u8 {
+    fn read(&self, addr: O) -> V {
         self.inner
             .keys()
             .filter(|key| key.contains(&addr))
             .map(|r| self.inner.get(r))
             .flatten()
             .next()
-            .map_or(0x00, |a| a.read(addr))
+            .map_or(<V>::default(), |a| a.read(addr))
     }
 
     /// Write assigns a single value to an address in memory
-    fn write(&mut self, addr: T, value: u8) -> Result<u8, String> {
+    fn write(&mut self, addr: O, value: V) -> Result<V, String> {
         let range = self
             .inner
             .keys()

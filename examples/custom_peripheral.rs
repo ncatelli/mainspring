@@ -33,7 +33,7 @@ impl VIA {
     }
 }
 
-impl Addressable<u16> for VIA {
+impl Addressable<u16, u8> for VIA {
     // Read the value at an address. Since this device is never read a
     // constant is returned to satisfy the trait.
     fn read(&self, _: u16) -> u8 {

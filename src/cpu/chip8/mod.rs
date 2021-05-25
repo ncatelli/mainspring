@@ -5,7 +5,7 @@ mod register;
 #[derive(Debug, Clone)]
 pub struct Chip8 {
     stack: [u16; 16],
-    address_space: AddressMap<u16>,
+    address_space: AddressMap<u16, u8>,
     dt: register::Decrementing,
     st: register::Decrementing,
     pc: register::ProgramCounter,

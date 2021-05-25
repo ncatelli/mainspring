@@ -66,7 +66,7 @@ impl<T> Memory<T> {
     }
 }
 
-impl Addressable<u16> for Memory<ReadWrite> {
+impl Addressable<u16, u8> for Memory<ReadWrite> {
     /// Reads a single byte at the specified address returning the u8
     /// representation of the value.
     fn read(&self, addr: u16) -> u8 {
@@ -83,7 +83,7 @@ impl Addressable<u16> for Memory<ReadWrite> {
     }
 }
 
-impl Addressable<u16> for Memory<ReadOnly> {
+impl Addressable<u16, u8> for Memory<ReadOnly> {
     /// Reads a single byte at the specified address
     fn read(&self, addr: u16) -> u8 {
         let addr_offset = addr - self.start_address;

@@ -7,7 +7,7 @@ mod memory;
 
 macro_rules! u16_address_map {
     () => {
-        $crate::address_map::AddressMap::<u16>::new().register(
+        $crate::address_map::AddressMap::<u16, u8>::new().register(
             0..=std::u16::MAX,
             Box::new($crate::address_map::memory::Memory::<
                 $crate::address_map::memory::ReadWrite,
@@ -18,7 +18,7 @@ macro_rules! u16_address_map {
         $crate::address_map::AddressMap::<u16>::new().register(0..=std::u16::MAX, Box::new($am))
     };
     ($range:expr, $am:expr) => {
-        $crate::address_map::AddressMap::<u16>::new().register($range, Box::new($am))
+        $crate::address_map::AddressMap::<u16, u8>::new().register($range, Box::new($am))
     };
 }
 

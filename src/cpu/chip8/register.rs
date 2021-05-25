@@ -1,4 +1,23 @@
 use crate::cpu::register::Register;
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum GPRegisters {
+    V0,
+    V1,
+    V2,
+    V3,
+    V4,
+    V5,
+    V6,
+    V7,
+    V8,
+    V9,
+    VA,
+    VB,
+    VC,
+    VD,
+    VE,
+    VF,
+}
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct GeneralPurpose {

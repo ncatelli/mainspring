@@ -382,6 +382,7 @@ impl Execute<MOS6502> for microcode::Inc8bitRegister {
         }
     }
 }
+
 impl Execute<MOS6502> for microcode::Dec8bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         let register = self.register;
@@ -422,6 +423,7 @@ impl Execute<MOS6502> for microcode::Dec8bitRegister {
         }
     }
 }
+
 impl Execute<MOS6502> for microcode::Write16bitRegister {
     fn execute(self, cpu: MOS6502) -> MOS6502 {
         cpu.with_pc_register(ProgramCounter::with_value(self.value))

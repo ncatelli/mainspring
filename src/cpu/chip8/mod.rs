@@ -4,25 +4,29 @@ mod register;
 /// Chip8 represents a CHIP-8 CPU.
 #[derive(Debug, Clone)]
 pub struct Chip8 {
+    stack: [u16; 16],
     address_space: AddressMap<u16>,
     dt: register::Decrementing,
     st: register::Decrementing,
-    v0: register::GeneralPurpose,
-    v1: register::GeneralPurpose,
-    v2: register::GeneralPurpose,
-    v3: register::GeneralPurpose,
-    v4: register::GeneralPurpose,
-    v5: register::GeneralPurpose,
-    v6: register::GeneralPurpose,
-    v7: register::GeneralPurpose,
-    v8: register::GeneralPurpose,
-    v9: register::GeneralPurpose,
-    va: register::GeneralPurpose,
-    vb: register::GeneralPurpose,
-    vc: register::GeneralPurpose,
-    vd: register::GeneralPurpose,
-    ve: register::GeneralPurpose,
-    vf: register::GeneralPurpose,
+    pc: register::ProgramCounter,
+    sp: register::StackPointer,
+    i: register::GeneralPurpose<u16>,
+    v0: register::GeneralPurpose<u8>,
+    v1: register::GeneralPurpose<u8>,
+    v2: register::GeneralPurpose<u8>,
+    v3: register::GeneralPurpose<u8>,
+    v4: register::GeneralPurpose<u8>,
+    v5: register::GeneralPurpose<u8>,
+    v6: register::GeneralPurpose<u8>,
+    v7: register::GeneralPurpose<u8>,
+    v8: register::GeneralPurpose<u8>,
+    v9: register::GeneralPurpose<u8>,
+    va: register::GeneralPurpose<u8>,
+    vb: register::GeneralPurpose<u8>,
+    vc: register::GeneralPurpose<u8>,
+    vd: register::GeneralPurpose<u8>,
+    ve: register::GeneralPurpose<u8>,
+    vf: register::GeneralPurpose<u8>,
 }
 
 impl Chip8 {
@@ -41,7 +45,7 @@ impl Chip8 {
     pub fn with_gp_register(
         mut self,
         reg_type: register::GPRegisters,
-        reg: register::GeneralPurpose,
+        reg: register::GeneralPurpose<u8>,
     ) -> Self {
         match reg_type {
             register::GPRegisters::V0 => self.v0 = reg,
@@ -68,9 +72,13 @@ impl Chip8 {
 impl Default for Chip8 {
     fn default() -> Self {
         Self {
+            stack: [0; 16],
             address_space: AddressMap::default(),
             dt: register::Decrementing::default(),
             st: register::Decrementing::default(),
+            pc: register::ProgramCounter::default(),
+            sp: register::StackPointer::default(),
+            i: register::GeneralPurpose::default(),
             v0: register::GeneralPurpose::default(),
             v1: register::GeneralPurpose::default(),
             v2: register::GeneralPurpose::default(),

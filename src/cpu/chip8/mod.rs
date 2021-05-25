@@ -5,8 +5,8 @@ mod register;
 #[derive(Debug, Clone)]
 pub struct Chip8 {
     address_space: AddressMap<u16>,
-    delay: register::Decrementing,
-    sound: register::Decrementing,
+    dt: register::Decrementing,
+    st: register::Decrementing,
     v0: register::GeneralPurpose,
     v1: register::GeneralPurpose,
     v2: register::GeneralPurpose,
@@ -26,7 +26,19 @@ pub struct Chip8 {
 }
 
 impl Chip8 {
-    pub fn with_register(
+    pub fn with_timer_register(
+        mut self,
+        reg_type: register::TimerRegisters,
+        reg: register::Decrementing,
+    ) -> Self {
+        match reg_type {
+            register::TimerRegisters::Sound => self.st = reg,
+            register::TimerRegisters::Delay => self.dt = reg,
+        };
+        self
+    }
+
+    pub fn with_gp_register(
         mut self,
         reg_type: register::GPRegisters,
         reg: register::GeneralPurpose,
@@ -57,8 +69,8 @@ impl Default for Chip8 {
     fn default() -> Self {
         Self {
             address_space: AddressMap::default(),
-            delay: register::Decrementing::default(),
-            sound: register::Decrementing::default(),
+            dt: register::Decrementing::default(),
+            st: register::Decrementing::default(),
             v0: register::GeneralPurpose::default(),
             v1: register::GeneralPurpose::default(),
             v2: register::GeneralPurpose::default(),

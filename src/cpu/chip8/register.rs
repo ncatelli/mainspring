@@ -25,7 +25,7 @@ pub enum GPRegisters {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub enum SpecialRegisters {
+pub enum TimerRegisters {
     Sound,
     Delay,
 }

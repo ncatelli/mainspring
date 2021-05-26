@@ -13,6 +13,14 @@ pub trait Offset {
     }
 }
 
+pub trait Generate<T, U> {
+    fn generate(self, cpu: &T) -> U;
+}
+
+pub trait Execute<T> {
+    fn execute(self, cpu: T) -> T;
+}
+
 pub trait CPU<T> {
     fn run(self, cycles: usize) -> StepState<T>;
 }

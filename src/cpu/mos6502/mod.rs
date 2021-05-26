@@ -5,7 +5,7 @@ use crate::{
         memory::{Memory, ReadOnly, ReadWrite},
         AddressMap, Addressable,
     },
-    cpu::{register::Register, StepState, CPU},
+    cpu::{register::Register, Execute, Generate, StepState, CPU},
 };
 
 #[macro_use]
@@ -30,14 +30,6 @@ use register::{
 };
 
 pub mod operations;
-
-pub trait Generate<T, U> {
-    fn generate(self, cpu: &T) -> U;
-}
-
-pub trait Execute<T> {
-    fn execute(self, cpu: T) -> T;
-}
 
 /// Provides an alias for the 16bit addressed RW stack.
 pub type StackMemory = Memory<ReadWrite, u16, u8>;

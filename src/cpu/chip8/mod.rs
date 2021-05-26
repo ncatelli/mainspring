@@ -31,15 +31,28 @@ pub struct Chip8 {
 }
 
 impl Chip8 {
-    pub fn with_timer_register(
-        mut self,
-        reg_type: register::TimerRegisters,
-        reg: register::Decrementing,
-    ) -> Self {
-        match reg_type {
-            register::TimerRegisters::Sound => self.st = reg,
-            register::TimerRegisters::Delay => self.dt = reg,
-        };
+    pub fn with_pc_register(mut self, reg: register::ProgramCounter) -> Self {
+        self.pc = reg;
+        self
+    }
+
+    pub fn with_sp_register(mut self, reg: register::StackPointer) -> Self {
+        self.sp = reg;
+        self
+    }
+
+    pub fn with_sound_register(mut self, reg: register::Decrementing) -> Self {
+        self.dt = reg;
+        self
+    }
+
+    pub fn with_timer_register(mut self, reg: register::Decrementing) -> Self {
+        self.dt = reg;
+        self
+    }
+
+    pub fn with_i_register(mut self, reg: register::GeneralPurpose<u16>) -> Self {
+        self.i = reg;
         self
     }
 
@@ -79,7 +92,7 @@ impl Default for Chip8 {
             st: register::Decrementing::default(),
             pc: register::ProgramCounter::default(),
             sp: register::StackPointer::default(),
-            i: register::GeneralPurpose::<u16>::default(),
+            i: register::GeneralPurpose::default(),
             v0: register::GeneralPurpose::default(),
             v1: register::GeneralPurpose::default(),
             v2: register::GeneralPurpose::default(),

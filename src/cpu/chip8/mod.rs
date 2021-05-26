@@ -1,5 +1,7 @@
 use crate::address_map::AddressMap;
+
 mod memory;
+mod microcode;
 mod register;
 
 /// Chip8 represents a CHIP-8 CPU.

@@ -5,6 +5,18 @@ pub trait Decrement {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
+pub enum ByteRegisters {
+    GPRegisters(GPRegisters),
+    TimerRegisters(TimerRegisters),
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum WordRegisters {
+    I,
+    ProgramCounter,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum GPRegisters {
     V0,
     V1,

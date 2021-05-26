@@ -11,10 +11,29 @@ mod tests;
 type WriteError = String;
 type RegistrationError = String;
 
+/// SafeAddressable represents an implementation of Addressable that will
+/// _NEVER_ fail a write. An example would be a ring buffer that will always
+/// wrap its address space.
+pub trait SafeAddressable<O, V>
+where
+    Self: Addressable<O, V>,
+    O: Into<usize> + Debug + Clone + Copy,
+    V: Debug + Clone + Copy,
+{
+    fn read(&self, offset: O) -> V {
+        Addressable::<O, V>::read(self, offset)
+    }
+
+    fn write(&mut self, offset: O, data: V) -> V {
+        Addressable::<O, V>::write(self, offset, data).unwrap()
+    }
+}
+
 /// Addressable implements the trait for addressable memory in an address map.
 /// this can represent IO, RAM, ROM, etc...
-pub trait Addressable<O, V>: AddressableClone<O, V>
+pub trait Addressable<O, V>
 where
+    Self: AddressableClone<O, V>,
     O: Into<usize> + Debug + Clone + Copy,
     V: Debug + Clone + Copy,
 {

@@ -41,13 +41,15 @@ impl Chip8 {
         self
     }
 
-    pub fn with_sound_register(mut self, reg: register::Decrementing) -> Self {
-        self.dt = reg;
-        self
-    }
-
-    pub fn with_timer_register(mut self, reg: register::Decrementing) -> Self {
-        self.dt = reg;
+    pub fn with_timer_register(
+        mut self,
+        reg_type: register::TimerRegisters,
+        reg: register::Decrementing,
+    ) -> Self {
+        match reg_type {
+            register::TimerRegisters::Sound => self.st = reg,
+            register::TimerRegisters::Delay => self.dt = reg,
+        };
         self
     }
 

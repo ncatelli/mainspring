@@ -126,3 +126,88 @@ impl Default for Chip8 {
         }
     }
 }
+
+impl crate::cpu::Execute<Chip8> for microcode::Microcode {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        match self {
+            microcode::Microcode::WriteMemory(mc) => mc.execute(cpu),
+            microcode::Microcode::Write8bitRegister(mc) => mc.execute(cpu),
+            microcode::Microcode::Inc8bitRegister(mc) => mc.execute(cpu),
+            microcode::Microcode::Dec8bitRegister(mc) => mc.execute(cpu),
+            microcode::Microcode::Write16bitRegister(mc) => mc.execute(cpu),
+            microcode::Microcode::Inc16bitRegister(mc) => mc.execute(cpu),
+            microcode::Microcode::Dec16bitRegister(mc) => mc.execute(cpu),
+            microcode::Microcode::PushStack(mc) => mc.execute(cpu),
+            microcode::Microcode::PopStack(mc) => mc.execute(cpu),
+        }
+    }
+}
+
+use crate::address_map::Addressable;
+
+impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
+    fn execute(self, mut cpu: Chip8) -> Chip8 {
+        cpu.address_space.write(self.address, self.value).unwrap();
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        use crate::cpu::register::Register;
+        use register::{ByteRegisters, Decrementing, GeneralPurpose};
+
+        let new_val = self.value;
+
+        match self.register {
+            ByteRegisters::GPRegisters(gpr) => {
+                cpu.with_gp_register(gpr, GeneralPurpose::with_value(new_val))
+            }
+            ByteRegisters::TimerRegisters(tr) => {
+                cpu.with_timer_register(tr, Decrementing::with_value(new_val))
+            }
+        }
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::Inc8bitRegister {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::Dec8bitRegister {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::Write16bitRegister {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::Inc16bitRegister {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::Dec16bitRegister {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::PushStack {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}
+
+impl crate::cpu::Execute<Chip8> for microcode::PopStack {
+    fn execute(self, cpu: Chip8) -> Chip8 {
+        cpu
+    }
+}

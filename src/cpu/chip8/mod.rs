@@ -1,5 +1,5 @@
 use crate::address_map::{AddressMap, Addressable};
-use crate::cpu::register::Register;
+use crate::cpu::{register::Register, StepState, CPU};
 
 mod memory;
 mod microcode;
@@ -133,6 +133,12 @@ impl Default for Chip8 {
             ve: register::GeneralPurpose::default(),
             vf: register::GeneralPurpose::default(),
         }
+    }
+}
+
+impl CPU<Chip8> for Chip8 {
+    fn run(self, _cycles: usize) -> StepState<Chip8> {
+        StepState::new(1, self)
     }
 }
 

@@ -1,3 +1,5 @@
+use parcel::prelude::v1::*;
+
 /// ToNibbles defines a trait for converting a type from a value into its
 /// corresponding nibbles.
 pub trait ToNibbles {
@@ -13,20 +15,26 @@ impl ToNibbles for u8 {
     }
 }
 
+fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u16> {
+    parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+        .map(|bytes| [bytes[0].to_nibbles(), bytes[1].to_nibbles()])
+        .predicate(move |[first, _]| first[0] == opcode)
+        .map(|[[_, first], [second, third]]| {
+            let upper = 0x00 | first;
+            let lower = (second << 4) | third;
+            u16::from_be_bytes([upper, lower])
+        })
+}
+
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Cls;
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
-        parcel::map(
-            parcel::join(
-                parcel::parsers::byte::expect_byte(0x00),
-                parcel::parsers::byte::expect_byte(0xe0),
-            ),
-            |_| Cls::default(),
-        )
-        .parse(input)
+        parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
+            .map(|_| Cls)
+            .parse(input)
     }
 }
 
@@ -42,14 +50,9 @@ pub struct Ret;
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret> for Ret {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Ret> {
-        parcel::map(
-            parcel::join(
-                parcel::parsers::byte::expect_byte(0x00),
-                parcel::parsers::byte::expect_byte(0xee),
-            ),
-            |_| Ret::default(),
-        )
-        .parse(input)
+        parcel::parsers::byte::expect_bytes(&[0x00, 0xee])
+            .map(|_| Ret)
+            .parse(input)
     }
 }
 
@@ -65,14 +68,8 @@ pub struct Jp(u16);
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Jp> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_nibbles(), bytes[1].to_nibbles()])
-            .predicate(|[first, _]| first[0] == 0x1u8)
-            .map(|[[_, first], [second, third]]| {
-                let upper = 0x00 | first;
-                let lower = (second << 4) | third;
-                Jp(u16::from_be_bytes([upper, lower]))
-            })
+        immediate_addressed_opcode(0x01)
+            .map(|addr| Jp(addr))
             .parse(input)
     }
 }
@@ -83,10 +80,27 @@ impl From<Jp> for u16 {
     }
 }
 
+/// Call subroutine at nnn.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Call(u16);
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Call> {
+        immediate_addressed_opcode(0x02)
+            .map(|addr| Call(addr))
+            .parse(input)
+    }
+}
+
+impl From<Call> for u16 {
+    fn from(src: Call) -> Self {
+        0x2000 | src.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use parcel::prelude::v1::*;
 
     #[test]
     fn should_parse_cls_opcode() {
@@ -139,6 +153,24 @@ mod tests {
                 inner: Jp(0x0fff)
             }),
             Jp::default().parse(&input[..])
+        );
+    }
+
+    #[test]
+    fn should_parse_call_opcode() {
+        let input: Vec<(usize, u8)> = 0x2fffu16
+            .to_be_bytes()
+            .iter()
+            .copied()
+            .enumerate()
+            .collect();
+        assert_eq!(
+            Ok(MatchStatus::Match {
+                span: 0..2,
+                remainder: &input[2..],
+                inner: Call(0x0fff)
+            }),
+            Call::default().parse(&input[..])
         );
     }
 }

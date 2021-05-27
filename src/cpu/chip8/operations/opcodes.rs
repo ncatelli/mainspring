@@ -1,23 +1,41 @@
 use parcel::prelude::v1::*;
 
-/// ToNibbles defines a trait for converting a type from a value into its
-/// corresponding nibbles.
-pub trait ToNibbles {
-    fn to_nibbles(&self) -> [u8; 2];
+/// ToNibble provides methods for fetching the upper and lower nibble of a byte.
+pub trait ToNibble {
+    fn to_upper_nibble(&self) -> u8;
+    fn to_lower_nibble(&self) -> u8;
 }
 
-impl ToNibbles for u8 {
-    fn to_nibbles(&self) -> [u8; 2] {
-        let upper = (self & 0xf0) >> 4;
-        let lower = self & 0x0f;
+impl ToNibble for u8 {
+    fn to_upper_nibble(&self) -> u8 {
+        (self & 0xf0) >> 4
+    }
 
-        [upper, lower]
+    fn to_lower_nibble(&self) -> u8 {
+        self & 0x0f
+    }
+}
+
+/// ToNibbles defines a trait for converting a type from a value into its
+/// corresponding nibbles.
+pub trait ToNibbleBytes {
+    fn to_be_nibbles(&self) -> [u8; 2];
+    fn to_le_nibbles(&self) -> [u8; 2];
+}
+
+impl ToNibbleBytes for u8 {
+    fn to_be_nibbles(&self) -> [u8; 2] {
+        [self.to_upper_nibble(), self.to_lower_nibble()]
+    }
+
+    fn to_le_nibbles(&self) -> [u8; 2] {
+        [self.to_lower_nibble(), self.to_upper_nibble()]
     }
 }
 
 fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u16> {
     parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-        .map(|bytes| [bytes[0].to_nibbles(), bytes[1].to_nibbles()])
+        .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
         .predicate(move |[first, _]| first[0] == opcode)
         .map(|[[_, first], [second, third]]| {
             let upper = 0x00 | first;

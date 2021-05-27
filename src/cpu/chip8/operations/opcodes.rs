@@ -1,4 +1,16 @@
+use crate::cpu::chip8::operations::u4::u4;
 use parcel;
+
+pub fn expect_nibble<'a>(expected: u4) -> impl parcel::Parser<'a, &'a [(usize, u4)], u4> {
+    move |input: &'a [(usize, u4)]| match input.get(0) {
+        Some(&(pos, next)) if next == expected => Ok(parcel::MatchStatus::Match {
+            span: pos..pos + 1,
+            remainder: &input[1..],
+            inner: next,
+        }),
+        _ => Ok(parcel::MatchStatus::NoMatch(input)),
+    }
+}
 
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

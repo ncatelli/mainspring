@@ -1,9 +1,13 @@
-use crate::address_map::AddressMap;
+use crate::address_map::{AddressMap, Addressable};
+use crate::cpu::register::Register;
 
 mod memory;
 mod microcode;
 mod operations;
 mod register;
+
+/// Represents the address the program counter is set to on chip reset.
+const RESET_PC_VECTOR: u16 = 0x200;
 
 /// Chip8 represents a CHIP-8 CPU.
 #[derive(Debug, Clone)]
@@ -86,6 +90,11 @@ impl Chip8 {
         };
         self
     }
+
+    /// Resets a cpu to a clean state.
+    pub fn reset() -> Self {
+        Self::default()
+    }
 }
 
 impl Default for Chip8 {
@@ -104,7 +113,7 @@ impl Default for Chip8 {
                 .unwrap(),
             dt: register::Decrementing::default(),
             st: register::Decrementing::default(),
-            pc: register::ProgramCounter::default(),
+            pc: register::ProgramCounter::with_value(RESET_PC_VECTOR),
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
             v0: register::GeneralPurpose::default(),
@@ -143,8 +152,6 @@ impl crate::cpu::Execute<Chip8> for microcode::Microcode {
     }
 }
 
-use crate::address_map::Addressable;
-
 impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
     fn execute(self, mut cpu: Chip8) -> Chip8 {
         cpu.address_space.write(self.address, self.value).unwrap();
@@ -154,7 +161,6 @@ impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
 
 impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
-        use crate::cpu::register::Register;
         use register::{ByteRegisters, Decrementing, GeneralPurpose};
 
         let new_val = self.value;

@@ -1,5 +1,3 @@
-use parcel::Parser;
-
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::{microcode::*, Chip8};
 use crate::cpu::register::Register;

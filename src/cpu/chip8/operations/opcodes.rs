@@ -84,6 +84,12 @@ impl From<Ret> for u16 {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Jp(u16);
 
+impl Jp {
+    pub fn addr(&self) -> u16 {
+        self.0
+    }
+}
+
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Jp> {
         immediate_addressed_opcode(0x01).map(Jp).parse(input)

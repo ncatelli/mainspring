@@ -44,6 +44,34 @@ fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(u
         })
 }
 
+/// Represents all valid opcodes for the CHIP-8 architecture.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum OpcodeVariant {
+    Cls(Cls),
+    Ret(Ret),
+    Jp(Jp),
+    Call(Call),
+}
+
+/// Provides a Parser type for the OpcodeVariant enum. Constructing an
+/// OpcodeVariant from a stream of bytes.
+pub struct OpcodeVariantParser;
+
+impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], OpcodeVariant> {
+        parcel::one_of(vec![
+            Cls::default().map(OpcodeVariant::Cls),
+            Ret::default().map(OpcodeVariant::Ret),
+            Jp::default().map(OpcodeVariant::Jp),
+            Call::default().map(OpcodeVariant::Call),
+        ])
+        .parse(input)
+    }
+}
+
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Cls;

@@ -1,5 +1,7 @@
 use crate::address_map::{AddressMap, Addressable};
 use crate::cpu::{register::Register, Cpu, StepState};
+use crate::cpu::{Execute, Generate};
+use parcel::Parser;
 
 mod memory;
 mod microcode;
@@ -137,8 +139,80 @@ impl Default for Chip8 {
 }
 
 impl Cpu<Chip8> for Chip8 {
-    fn run(self, _cycles: usize) -> StepState<Chip8> {
-        StepState::new(1, self)
+    fn run(self, cycles: usize) -> StepState<Chip8> {
+        let state = self
+            .clone()
+            .into_iter()
+            .take(cycles)
+            .flatten()
+            .fold(self, |c, mc| mc.execute(c));
+        StepState::from(state)
+    }
+}
+
+impl Cpu<Chip8> for StepState<Chip8> {
+    fn run(self, cycles: usize) -> StepState<Chip8> {
+        // CHIP-8 instructions are all single cycle. It's always ready.
+        self.unwrap().run(cycles)
+    }
+}
+
+impl IntoIterator for Chip8 {
+    type Item = Vec<microcode::Microcode>;
+    type IntoIter = Chip8IntoIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Chip8IntoIterator::new(self)
+    }
+}
+
+pub struct Chip8IntoIterator {
+    state: Chip8,
+}
+
+impl From<Chip8IntoIterator> for Chip8 {
+    fn from(src: Chip8IntoIterator) -> Self {
+        src.state
+    }
+}
+
+impl Chip8IntoIterator {
+    fn new(state: Chip8) -> Self {
+        Chip8IntoIterator { state }
+    }
+}
+
+impl Iterator for Chip8IntoIterator {
+    type Item = Vec<microcode::Microcode>;
+
+    fn next(&mut self) -> Option<Vec<microcode::Microcode>> {
+        let pc = self.state.pc.read();
+        let opcodes: [(usize, u8); 2] = [
+            (pc as usize, self.state.address_space.read(pc)),
+            ((pc as usize + 1), self.state.address_space.read(pc + 1)),
+        ];
+
+        // Parse correct operation
+        let ops = match operations::opcodes::OpcodeVariantParser.parse(&opcodes[..]) {
+            Ok(parcel::MatchStatus::Match {
+                span: _,
+                remainder: _,
+                inner: op,
+            }) => Ok(op),
+            _ => Err(format!(
+                "No match found for {:#02x}",
+                u16::from_be_bytes([opcodes[0].1, opcodes[1].1])
+            )),
+        }
+        .unwrap();
+
+        let microcode_steps = ops.generate(&self.state);
+
+        self.state = microcode_steps
+            .iter()
+            .fold(self.state.clone(), |cpu, mc| mc.execute(cpu));
+
+        Some(microcode_steps)
     }
 }
 

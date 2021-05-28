@@ -14,7 +14,7 @@ A CPU device and emulation framework focused on extensibility and flexibility of
             - [Offset](#offset)
             - [Cyclable](#cyclable)
         - [Reference Implementations](#reference-implementations)
-            - [MOS6502](#mos6502)
+            - [Mos6502](#mos6502)
     - [Warnings](#warnings)
 
 <!-- /TOC -->
@@ -45,8 +45,8 @@ Contains a single `offset` method that returns a usize count of the byte offset 
 Contains a single method `cycles` which returns a usize count representing the cycles of an operations.
 
 ### Reference Implementations
-#### MOS6502
-The [MOS6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) is the first cpu emulated in this example and is used heavily as the basis for most of the traits and examples. Basic usages and hardware layouts can be found in the [examples](./examples/) directory.
+#### Mos6502
+The [Mos6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) is the first cpu emulated in this example and is used heavily as the basis for most of the traits and examples. Basic usages and hardware layouts can be found in the [examples](./examples/) directory.
 
 ## Warnings
 This is a built to support the other projects I've implemented in the First Principles of Computing project and may be subject to API change.

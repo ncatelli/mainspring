@@ -40,7 +40,7 @@ pub type Ram = Memory<ReadWrite, u16, u8>;
 /// Provides an alias for the 16bit addressable RO ROM.
 pub type Rom = Memory<ReadOnly, u16, u8>;
 
-/// MOS6502 represents the 6502 CPU
+/// Mos6502 represents the 6502 CPU
 #[derive(Debug, Clone)]
 pub struct Mos6502 {
     address_map: AddressMap<u16, u8>,
@@ -57,7 +57,7 @@ impl Mos6502 {
         Self::default()
     }
 
-    /// instantiates a new MOS6502 with a provided address_map.
+    /// instantiates a new Mos6502 with a provided address_map.
     #[allow(clippy::field_reassign_with_default)]
     pub fn with_addressmap(am: AddressMap<u16, u8>) -> Self {
         let mut cpu = Self::default();
@@ -78,13 +78,13 @@ impl Mos6502 {
     ///     memory::{Memory, ReadOnly},
     ///     Addressable,
     /// };
-    /// use mainspring::cpu::mos6502::{MOS6502, Rom};
+    /// use mainspring::cpu::mos6502::{Mos6502, Rom};
     ///
     /// let (start_addr, stop_addr) = (0x6000, 0x7000);
     /// let nop_sled = [0xea; 0x7000 - 0x6000].to_vec();
     ///
     /// assert!(
-    ///     MOS6502::default()
+    ///     Mos6502::default()
     ///         .register_address_space(
     ///             start_addr..=stop_addr,
     ///             Rom::new(0x6000, 0x7000).load(nop_sled),

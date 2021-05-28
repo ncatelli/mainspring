@@ -30,7 +30,7 @@ fn main() {
         .unwrap()
         // Resets the cpu and loads the reset vector into the PC.
         .reset()
-        // This return a StepState<MOS6502> which is unwrapped to return the
+        // This return a StepState<Mos6502> which is unwrapped to return the
         // enclosing cpu.
         .unwrap();
 

@@ -38,7 +38,7 @@ fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(u
         .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
         .predicate(move |[first, _]| first[0] == opcode)
         .map(|[[_, first], [second, third]]| {
-            let upper = 0x00 | first;
+            let upper = 0x0f & first;
             let lower = (second << 4) | third;
             u16::from_be_bytes([upper, lower])
         })
@@ -86,9 +86,7 @@ pub struct Jp(u16);
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Jp> {
-        immediate_addressed_opcode(0x01)
-            .map(|addr| Jp(addr))
-            .parse(input)
+        immediate_addressed_opcode(0x01).map(Jp).parse(input)
     }
 }
 
@@ -104,9 +102,7 @@ pub struct Call(u16);
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Call> {
-        immediate_addressed_opcode(0x02)
-            .map(|addr| Call(addr))
-            .parse(input)
+        immediate_addressed_opcode(0x02).map(Call).parse(input)
     }
 }
 

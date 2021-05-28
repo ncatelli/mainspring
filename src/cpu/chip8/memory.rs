@@ -12,10 +12,7 @@ where
 {
     pub fn new(capacity: usize) -> Self {
         let inner = (0..capacity).into_iter().map(|_| <T>::default()).collect();
-        Self {
-            capacity,
-            inner: inner,
-        }
+        Self { capacity, inner }
     }
 }
 

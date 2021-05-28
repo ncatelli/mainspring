@@ -1,5 +1,5 @@
 use crate::address_map::{AddressMap, Addressable};
-use crate::cpu::{register::Register, StepState, CPU};
+use crate::cpu::{register::Register, Cpu, StepState};
 
 mod memory;
 mod microcode;
@@ -67,26 +67,26 @@ impl Chip8 {
 
     pub fn with_gp_register(
         mut self,
-        reg_type: register::GPRegisters,
+        reg_type: register::GpRegisters,
         reg: register::GeneralPurpose<u8>,
     ) -> Self {
         match reg_type {
-            register::GPRegisters::V0 => self.v0 = reg,
-            register::GPRegisters::V1 => self.v1 = reg,
-            register::GPRegisters::V2 => self.v2 = reg,
-            register::GPRegisters::V3 => self.v3 = reg,
-            register::GPRegisters::V4 => self.v4 = reg,
-            register::GPRegisters::V5 => self.v5 = reg,
-            register::GPRegisters::V6 => self.v6 = reg,
-            register::GPRegisters::V7 => self.v7 = reg,
-            register::GPRegisters::V8 => self.v8 = reg,
-            register::GPRegisters::V9 => self.v9 = reg,
-            register::GPRegisters::VA => self.va = reg,
-            register::GPRegisters::VB => self.vb = reg,
-            register::GPRegisters::VC => self.vc = reg,
-            register::GPRegisters::VD => self.vd = reg,
-            register::GPRegisters::VE => self.ve = reg,
-            register::GPRegisters::VF => self.vf = reg,
+            register::GpRegisters::V0 => self.v0 = reg,
+            register::GpRegisters::V1 => self.v1 = reg,
+            register::GpRegisters::V2 => self.v2 = reg,
+            register::GpRegisters::V3 => self.v3 = reg,
+            register::GpRegisters::V4 => self.v4 = reg,
+            register::GpRegisters::V5 => self.v5 = reg,
+            register::GpRegisters::V6 => self.v6 = reg,
+            register::GpRegisters::V7 => self.v7 = reg,
+            register::GpRegisters::V8 => self.v8 = reg,
+            register::GpRegisters::V9 => self.v9 = reg,
+            register::GpRegisters::Va => self.va = reg,
+            register::GpRegisters::Vb => self.vb = reg,
+            register::GpRegisters::Vc => self.vc = reg,
+            register::GpRegisters::Vd => self.vd = reg,
+            register::GpRegisters::Ve => self.ve = reg,
+            register::GpRegisters::Vf => self.vf = reg,
         };
         self
     }
@@ -136,7 +136,7 @@ impl Default for Chip8 {
     }
 }
 
-impl CPU<Chip8> for Chip8 {
+impl Cpu<Chip8> for Chip8 {
     fn run(self, _cycles: usize) -> StepState<Chip8> {
         StepState::new(1, self)
     }
@@ -172,7 +172,7 @@ impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
         let new_val = self.value;
 
         match self.register {
-            ByteRegisters::GPRegisters(gpr) => {
+            ByteRegisters::GpRegisters(gpr) => {
                 cpu.with_gp_register(gpr, GeneralPurpose::with_value(new_val))
             }
             ByteRegisters::TimerRegisters(tr) => {

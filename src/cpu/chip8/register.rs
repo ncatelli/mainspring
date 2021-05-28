@@ -6,7 +6,7 @@ pub trait Decrement {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ByteRegisters {
-    GPRegisters(GPRegisters),
+    GpRegisters(GpRegisters),
     TimerRegisters(TimerRegisters),
 }
 
@@ -17,7 +17,7 @@ pub enum WordRegisters {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub enum GPRegisters {
+pub enum GpRegisters {
     V0,
     V1,
     V2,
@@ -28,12 +28,12 @@ pub enum GPRegisters {
     V7,
     V8,
     V9,
-    VA,
-    VB,
-    VC,
-    VD,
-    VE,
-    VF,
+    Va,
+    Vb,
+    Vc,
+    Vd,
+    Ve,
+    Vf,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]

@@ -21,7 +21,7 @@ pub trait Execute<T> {
     fn execute(self, cpu: T) -> T;
 }
 
-pub trait CPU<T> {
+pub trait Cpu<T> {
     fn run(self, cycles: usize) -> StepState<T>;
 }
 

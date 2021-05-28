@@ -3,21 +3,21 @@ use crate::address_map::{
     Addressable,
 };
 use crate::cpu::{
-    mos6502::{register, register::GPRegister, Ram, MOS6502},
+    mos6502::{register, register::GpRegister, Mos6502, Ram},
     register::Register,
-    CPU,
+    Cpu,
 };
 
 type Rom = Memory<ReadOnly, u16, u8>;
 
-fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
+fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> Mos6502 {
     let (start_addr, stop_addr) = (0x6000, 0x7000);
     let mut nop_sled = [0xea; 0x7000 - 0x6000].to_vec();
     for (index, val) in opcodes.into_iter().enumerate() {
         nop_sled[index] = val;
     }
 
-    MOS6502::default()
+    Mos6502::default()
         .reset()
         .unwrap()
         .with_pc_register(register::ProgramCounter::with_value(start_addr))
@@ -31,7 +31,7 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> MOS6502 {
 #[test]
 fn should_cycle_on_adc_absolute_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x6d, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -51,7 +51,7 @@ fn should_cycle_on_adc_absolute_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_absolute_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x6d, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10));
     cpu.address_map.write(0x00ff, 0x50).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -71,8 +71,8 @@ fn should_cycle_on_adc_absolute_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_absolute_indexed_with_x_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x7d, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -92,8 +92,8 @@ fn should_cycle_on_adc_absolute_indexed_with_x_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_absolute_indexed_with_x_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x7d, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x50).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -113,8 +113,8 @@ fn should_cycle_on_adc_absolute_indexed_with_x_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_absolute_indexed_with_y_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x79, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -134,8 +134,8 @@ fn should_cycle_on_adc_absolute_indexed_with_y_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_absolute_indexed_with_y_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x79, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x50).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -155,8 +155,8 @@ fn should_cycle_on_adc_absolute_indexed_with_y_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_indirect_y_indexed_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x71, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xff).unwrap();
@@ -178,8 +178,8 @@ fn should_cycle_on_adc_indirect_y_indexed_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_indirect_y_indexed_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x71, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x50).unwrap();
@@ -201,7 +201,7 @@ fn should_cycle_on_adc_indirect_y_indexed_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_immediate_operation_with_overflow() {
     let cpu = generate_test_cpu_with_instructions(vec![0x69, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -220,8 +220,8 @@ fn should_cycle_on_adc_immediate_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_x_indexed_indirect_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x61, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xff).unwrap();
@@ -243,8 +243,8 @@ fn should_cycle_on_adc_x_indexed_indirect_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_x_indexed_indirect_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x61, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x50).unwrap();
@@ -266,7 +266,7 @@ fn should_cycle_on_adc_x_indexed_indirect_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_immediate_operation_without_overflow() {
     let cpu = generate_test_cpu_with_instructions(vec![0x69, 0x50])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -285,7 +285,7 @@ fn should_cycle_on_adc_immediate_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_zeropage_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x65, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -305,7 +305,7 @@ fn should_cycle_on_adc_zeropage_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_zeropage_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x65, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10));
     cpu.address_map.write(0x00ff, 0x50).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -325,8 +325,8 @@ fn should_cycle_on_adc_zeropage_operation_without_overflow() {
 #[test]
 fn should_cycle_on_adc_zeropage_indexed_with_x_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x75, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x80))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -346,8 +346,8 @@ fn should_cycle_on_adc_zeropage_indexed_with_x_operation_with_overflow() {
 #[test]
 fn should_cycle_on_adc_zeropage_indexed_with_x_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x75, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x10))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x10))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x50).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -367,7 +367,7 @@ fn should_cycle_on_adc_zeropage_indexed_with_x_operation_without_overflow() {
 #[test]
 fn should_cycle_on_and_absolute_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x2d, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -379,8 +379,8 @@ fn should_cycle_on_and_absolute_operation() {
 #[test]
 fn should_cycle_on_and_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x3d, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -392,8 +392,8 @@ fn should_cycle_on_and_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_and_absolute_indexed_with_y_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x39, 0xfa, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -405,8 +405,8 @@ fn should_cycle_on_and_absolute_indexed_with_y_operation() {
 #[test]
 fn should_cycle_on_and_indirect_y_indexed_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x31, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap();
@@ -420,7 +420,7 @@ fn should_cycle_on_and_indirect_y_indexed_operation() {
 #[test]
 fn should_cycle_on_and_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x29, 0x55])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -431,8 +431,8 @@ fn should_cycle_on_and_immediate_operation() {
 #[test]
 fn should_cycle_on_and_x_indexed_indirect_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x21, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap();
@@ -446,7 +446,7 @@ fn should_cycle_on_and_x_indexed_indirect_operation() {
 #[test]
 fn should_cycle_on_and_zeropage_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x25, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -458,8 +458,8 @@ fn should_cycle_on_and_zeropage_operation() {
 #[test]
 fn should_cycle_on_and_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x35, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -485,7 +485,7 @@ fn should_cycle_on_asl_absolute_operation() {
 #[test]
 fn should_cycle_on_asl_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x1e, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
 
     let state = cpu.run(7).unwrap();
@@ -500,7 +500,7 @@ fn should_cycle_on_asl_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_asl_accumulator_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x0a])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xaa));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xaa));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -528,7 +528,7 @@ fn should_cycle_on_asl_zeropage_operation() {
 #[test]
 fn should_cycle_on_asl_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x16, 0xfa])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0xaa).unwrap();
 
     let state = cpu.run(6).unwrap();
@@ -659,7 +659,7 @@ fn bmi_relative_operation_should_not_jump_when_zero_unset() {
 #[test]
 fn should_cycle_on_bit_absolute_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x2c, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -674,7 +674,7 @@ fn should_cycle_on_bit_absolute_operation() {
 #[test]
 fn should_cycle_on_bit_zeropage_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x24, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -861,7 +861,7 @@ fn should_cycle_on_clv_implied_operation() {
 #[test]
 fn should_cycle_on_cmp_absolute_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xcd, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::ACC,
+        register::GpRegister::Acc,
         register::GeneralPurpose::with_value(0xff),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -877,7 +877,7 @@ fn should_cycle_on_cmp_absolute_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cmp_absolute_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xcd, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::ACC,
+        register::GpRegister::Acc,
         register::GeneralPurpose::with_value(0x00),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -894,11 +894,11 @@ fn should_cycle_on_cmp_absolute_operation_with_inequal_operands() {
 fn should_cycle_on_cmp_absolute_indexed_with_x_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xdd, 0xfa, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0x00),
         )
         .with_gp_register(
-            register::GPRegister::X,
+            register::GpRegister::X,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -915,11 +915,11 @@ fn should_cycle_on_cmp_absolute_indexed_with_x_operation_with_inequal_operands()
 fn should_cycle_on_cmp_absolute_indexed_with_x_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xdd, 0xfa, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xff),
         )
         .with_gp_register(
-            register::GPRegister::X,
+            register::GpRegister::X,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -936,11 +936,11 @@ fn should_cycle_on_cmp_absolute_indexed_with_x_operation_with_equal_operands() {
 fn should_cycle_on_cmp_absolute_indexed_with_y_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd9, 0xfa, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0x00),
         )
         .with_gp_register(
-            register::GPRegister::Y,
+            register::GpRegister::Y,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -957,11 +957,11 @@ fn should_cycle_on_cmp_absolute_indexed_with_y_operation_with_inequal_operands()
 fn should_cycle_on_cmp_absolute_indexed_with_y_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd9, 0xfa, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xff),
         )
         .with_gp_register(
-            register::GPRegister::Y,
+            register::GpRegister::Y,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -978,11 +978,11 @@ fn should_cycle_on_cmp_absolute_indexed_with_y_operation_with_equal_operands() {
 fn should_cycle_on_cmp_indirect_y_indexed_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd1, 0x01, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xea),
         )
         .with_gp_register(
-            register::GPRegister::Y,
+            register::GpRegister::Y,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x01, 0xfa).unwrap();
@@ -1001,11 +1001,11 @@ fn should_cycle_on_cmp_indirect_y_indexed_operation_with_equal_operands() {
 fn should_cycle_on_cmp_indirect_y_indexed_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd1, 0x01, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xff),
         )
         .with_gp_register(
-            register::GPRegister::Y,
+            register::GpRegister::Y,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x01, 0xfa).unwrap();
@@ -1023,7 +1023,7 @@ fn should_cycle_on_cmp_indirect_y_indexed_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
-        register::GPRegister::ACC,
+        register::GpRegister::Acc,
         register::GeneralPurpose::with_value(0x00),
     );
 
@@ -1038,7 +1038,7 @@ fn should_cycle_on_cmp_immediate_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc9, 0xff]).with_gp_register(
-        register::GPRegister::ACC,
+        register::GpRegister::Acc,
         register::GeneralPurpose::with_value(0xff),
     );
 
@@ -1054,11 +1054,11 @@ fn should_cycle_on_cmp_immediate_operation_with_equal_operands() {
 fn should_cycle_on_cmp_x_indexed_indirect_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xc1, 0x01, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xea),
         )
         .with_gp_register(
-            register::GPRegister::X,
+            register::GpRegister::X,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x06, 0xff).unwrap();
@@ -1077,11 +1077,11 @@ fn should_cycle_on_cmp_x_indexed_indirect_operation_with_equal_operands() {
 fn should_cycle_on_cmp_x_indexed_indirect_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xc1, 0x01, 0x00])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xff),
         )
         .with_gp_register(
-            register::GPRegister::X,
+            register::GpRegister::X,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x06, 0xff).unwrap();
@@ -1099,7 +1099,7 @@ fn should_cycle_on_cmp_x_indexed_indirect_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cmp_zeropage_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xc5, 0xff]).with_gp_register(
-        register::GPRegister::ACC,
+        register::GpRegister::Acc,
         register::GeneralPurpose::with_value(0x00),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1115,7 +1115,7 @@ fn should_cycle_on_cmp_zeropage_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cmp_zeropage_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xc5, 0xff]).with_gp_register(
-        register::GPRegister::ACC,
+        register::GpRegister::Acc,
         register::GeneralPurpose::with_value(0xff),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1132,11 +1132,11 @@ fn should_cycle_on_cmp_zeropage_operation_with_equal_operands() {
 fn should_cycle_on_cmp_zeropage_indexed_with_x_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd5, 0xfa])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0x00),
         )
         .with_gp_register(
-            register::GPRegister::X,
+            register::GpRegister::X,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1153,11 +1153,11 @@ fn should_cycle_on_cmp_zeropage_indexed_with_x_operation_with_inequal_operands()
 fn should_cycle_on_cmp_zeropage_indexed_with_x_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xd5, 0xfa])
         .with_gp_register(
-            register::GPRegister::ACC,
+            register::GpRegister::Acc,
             register::GeneralPurpose::with_value(0xff),
         )
         .with_gp_register(
-            register::GPRegister::X,
+            register::GpRegister::X,
             register::GeneralPurpose::with_value(0x05),
         );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1173,7 +1173,7 @@ fn should_cycle_on_cmp_zeropage_indexed_with_x_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cpx_absolute_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xec, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::X,
+        register::GpRegister::X,
         register::GeneralPurpose::with_value(0xff),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1189,7 +1189,7 @@ fn should_cycle_on_cpx_absolute_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cpx_absolute_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xec, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::X,
+        register::GpRegister::X,
         register::GeneralPurpose::with_value(0x00),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1205,7 +1205,7 @@ fn should_cycle_on_cpx_absolute_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cpx_immediate_operation_with_inequal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe0, 0xff]).with_gp_register(
-        register::GPRegister::X,
+        register::GpRegister::X,
         register::GeneralPurpose::with_value(0x00),
     );
 
@@ -1220,7 +1220,7 @@ fn should_cycle_on_cpx_immediate_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cpx_immediate_operation_with_equal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe0, 0xff]).with_gp_register(
-        register::GPRegister::X,
+        register::GpRegister::X,
         register::GeneralPurpose::with_value(0xff),
     );
 
@@ -1235,7 +1235,7 @@ fn should_cycle_on_cpx_immediate_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cpx_zeropage_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe4, 0xff]).with_gp_register(
-        register::GPRegister::X,
+        register::GpRegister::X,
         register::GeneralPurpose::with_value(0x00),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1251,7 +1251,7 @@ fn should_cycle_on_cpx_zeropage_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cpx_zeropage_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe4, 0xff]).with_gp_register(
-        register::GPRegister::X,
+        register::GpRegister::X,
         register::GeneralPurpose::with_value(0xff),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1267,7 +1267,7 @@ fn should_cycle_on_cpx_zeropage_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cpy_absolute_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xcc, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::Y,
+        register::GpRegister::Y,
         register::GeneralPurpose::with_value(0xff),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1283,7 +1283,7 @@ fn should_cycle_on_cpy_absolute_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cpy_absolute_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xcc, 0xff, 0x00]).with_gp_register(
-        register::GPRegister::Y,
+        register::GpRegister::Y,
         register::GeneralPurpose::with_value(0x00),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1299,7 +1299,7 @@ fn should_cycle_on_cpy_absolute_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cpy_immediate_operation_with_inequal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc0, 0xff]).with_gp_register(
-        register::GPRegister::Y,
+        register::GpRegister::Y,
         register::GeneralPurpose::with_value(0x00),
     );
 
@@ -1314,7 +1314,7 @@ fn should_cycle_on_cpy_immediate_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cpy_immediate_operation_with_equal_operands() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc0, 0xff]).with_gp_register(
-        register::GPRegister::Y,
+        register::GpRegister::Y,
         register::GeneralPurpose::with_value(0xff),
     );
 
@@ -1329,7 +1329,7 @@ fn should_cycle_on_cpy_immediate_operation_with_equal_operands() {
 #[test]
 fn should_cycle_on_cpy_zeropage_operation_with_inequal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xc4, 0xff]).with_gp_register(
-        register::GPRegister::Y,
+        register::GpRegister::Y,
         register::GeneralPurpose::with_value(0x00),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1345,7 +1345,7 @@ fn should_cycle_on_cpy_zeropage_operation_with_inequal_operands() {
 #[test]
 fn should_cycle_on_cpy_zeropage_operation_with_equal_operands() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xc4, 0xff]).with_gp_register(
-        register::GPRegister::Y,
+        register::GpRegister::Y,
         register::GeneralPurpose::with_value(0xff),
     );
     cpu.address_map.write(0x00ff, 0xff).unwrap();
@@ -1371,7 +1371,7 @@ fn should_cycle_on_dec_absolute_operation() {
 #[test]
 fn should_cycle_on_dec_absolute_indexed_with_x_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xde, 0xfa, 0x01])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(7).unwrap();
     assert_eq!(0x6003, state.pc.read());
@@ -1392,7 +1392,7 @@ fn should_cycle_on_dec_zeropage_operation() {
 #[test]
 fn should_cycle_on_dec_zeropage_indexed_with_x_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xd6, 0xfa])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(6).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -1403,7 +1403,7 @@ fn should_cycle_on_dec_zeropage_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_dex_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xca])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x51));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x51));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -1414,7 +1414,7 @@ fn should_cycle_on_dex_implied_operation() {
 #[test]
 fn should_cycle_on_dey_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x88])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -1425,7 +1425,7 @@ fn should_cycle_on_dey_implied_operation() {
 #[test]
 fn should_cycle_on_eor_absolute_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x4d, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1437,8 +1437,8 @@ fn should_cycle_on_eor_absolute_operation() {
 #[test]
 fn should_cycle_on_eor_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x5d, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1450,8 +1450,8 @@ fn should_cycle_on_eor_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_eor_absolute_indexed_with_y_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x59, 0xfa, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1463,8 +1463,8 @@ fn should_cycle_on_eor_absolute_indexed_with_y_operation() {
 #[test]
 fn should_cycle_on_eor_indirect_y_indexed_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x51, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap();
@@ -1478,7 +1478,7 @@ fn should_cycle_on_eor_indirect_y_indexed_operation() {
 #[test]
 fn should_cycle_on_eor_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x49, 0x55])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -1489,8 +1489,8 @@ fn should_cycle_on_eor_immediate_operation() {
 #[test]
 fn should_cycle_on_eor_x_indexed_indirect_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x41, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap();
@@ -1504,7 +1504,7 @@ fn should_cycle_on_eor_x_indexed_indirect_operation() {
 #[test]
 fn should_cycle_on_eor_zeropage_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x45, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -1516,8 +1516,8 @@ fn should_cycle_on_eor_zeropage_operation() {
 #[test]
 fn should_cycle_on_eor_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x55, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1539,7 +1539,7 @@ fn should_cycle_on_inc_absolute_operation() {
 #[test]
 fn should_cycle_on_inc_absolute_indexed_with_x_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xfe, 0xfa, 0x01])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(7).unwrap();
     assert_eq!(0x6003, state.pc.read());
@@ -1560,7 +1560,7 @@ fn should_cycle_on_inc_zeropage_operation() {
 #[test]
 fn should_cycle_on_inc_zeropage_indexed_with_x_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xf6, 0xfa])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(6).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -1571,7 +1571,7 @@ fn should_cycle_on_inc_zeropage_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_inx_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe8])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(127));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(127));
     assert_eq!(false, cpu.ps.negative);
 
     let state = cpu.run(2).unwrap();
@@ -1583,7 +1583,7 @@ fn should_cycle_on_inx_implied_operation() {
 #[test]
 fn should_cycle_on_iny_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc8])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(127));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(127));
     assert_eq!(false, cpu.ps.negative);
 
     let state = cpu.run(2).unwrap();
@@ -1648,7 +1648,7 @@ fn should_cycle_on_lda_zeropage_operation() {
 #[test]
 fn should_cycle_on_lda_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb5, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1661,7 +1661,7 @@ fn should_cycle_on_lda_zeropage_indexed_with_x_operation() {
 fn should_cycle_on_lda_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xad, 0x00, 0x02])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -1676,7 +1676,7 @@ fn should_cycle_on_lda_absolute_operation() {
 #[test]
 fn should_cycle_on_lda_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xbd, 0x00, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1688,7 +1688,7 @@ fn should_cycle_on_lda_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_lda_absolute_indexed_with_y_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb9, 0x00, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1700,7 +1700,7 @@ fn should_cycle_on_lda_absolute_indexed_with_y_operation() {
 #[test]
 fn should_cycle_on_lda_indirect_y_indexed_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb1, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xea).unwrap();
@@ -1714,7 +1714,7 @@ fn should_cycle_on_lda_indirect_y_indexed_operation() {
 #[test]
 fn should_cycle_on_lda_x_indexed_indirect_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xa1, 0x05])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x00));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x00));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0xea).unwrap();
@@ -1729,7 +1729,7 @@ fn should_cycle_on_lda_x_indexed_indirect_operation() {
 fn should_cycle_on_ldx_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xae, 0x00, 0x02])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -1744,7 +1744,7 @@ fn should_cycle_on_ldx_absolute_operation() {
 #[test]
 fn should_cycle_on_ldx_absolute_indexed_with_y_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xbe, 0x00, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1776,7 +1776,7 @@ fn should_cycle_on_ldx_zeropage_operation() {
 #[test]
 fn should_cycle_on_ldx_zeropage_indexed_with_y_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb6, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1789,7 +1789,7 @@ fn should_cycle_on_ldx_zeropage_indexed_with_y_operation() {
 fn should_cycle_on_ldy_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0xac, 0x00, 0x02])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -1804,7 +1804,7 @@ fn should_cycle_on_ldy_absolute_operation() {
 #[test]
 fn should_cycle_on_ldy_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xbc, 0x00, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1836,7 +1836,7 @@ fn should_cycle_on_ldy_zeropage_operation() {
 #[test]
 fn should_cycle_on_ldy_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xb4, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1862,7 +1862,7 @@ fn should_cycle_on_lsr_absolute_operation() {
 #[test]
 fn should_cycle_on_lsr_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x5e, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(7).unwrap();
@@ -1877,7 +1877,7 @@ fn should_cycle_on_lsr_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_lsr_accumulator_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x4a])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x55));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x55));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -1905,7 +1905,7 @@ fn should_cycle_on_lsr_zeropage_operation() {
 #[test]
 fn should_cycle_on_lsr_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x56, 0xfa])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(6).unwrap();
@@ -1931,7 +1931,7 @@ fn should_cycle_on_nop_implied_operation() {
 #[test]
 fn should_cycle_on_ora_absolute_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x0d, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1943,8 +1943,8 @@ fn should_cycle_on_ora_absolute_operation() {
 #[test]
 fn should_cycle_on_ora_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x1d, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1956,8 +1956,8 @@ fn should_cycle_on_ora_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_ora_absolute_indexed_with_y_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x19, 0xfa, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -1969,8 +1969,8 @@ fn should_cycle_on_ora_absolute_indexed_with_y_operation() {
 #[test]
 fn should_cycle_on_ora_indirect_y_indexed_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x11, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap();
@@ -1984,7 +1984,7 @@ fn should_cycle_on_ora_indirect_y_indexed_operation() {
 #[test]
 fn should_cycle_on_ora_immediate_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x09, 0x55])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -1995,8 +1995,8 @@ fn should_cycle_on_ora_immediate_operation() {
 #[test]
 fn should_cycle_on_ora_x_indexed_indirect_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x01, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x55).unwrap();
@@ -2010,7 +2010,7 @@ fn should_cycle_on_ora_x_indexed_indirect_operation() {
 #[test]
 fn should_cycle_on_ora_zeropage_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x05, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -2022,8 +2022,8 @@ fn should_cycle_on_ora_zeropage_operation() {
 #[test]
 fn should_cycle_on_ora_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x15, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x55).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2035,7 +2035,7 @@ fn should_cycle_on_ora_zeropage_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_pha_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x48])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(3).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -2098,7 +2098,7 @@ fn should_cycle_on_rol_absolute_operation() {
 #[test]
 fn should_cycle_on_rol_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x3e, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
             let mut ps = register::ProcessorStatus::default();
             ps.carry = true;
@@ -2118,7 +2118,7 @@ fn should_cycle_on_rol_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_rol_accumulator_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x2a])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xaa))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xaa))
         .with_ps_register({
             let mut ps = register::ProcessorStatus::default();
             ps.carry = true;
@@ -2155,7 +2155,7 @@ fn should_cycle_on_rol_zeropage_operation() {
 #[test]
 fn should_cycle_on_rol_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x36, 0xfa])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
             let mut ps = register::ProcessorStatus::default();
             ps.carry = true;
@@ -2193,7 +2193,7 @@ fn should_cycle_on_ror_absolute_operation() {
 #[test]
 fn should_cycle_on_ror_absolute_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x7e, 0xfa, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
             let mut ps = register::ProcessorStatus::default();
             ps.carry = true;
@@ -2213,7 +2213,7 @@ fn should_cycle_on_ror_absolute_indexed_with_x_operation() {
 #[test]
 fn should_cycle_on_ror_accumulator_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x6a])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xaa))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xaa))
         .with_ps_register({
             let mut ps = register::ProcessorStatus::default();
             ps.carry = true;
@@ -2250,7 +2250,7 @@ fn should_cycle_on_ror_zeropage_operation() {
 #[test]
 fn should_cycle_on_ror_zeropage_indexed_with_x_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x76, 0xfa])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
             let mut ps = register::ProcessorStatus::default();
             ps.carry = true;
@@ -2310,9 +2310,9 @@ fn should_cycle_on_rts_implied_operation() {
 #[test]
 fn should_cycle_on_sbc_absolute_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xed, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2335,7 +2335,7 @@ fn should_cycle_on_sbc_absolute_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_absolute_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xed, 0xff, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x80).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2355,10 +2355,10 @@ fn should_cycle_on_sbc_absolute_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_absolute_indexed_with_x_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xfd, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2381,8 +2381,8 @@ fn should_cycle_on_sbc_absolute_indexed_with_x_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_absolute_indexed_with_x_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xfd, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x80).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2402,10 +2402,10 @@ fn should_cycle_on_sbc_absolute_indexed_with_x_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_absolute_indexed_with_y_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf9, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2428,8 +2428,8 @@ fn should_cycle_on_sbc_absolute_indexed_with_y_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_absolute_indexed_with_y_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf9, 0xfa, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x80).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2449,10 +2449,10 @@ fn should_cycle_on_sbc_absolute_indexed_with_y_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_indirect_y_indexed_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf1, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2477,8 +2477,8 @@ fn should_cycle_on_sbc_indirect_y_indexed_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_indirect_y_indexed_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf1, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x80).unwrap();
@@ -2500,9 +2500,9 @@ fn should_cycle_on_sbc_indirect_y_indexed_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_immediate_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe9, 0xb0])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2529,7 +2529,7 @@ fn should_cycle_on_sbc_immediate_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_immediate_operation_without_overflow() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe9, 0x80])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2548,10 +2548,10 @@ fn should_cycle_on_sbc_immediate_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_x_indexed_indirect_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe1, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2576,8 +2576,8 @@ fn should_cycle_on_sbc_x_indexed_indirect_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_x_indexed_indirect_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe1, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
     cpu.address_map.write(0xff, 0x80).unwrap();
@@ -2599,9 +2599,9 @@ fn should_cycle_on_sbc_x_indexed_indirect_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_zeropage_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe5, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2624,7 +2624,7 @@ fn should_cycle_on_sbc_zeropage_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_zeropage_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xe5, 0xff])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00ff, 0x80).unwrap();
 
     let state = cpu.run(3).unwrap();
@@ -2644,10 +2644,10 @@ fn should_cycle_on_sbc_zeropage_operation_without_overflow() {
 #[test]
 fn should_cycle_on_sbc_zeropage_indexed_with_x_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf5, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x50))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x50))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
         .with_ps_register({
-            let mut ps = MOS6502::default().ps;
+            let mut ps = Mos6502::default().ps;
             ps.carry = true;
             ps
         });
@@ -2670,8 +2670,8 @@ fn should_cycle_on_sbc_zeropage_indexed_with_x_operation_with_overflow() {
 #[test]
 fn should_cycle_on_sbc_zeropage_indexed_with_x_operation_without_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0xf5, 0xfa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
     cpu.address_map.write(0x00ff, 0x80).unwrap();
 
     let state = cpu.run(4).unwrap();
@@ -2720,7 +2720,7 @@ fn should_cycle_on_sei_implied_operation() {
 fn should_cycle_on_sta_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8d, 0x00, 0x02])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -2734,8 +2734,8 @@ fn should_cycle_on_sta_absolute_operation() {
 fn should_cycle_on_sta_absolute_indexed_with_x_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x9d, 0x00, 0x02])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x5))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x5))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -2749,8 +2749,8 @@ fn should_cycle_on_sta_absolute_indexed_with_x_operation() {
 fn should_cycle_on_sta_absolute_indexed_with_y_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x99, 0x00, 0x02])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x5))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x5))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -2763,8 +2763,8 @@ fn should_cycle_on_sta_absolute_indexed_with_y_operation() {
 #[test]
 fn should_cycle_on_sta_y_indexed_indirect_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x91, 0x00])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x00, 0xfa).unwrap();
     cpu.address_map.write(0x01, 0x00).unwrap();
 
@@ -2777,8 +2777,8 @@ fn should_cycle_on_sta_y_indexed_indirect_operation() {
 #[test]
 fn should_cycle_on_sta_x_indexed_indirect_operation() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x81, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
     cpu.address_map.write(0x05, 0xff).unwrap();
     cpu.address_map.write(0x06, 0x00).unwrap();
 
@@ -2791,7 +2791,7 @@ fn should_cycle_on_sta_x_indexed_indirect_operation() {
 #[test]
 fn should_cycle_on_sta_zeropage_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x85, 0x02])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(3).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2802,8 +2802,8 @@ fn should_cycle_on_sta_zeropage_operation() {
 #[test]
 fn should_cycle_on_sta_zeropage_with_x_index_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x95, 0x00])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(4).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2815,7 +2815,7 @@ fn should_cycle_on_sta_zeropage_with_x_index_operation() {
 fn should_cycle_on_stx_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8e, 0x00, 0x02])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -2828,7 +2828,7 @@ fn should_cycle_on_stx_absolute_operation() {
 #[test]
 fn should_cycle_on_stx_zeropage_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x86, 0x02])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(3).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2839,8 +2839,8 @@ fn should_cycle_on_stx_zeropage_operation() {
 #[test]
 fn should_cycle_on_stx_zeropage_with_y_index_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x96, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x05));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x05));
 
     let state = cpu.run(4).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2852,7 +2852,7 @@ fn should_cycle_on_stx_zeropage_with_y_index_operation() {
 fn should_cycle_on_sty_absolute_operation() {
     let (ram_start, ram_end) = (0x0200, 0x5fff);
     let cpu = generate_test_cpu_with_instructions(vec![0x8c, 0x00, 0x02])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0xff))
         .register_address_space(ram_start..=ram_end, Ram::new(ram_start, ram_end))
         .unwrap();
 
@@ -2865,7 +2865,7 @@ fn should_cycle_on_sty_absolute_operation() {
 #[test]
 fn should_cycle_on_sty_zeropage_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x84, 0x02])
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(3).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2876,8 +2876,8 @@ fn should_cycle_on_sty_zeropage_operation() {
 #[test]
 fn should_cycle_on_sty_zeropage_with_x_index_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x94, 0x00])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x05))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x05))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(4).unwrap();
     assert_eq!(0x6002, state.pc.read());
@@ -2888,8 +2888,8 @@ fn should_cycle_on_sty_zeropage_with_x_index_operation() {
 #[test]
 fn should_cycle_on_tax_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xaa])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x00));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x00));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -2901,8 +2901,8 @@ fn should_cycle_on_tax_implied_operation() {
 #[test]
 fn should_cycle_on_tay_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xa8])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0xff))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0x00));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0xff))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0x00));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -2914,7 +2914,7 @@ fn should_cycle_on_tay_implied_operation() {
 #[test]
 fn should_cycle_on_tsx_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xba])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x00))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x00))
         .with_sp_register(register::StackPointer::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
@@ -2927,8 +2927,8 @@ fn should_cycle_on_tsx_implied_operation() {
 #[test]
 fn should_cycle_on_txa_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x8a])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x00))
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x00))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -2940,7 +2940,7 @@ fn should_cycle_on_txa_implied_operation() {
 #[test]
 fn should_cycle_on_txs_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x9a])
-        .with_gp_register(GPRegister::X, register::GeneralPurpose::with_value(0x00))
+        .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(0x00))
         .with_sp_register(register::StackPointer::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
@@ -2952,8 +2952,8 @@ fn should_cycle_on_txs_implied_operation() {
 #[test]
 fn should_cycle_on_tya_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0x98])
-        .with_gp_register(GPRegister::ACC, register::GeneralPurpose::with_value(0x00))
-        .with_gp_register(GPRegister::Y, register::GeneralPurpose::with_value(0xff));
+        .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x00))
+        .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(0xff));
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());

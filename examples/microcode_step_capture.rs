@@ -1,5 +1,5 @@
 use mainspring::address_map::memory::{Memory, ReadOnly, ReadWrite};
-use mainspring::cpu::mos6502::{microcode::Microcode, MOS6502};
+use mainspring::cpu::mos6502::{microcode::Microcode, Mos6502};
 use mainspring::cpu::Execute;
 
 #[allow(unused)]
@@ -20,7 +20,7 @@ fn main() {
     // A segment of ReadWrite memory existing inclusively in the the space
     // between 0x8000 and 0xffff.
     let ram = Ram::new(0x0200, 0x7fff);
-    let cpu = MOS6502::default()
+    let cpu = Mos6502::default()
         // Registers the address space and the rom as addressable memory with
         // the cpu. This accepts any implementation of the Addressable trait.
         .register_address_space(0xffea..=0xffff, rom)

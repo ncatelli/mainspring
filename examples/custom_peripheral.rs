@@ -2,7 +2,7 @@
 
 use mainspring::address_map::memory::{Memory, ReadOnly};
 use mainspring::cpu::mos6502::microcode::Microcode;
-use mainspring::cpu::mos6502::MOS6502;
+use mainspring::cpu::mos6502::Mos6502;
 
 #[allow(unused)]
 use mainspring::prelude::v1::*;
@@ -69,7 +69,7 @@ fn main() {
     ]);
 
     let via = VIA::new(0x8000);
-    let cpu = MOS6502::default()
+    let cpu = Mos6502::default()
         // Registers the address space and the rom as addressable memory with
         // the cpu. This accepts any implementation of the Addressable trait.
         .register_address_space(0xffea..=0xffff, rom)

@@ -270,13 +270,29 @@ impl crate::cpu::Execute<Chip8> for microcode::Dec8bitRegister {
 
 impl crate::cpu::Execute<Chip8> for microcode::Write16bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
+        match self.register {
+            register::WordRegisters::I => {
+                cpu.with_i_register(register::GeneralPurpose::with_value(self.value))
+            }
+            register::WordRegisters::ProgramCounter => {
+                cpu.with_pc_register(register::ProgramCounter::with_value(self.value))
+            }
+        }
     }
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Inc16bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
+        match self.register {
+            register::WordRegisters::I => {
+                let i = cpu.i.read();
+                cpu.with_i_register(register::GeneralPurpose::with_value(i + self.value))
+            }
+            register::WordRegisters::ProgramCounter => {
+                let pc = cpu.pc.read();
+                cpu.with_pc_register(register::ProgramCounter::with_value(pc + self.value))
+            }
+        }
     }
 }
 
@@ -295,5 +311,22 @@ impl crate::cpu::Execute<Chip8> for microcode::PushStack {
 impl crate::cpu::Execute<Chip8> for microcode::PopStack {
     fn execute(self, cpu: Chip8) -> Chip8 {
         cpu
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cpu::Cpu;
+
+    #[test]
+    fn should_execute_infinitely_on_jump_to_reset_vector() {
+        let mut cpu = Chip8::default();
+        cpu.address_space.write(0x200, 0x12).unwrap();
+        cpu.address_space.write(0x201, 0x00).unwrap();
+
+        assert_eq!(0x200, cpu.pc.read());
+        let state = cpu.run(5).unwrap();
+        assert_eq!(0x200, state.pc.read())
     }
 }

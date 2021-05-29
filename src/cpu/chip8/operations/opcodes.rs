@@ -113,6 +113,10 @@ impl From<Ret> for u16 {
 pub struct Jp(u16);
 
 impl Jp {
+    pub fn new(addr: u16) -> Self {
+        Self(addr)
+    }
+
     pub fn addr(&self) -> u16 {
         self.0
     }
@@ -127,6 +131,12 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
 impl From<Jp> for u16 {
     fn from(src: Jp) -> Self {
         0x1000 | src.0
+    }
+}
+
+impl From<Jp> for OpcodeVariant {
+    fn from(src: Jp) -> Self {
+        OpcodeVariant::Jp(src)
     }
 }
 

@@ -1,6 +1,5 @@
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::{microcode::*, Chip8};
-use crate::cpu::register::Register;
 use crate::cpu::Generate;
 
 pub mod opcodes;
@@ -16,9 +15,9 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::OpcodeVariant {
             _ => vec![],
         }
         .into_iter()
-        .chain(vec![Microcode::Write16bitRegister(
+        .chain(vec![Microcode::Inc16bitRegister(
             // increment the PC by instruction size.
-            Write16bitRegister::new(register::WordRegisters::ProgramCounter, cpu.pc.read() + 2),
+            Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
         )])
         .collect()
     }
@@ -28,7 +27,7 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
     fn generate(self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
-            self.addr(),
+            self.addr().wrapping_sub(2),
         ))]
     }
 }

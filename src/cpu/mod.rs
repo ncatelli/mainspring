@@ -13,7 +13,15 @@ pub trait Offset {
     }
 }
 
-pub trait CPU<T> {
+pub trait Generate<T, U> {
+    fn generate(self, cpu: &T) -> U;
+}
+
+pub trait Execute<T> {
+    fn execute(self, cpu: T) -> T;
+}
+
+pub trait Cpu<T> {
     fn run(self, cycles: usize) -> StepState<T>;
 }
 
@@ -68,4 +76,5 @@ impl<T> From<StepState<T>> for (usize, T) {
 
 #[macro_use]
 pub mod mos6502;
+pub mod chip8;
 pub mod register;

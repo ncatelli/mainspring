@@ -3,28 +3,28 @@ use crate::cpu::register::Register;
 /// Represets each type of register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Registers {
-    PC,
-    ACC,
+    Pc,
+    Acc,
     X,
     Y,
-    PS,
-    SP,
+    Ps,
+    Sp,
 }
 
 /// Represets each type of word-sized register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum WordRegisters {
-    PC,
+    Pc,
 }
 
 /// Represets each type of byte-sized register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ByteRegisters {
-    ACC,
+    Acc,
     X,
     Y,
-    PS,
-    SP,
+    Ps,
+    Sp,
 }
 
 /// Represets each flag represented in the ProgramStatus Register.
@@ -41,8 +41,8 @@ pub enum ProgramStatusFlags {
 
 /// Represets each type of general purpose register available in the mos6502.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum GPRegister {
-    ACC,
+pub enum GpRegister {
+    Acc,
     X,
     Y,
 }

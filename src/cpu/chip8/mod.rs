@@ -7,6 +7,7 @@ mod memory;
 mod microcode;
 mod operations;
 mod register;
+mod u12;
 
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;

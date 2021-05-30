@@ -1,4 +1,5 @@
 use super::*;
+use crate::cpu::chip8::u12::u12;
 use crate::cpu::chip8::Chip8;
 
 #[test]
@@ -9,7 +10,7 @@ fn should_generate_jump_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x1fe
         ))],
-        opcodes::Jp::new(0x200u16).generate(&cpu)
+        opcodes::Jp::new(u12::new(0x200)).generate(&cpu)
     );
 
     assert_eq!(
@@ -23,6 +24,6 @@ fn should_generate_jump_with_pc_incrementer() {
                 2
             ))
         ],
-        opcodes::OpcodeVariant::from(opcodes::Jp::new(0x200u16)).generate(&cpu)
+        opcodes::OpcodeVariant::from(opcodes::Jp::new(u12::new(0x200))).generate(&cpu)
     )
 }

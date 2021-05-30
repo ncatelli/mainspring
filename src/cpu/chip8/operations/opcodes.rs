@@ -1,3 +1,4 @@
+use crate::cpu::chip8::u12::u12;
 use parcel::prelude::v1::*;
 
 /// ToNibble provides methods for fetching the upper and lower nibble of a byte.
@@ -33,14 +34,14 @@ impl ToNibbleBytes for u8 {
     }
 }
 
-fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u16> {
+fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u12> {
     parcel::take_n(parcel::parsers::byte::any_byte(), 2)
         .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
         .predicate(move |[first, _]| first[0] == opcode)
         .map(|[[_, first], [second, third]]| {
             let upper = 0x0f & first;
             let lower = (second << 4) | third;
-            u16::from_be_bytes([upper, lower])
+            u12::new(u16::from_be_bytes([upper, lower]))
         })
 }
 
@@ -110,14 +111,14 @@ impl From<Ret> for u16 {
 
 /// Jump to location nnn.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Jp(u16);
+pub struct Jp(u12);
 
 impl Jp {
-    pub fn new(addr: u16) -> Self {
+    pub fn new(addr: u12) -> Self {
         Self(addr)
     }
 
-    pub fn addr(&self) -> u16 {
+    pub fn addr(&self) -> u12 {
         self.0
     }
 }
@@ -130,7 +131,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
 
 impl From<Jp> for u16 {
     fn from(src: Jp) -> Self {
-        0x1000 | src.0
+        0x1000 | u16::from(src.0)
     }
 }
 
@@ -142,7 +143,7 @@ impl From<Jp> for OpcodeVariant {
 
 /// Call subroutine at nnn.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Call(u16);
+pub struct Call(u12);
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Call> {
@@ -152,7 +153,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
 
 impl From<Call> for u16 {
     fn from(src: Call) -> Self {
-        0x2000 | src.0
+        0x2000 | u16::from(src.0)
     }
 }
 
@@ -208,7 +209,7 @@ mod tests {
             Ok(MatchStatus::Match {
                 span: 0..2,
                 remainder: &input[2..],
-                inner: Jp(0x0fff)
+                inner: Jp(u12::new(0x0fff))
             }),
             Jp::default().parse(&input[..])
         );
@@ -226,7 +227,7 @@ mod tests {
             Ok(MatchStatus::Match {
                 span: 0..2,
                 remainder: &input[2..],
-                inner: Call(0x0fff)
+                inner: Call(u12::new(0x0fff))
             }),
             Call::default().parse(&input[..])
         );

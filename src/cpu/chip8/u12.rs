@@ -1,5 +1,5 @@
 /// Represents an unsigned 12-bit integer.
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 #[allow(non_camel_case_types)]
 pub struct u12(u16);
 

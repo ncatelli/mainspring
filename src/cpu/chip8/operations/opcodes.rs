@@ -1,40 +1,7 @@
-use crate::cpu::chip8::u12::u12;
+use crate::cpu::chip8::{operations::ToNibbleBytes, register, u12::u12};
 use parcel::prelude::v1::*;
 
-/// ToNibble provides methods for fetching the upper and lower nibble of a byte.
-pub trait ToNibble {
-    fn to_upper_nibble(&self) -> u8;
-    fn to_lower_nibble(&self) -> u8;
-}
-
-impl ToNibble for u8 {
-    fn to_upper_nibble(&self) -> u8 {
-        (self & 0xf0) >> 4
-    }
-
-    fn to_lower_nibble(&self) -> u8 {
-        self & 0x0f
-    }
-}
-
-/// ToNibbles defines a trait for converting a type from a value into its
-/// corresponding nibbles.
-pub trait ToNibbleBytes {
-    fn to_be_nibbles(&self) -> [u8; 2];
-    fn to_le_nibbles(&self) -> [u8; 2];
-}
-
-impl ToNibbleBytes for u8 {
-    fn to_be_nibbles(&self) -> [u8; 2] {
-        [self.to_upper_nibble(), self.to_lower_nibble()]
-    }
-
-    fn to_le_nibbles(&self) -> [u8; 2] {
-        [self.to_lower_nibble(), self.to_upper_nibble()]
-    }
-}
-
-fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u12> {
+fn absolute_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u12> {
     parcel::take_n(parcel::parsers::byte::any_byte(), 2)
         .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
         .predicate(move |[first, _]| first[0] == opcode)
@@ -45,6 +12,40 @@ fn immediate_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(u
         })
 }
 
+fn immediate_addressed_opcode<'a>(
+    opcode: u8,
+) -> impl parcel::Parser<'a, &'a [(usize, u8)], (register::GpRegisters, u8)> {
+    parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+        .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+        .predicate(move |[first, _]| first[0] == opcode)
+        .map(|[[_, first], [second, third]]| {
+            let upper = 0x0f & first;
+            let lower = (second << 4) | third;
+            let reg = match upper {
+                0x0 => register::GpRegisters::V0,
+                0x1 => register::GpRegisters::V1,
+                0x2 => register::GpRegisters::V2,
+                0x3 => register::GpRegisters::V3,
+                0x4 => register::GpRegisters::V4,
+                0x5 => register::GpRegisters::V5,
+                0x6 => register::GpRegisters::V6,
+                0x7 => register::GpRegisters::V7,
+                0x8 => register::GpRegisters::V8,
+                0x9 => register::GpRegisters::V9,
+                0xa => register::GpRegisters::Va,
+                0xb => register::GpRegisters::Vb,
+                0xc => register::GpRegisters::Vc,
+                0xd => register::GpRegisters::Vd,
+                0xe => register::GpRegisters::Ve,
+                0xf => register::GpRegisters::Vf,
+
+                _ => panic!("unreachable nibble should be limited to u4."),
+            };
+
+            (reg, lower)
+        })
+}
+
 /// Represents all valid opcodes for the CHIP-8 architecture.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum OpcodeVariant {
@@ -52,6 +53,7 @@ pub enum OpcodeVariant {
     Ret(Ret),
     Jp(Jp),
     Call(Call),
+    AddImmediate(AddImmediate),
 }
 
 /// Provides a Parser type for the OpcodeVariant enum. Constructing an
@@ -68,6 +70,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
             Ret::default().map(OpcodeVariant::Ret),
             Jp::default().map(OpcodeVariant::Jp),
             Call::default().map(OpcodeVariant::Call),
+            AddImmediate::default().map(OpcodeVariant::AddImmediate),
         ])
         .parse(input)
     }
@@ -125,7 +128,7 @@ impl Jp {
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Jp> {
-        immediate_addressed_opcode(0x01).map(Jp).parse(input)
+        absolute_addressed_opcode(0x01).map(Jp).parse(input)
     }
 }
 
@@ -147,13 +150,45 @@ pub struct Call(u12);
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Call> {
-        immediate_addressed_opcode(0x02).map(Call).parse(input)
+        absolute_addressed_opcode(0x02).map(Call).parse(input)
     }
 }
 
 impl From<Call> for u16 {
     fn from(src: Call) -> Self {
         0x2000 | u16::from(src.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AddImmediate {
+    register: register::GpRegisters,
+    value: u8,
+}
+
+impl AddImmediate {
+    pub fn new(register: register::GpRegisters, value: u8) -> Self {
+        Self { register, value }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], AddImmediate> for AddImmediate {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], AddImmediate> {
+        immediate_addressed_opcode(0x07)
+            .map(|(reg, val)| AddImmediate::new(reg, val))
+            .parse(input)
+    }
+}
+
+impl Default for AddImmediate {
+    fn default() -> Self {
+        Self {
+            register: register::GpRegisters::V0,
+            value: 0,
+        }
     }
 }
 
@@ -230,6 +265,24 @@ mod tests {
                 inner: Call(u12::new(0x0fff))
             }),
             Call::default().parse(&input[..])
+        );
+    }
+
+    #[test]
+    fn should_parse_add_immediate_opcode() {
+        let input: Vec<(usize, u8)> = 0x70ffu16
+            .to_be_bytes()
+            .iter()
+            .copied()
+            .enumerate()
+            .collect();
+        assert_eq!(
+            Ok(MatchStatus::Match {
+                span: 0..2,
+                remainder: &input[2..],
+                inner: AddImmediate::new(register::GpRegisters::V0, 0xff)
+            }),
+            AddImmediate::default().parse(&input[..])
         );
     }
 }

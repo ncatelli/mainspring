@@ -31,3 +31,36 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
         ))]
     }
 }
+
+/// ToNibble provides methods for fetching the upper and lower nibble of a byte.
+pub trait ToNibble {
+    fn to_upper_nibble(&self) -> u8;
+    fn to_lower_nibble(&self) -> u8;
+}
+
+impl ToNibble for u8 {
+    fn to_upper_nibble(&self) -> u8 {
+        (self & 0xf0) >> 4
+    }
+
+    fn to_lower_nibble(&self) -> u8 {
+        self & 0x0f
+    }
+}
+
+/// ToNibbles defines a trait for converting a type from a value into its
+/// corresponding nibbles.
+pub trait ToNibbleBytes {
+    fn to_be_nibbles(&self) -> [u8; 2];
+    fn to_le_nibbles(&self) -> [u8; 2];
+}
+
+impl ToNibbleBytes for u8 {
+    fn to_be_nibbles(&self) -> [u8; 2] {
+        [self.to_upper_nibble(), self.to_lower_nibble()]
+    }
+
+    fn to_le_nibbles(&self) -> [u8; 2] {
+        [self.to_lower_nibble(), self.to_upper_nibble()]
+    }
+}

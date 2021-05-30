@@ -1,9 +1,5 @@
 use crate::cpu::register::Register;
 
-pub trait Decrement {
-    fn decrement(self) -> Self;
-}
-
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ByteRegisters {
     GpRegisters(GpRegisters),
@@ -36,6 +32,8 @@ pub enum GpRegisters {
     Vf,
 }
 
+/// Represents the special Timer registers that decrement at a pre-selected
+/// 60hz (1 second), clock-rate.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TimerRegisters {
     Sound,
@@ -63,31 +61,48 @@ where
     }
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
-pub struct Decrementing {
+/// Represents a one of the Special Timer registers that decrements at a set
+/// clockrate of 60Hz (1 second).
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct ClockDecrementing {
+    written_at: std::time::Instant,
     inner: GeneralPurpose<u8>,
 }
 
-impl Decrement for Decrementing {
-    fn decrement(self) -> Self {
-        let old_val = self.read();
-        self.write(old_val - 1)
-    }
-}
-
-impl Register<u8, u8> for Decrementing {
+impl Register<u8, u8> for ClockDecrementing {
     fn read(&self) -> u8 {
-        self.inner.read()
+        let v = self.inner.read();
+        let seconds_since_write = self.written_at.elapsed().as_secs();
+
+        if v as u64 > seconds_since_write {
+            std::convert::TryInto::<u8>::try_into(seconds_since_write)
+                .map(|ssw| v - ssw)
+                .unwrap()
+        } else {
+            0
+        }
     }
+
     fn write(self, value: u8) -> Self {
         Self {
+            written_at: std::time::Instant::now(),
             inner: GeneralPurpose::with_value(value),
         }
     }
 
     fn with_value(value: u8) -> Self {
         Self {
+            written_at: std::time::Instant::now(),
             inner: GeneralPurpose::with_value(value),
+        }
+    }
+}
+
+impl Default for ClockDecrementing {
+    fn default() -> Self {
+        Self {
+            written_at: std::time::Instant::now(),
+            inner: GeneralPurpose::default(),
         }
     }
 }
@@ -147,5 +162,14 @@ mod tests {
         // assert overflow rolls around
         assert_eq!(0, StackPointer::with_value(16).read());
         assert_eq!(1, StackPointer::with_value(17).read());
+    }
+
+    #[test]
+    fn should_decrement_clocked_register_at_a_set_pulse() {
+        let cdr = ClockDecrementing::with_value(0xff);
+        let sleep_time = std::time::Duration::from_secs(2);
+        std::thread::sleep(sleep_time);
+
+        assert!(cdr.read() < 0xff)
     }
 }

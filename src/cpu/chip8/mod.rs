@@ -17,8 +17,8 @@ const RESET_PC_VECTOR: u16 = 0x200;
 pub struct Chip8 {
     stack: memory::Ring<u16>,
     address_space: AddressMap<u16, u8>,
-    dt: register::Decrementing,
-    st: register::Decrementing,
+    dt: register::ClockDecrementing,
+    st: register::ClockDecrementing,
     pc: register::ProgramCounter,
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
@@ -54,7 +54,7 @@ impl Chip8 {
     pub fn with_timer_register(
         mut self,
         reg_type: register::TimerRegisters,
-        reg: register::Decrementing,
+        reg: register::ClockDecrementing,
     ) -> Self {
         match reg_type {
             register::TimerRegisters::Sound => self.st = reg,
@@ -114,8 +114,8 @@ impl Default for Chip8 {
                 .unwrap()
                 .register(0x200..=0xfff, Box::new(Ram::new(0x200, 0xfff)))
                 .unwrap(),
-            dt: register::Decrementing::default(),
-            st: register::Decrementing::default(),
+            dt: register::ClockDecrementing::default(),
+            st: register::ClockDecrementing::default(),
             pc: register::ProgramCounter::with_value(RESET_PC_VECTOR),
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
@@ -242,7 +242,7 @@ impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
 
 impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
-        use register::{ByteRegisters, Decrementing, GeneralPurpose};
+        use register::{ByteRegisters, ClockDecrementing, GeneralPurpose};
 
         let new_val = self.value;
 
@@ -251,7 +251,7 @@ impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
                 cpu.with_gp_register(gpr, GeneralPurpose::with_value(new_val))
             }
             ByteRegisters::TimerRegisters(tr) => {
-                cpu.with_timer_register(tr, Decrementing::with_value(new_val))
+                cpu.with_timer_register(tr, ClockDecrementing::with_value(new_val))
             }
         }
     }

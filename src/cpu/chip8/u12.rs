@@ -21,6 +21,18 @@ impl u12 {
             Self(value)
         }
     }
+
+    pub fn wrapping_add(self, rhs: Self) -> Self {
+        let (lhs, rhs) = (self.0, rhs.0);
+
+        u12::new(lhs.wrapping_add(rhs).mask())
+    }
+
+    pub fn wrapping_sub(self, rhs: Self) -> Self {
+        let (lhs, rhs) = (self.0, rhs.0);
+
+        u12::new(lhs.wrapping_sub(rhs).mask())
+    }
 }
 
 impl core::fmt::Debug for u12 {
@@ -61,7 +73,7 @@ impl core::fmt::Binary for u12 {
 
 impl core::cmp::PartialEq for u12 {
     fn eq(&self, other: &Self) -> bool {
-        mask(*self).0 == mask(*other).0
+        self.0.mask() == other.0.mask()
     }
 }
 
@@ -69,13 +81,13 @@ impl Eq for u12 {}
 
 impl core::cmp::PartialOrd for u12 {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        mask(*self).0.partial_cmp(&mask(*other).0)
+        self.0.mask().partial_cmp(&other.0.mask())
     }
 }
 
 impl core::cmp::Ord for u12 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        mask(*self).0.cmp(&mask(*other).0)
+        self.0.mask().cmp(&other.0.mask())
     }
 }
 
@@ -99,7 +111,7 @@ impl core::ops::Sub for u12 {
 
     fn sub(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.0, other.0);
-        mask(Self(lhs - rhs))
+        Self(lhs - rhs).mask()
     }
 }
 
@@ -108,7 +120,7 @@ impl core::ops::BitAnd for u12 {
 
     fn bitand(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.0, other.0);
-        mask(Self(lhs & rhs))
+        Self(lhs & rhs).mask()
     }
 }
 
@@ -117,7 +129,7 @@ impl core::ops::BitOr for u12 {
 
     fn bitor(self, other: Self) -> Self::Output {
         let (lhs, rhs) = (self.0, other.0);
-        mask(Self(lhs | rhs))
+        Self(lhs | rhs).mask()
     }
 }
 
@@ -126,7 +138,7 @@ impl core::ops::Shl for u12 {
 
     fn shl(self, other: Self) -> Self {
         let (lhs, rhs) = (self.0, other.0);
-        mask(Self(lhs << rhs))
+        Self(lhs << rhs).mask()
     }
 }
 
@@ -135,7 +147,7 @@ impl core::ops::Shr for u12 {
 
     fn shr(self, other: Self) -> Self {
         let (lhs, rhs) = (self.0, other.0);
-        mask(Self(lhs >> rhs))
+        Self(lhs >> rhs).mask()
     }
 }
 
@@ -153,8 +165,20 @@ macro_rules! impl_from_u12_for_uX {
 
 impl_from_u12_for_uX!(u16, u32, u64, u128,);
 
-fn mask(value: u12) -> u12 {
-    u12::new(value.0 & u12::MAX.0)
+trait MaskU12 {
+    fn mask(self) -> Self;
+}
+
+impl MaskU12 for u12 {
+    fn mask(self) -> u12 {
+        u12::new(self.0.mask())
+    }
+}
+
+impl MaskU12 for u16 {
+    fn mask(self) -> u16 {
+        self & u12::MAX.0
+    }
 }
 
 #[cfg(test)]
@@ -171,6 +195,24 @@ mod tests {
     #[allow(unused_must_use)]
     fn should_panic_on_overflowing_add() {
         u12::new(0xFFFF) + u12::new(1);
+    }
+
+    #[test]
+    fn should_wrap_correctly_with_overflowing_wrapping_add() {
+        // non-overflowing add.
+        assert_eq!(u12::new(12), (u12::new(5).wrapping_add(u12::new(7))));
+
+        // overflowing add.
+        assert_eq!(u12::new(1), (u12::new(0xFFF).wrapping_add(u12::new(2))))
+    }
+
+    #[test]
+    fn should_wrap_correctly_with_overflowing_wrapping_sub() {
+        // non-overflowing add.
+        assert_eq!(u12::new(2), (u12::new(7).wrapping_sub(u12::new(5))));
+
+        // overflowing add.
+        assert_eq!(u12::new(0xFFF), (u12::new(0).wrapping_sub(u12::new(1))))
     }
 
     #[test]

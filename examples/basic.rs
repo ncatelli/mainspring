@@ -37,5 +37,5 @@ fn main() {
     // is unwrapped to return a CPU snapshot at its current state.
     let state = cpu.run(1_000_000).unwrap();
 
-    println!("{:?}", state);
+    println!("{:#?}", state);
 }

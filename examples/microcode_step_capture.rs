@@ -52,7 +52,7 @@ fn main() {
         .collect();
 
     println!(
-        "{:?}",
+        "{:#?}",
         // Microcode can then be folded onto a cpu to replay its state onto a fresh cpu.
         states.iter().fold(cpu.clone(), |c, mc| mc.execute(c))
     );

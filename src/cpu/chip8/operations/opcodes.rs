@@ -160,6 +160,8 @@ impl From<Call> for u16 {
     }
 }
 
+/// Adds the associated value to the value of the specified register. Setting
+/// the register to the sum.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AddImmediate {
     pub register: register::GpRegisters,

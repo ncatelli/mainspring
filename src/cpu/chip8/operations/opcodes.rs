@@ -162,8 +162,8 @@ impl From<Call> for u16 {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AddImmediate {
-    register: register::GpRegisters,
-    value: u8,
+    pub register: register::GpRegisters,
+    pub value: u8,
 }
 
 impl AddImmediate {
@@ -189,6 +189,12 @@ impl Default for AddImmediate {
             register: register::GpRegisters::V0,
             value: 0,
         }
+    }
+}
+
+impl From<AddImmediate> for OpcodeVariant {
+    fn from(src: AddImmediate) -> Self {
+        OpcodeVariant::AddImmediate(src)
     }
 }
 

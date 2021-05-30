@@ -7,31 +7,6 @@ pub mod opcodes;
 #[cfg(test)]
 mod tests;
 
-impl Generate<Chip8, Vec<Microcode>> for opcodes::OpcodeVariant {
-    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
-        match self {
-            opcodes::OpcodeVariant::Jp(op) => Generate::generate(op, cpu),
-            // TODO: Empty placeholder representing a NOP
-            _ => vec![],
-        }
-        .into_iter()
-        .chain(vec![Microcode::Inc16bitRegister(
-            // increment the PC by instruction size.
-            Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
-        )])
-        .collect()
-    }
-}
-
-impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
-    fn generate(self, _: &Chip8) -> Vec<Microcode> {
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
-            register::WordRegisters::ProgramCounter,
-            u16::from(self.addr()).wrapping_sub(2),
-        ))]
-    }
-}
-
 /// ToNibble provides methods for fetching the upper and lower nibble of a byte.
 pub trait ToNibble {
     fn to_upper_nibble(&self) -> u8;
@@ -62,5 +37,40 @@ impl ToNibbleBytes for u8 {
 
     fn to_le_nibbles(&self) -> [u8; 2] {
         [self.to_lower_nibble(), self.to_upper_nibble()]
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for opcodes::OpcodeVariant {
+    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+        match self {
+            opcodes::OpcodeVariant::Jp(op) => Generate::generate(op, cpu),
+            opcodes::OpcodeVariant::AddImmediate(op) => Generate::generate(op, cpu),
+            // TODO: Empty placeholder representing a NOP
+            _ => vec![],
+        }
+        .into_iter()
+        .chain(vec![Microcode::Inc16bitRegister(
+            // increment the PC by instruction size.
+            Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
+        )])
+        .collect()
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
+    fn generate(self, _: &Chip8) -> Vec<Microcode> {
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            u16::from(self.addr()).wrapping_sub(2),
+        ))]
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for opcodes::AddImmediate {
+    fn generate(self, _: &Chip8) -> Vec<Microcode> {
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.register),
+            self.value,
+        ))]
     }
 }

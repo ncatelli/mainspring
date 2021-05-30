@@ -330,4 +330,15 @@ mod tests {
         let state = cpu.run(5).unwrap();
         assert_eq!(0x200, state.pc.read())
     }
+
+    #[test]
+    fn should_execute_add_immediate() {
+        let mut cpu = Chip8::default();
+        cpu.address_space.write(0x200, 0x70).unwrap();
+        cpu.address_space.write(0x201, 0xff).unwrap();
+
+        assert_eq!(0x00, cpu.v0.read());
+        let state = cpu.run(1).unwrap();
+        assert_eq!(0xff, state.v0.read())
+    }
 }

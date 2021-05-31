@@ -3,23 +3,26 @@ use crate::cpu::chip8::{operations::ToNibbleBytes, register, u12::u12};
 pub trait AddressingMode {}
 
 /// Implied represents a type that explicitly implies it's addressing mode through a 2-byte mnemonic code.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Implied;
 
 impl AddressingMode for Implied {}
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Implied> for Implied {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Implied> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|_| Implied)
-            .parse(input)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Absolute(u12);
 
 impl AddressingMode for Absolute {}
+
+impl Absolute {
+    #[allow(dead_code)]
+    pub fn new(addr: u12) -> Self {
+        Self(addr)
+    }
+
+    pub fn addr(&self) -> u12 {
+        self.0
+    }
+}
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Absolute> {

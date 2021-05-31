@@ -58,11 +58,11 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::OpcodeVariant {
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
+impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp<addressing_mode::Absolute> {
     fn generate(self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
-            u16::from(self.addr()).wrapping_sub(2),
+            u16::from(self.addressing_mode.addr()).wrapping_sub(2),
         ))]
     }
 }

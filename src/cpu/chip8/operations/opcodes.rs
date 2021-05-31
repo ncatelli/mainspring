@@ -1,14 +1,11 @@
-use crate::cpu::chip8::{
-    operations::{addressing_mode, ToNibbleBytes},
-    u12::u12,
-};
+use crate::cpu::chip8::operations::addressing_mode;
 use parcel::prelude::v1::*;
 
 pub fn matches_first_nibble_without_taking_input<'a>(
     opcode: u8,
 ) -> impl Parser<'a, &'a [(usize, u8)], u8> {
     move |input: &'a [(usize, u8)]| match input.get(0) {
-        Some(&(pos, next)) if (next & 0xf0) == opcode => Ok(MatchStatus::Match {
+        Some(&(pos, next)) if ((next & 0xf0) >> 4) == opcode => Ok(MatchStatus::Match {
             span: pos..pos + 1,
             remainder: &input[0..],
             inner: opcode,
@@ -17,24 +14,13 @@ pub fn matches_first_nibble_without_taking_input<'a>(
     }
 }
 
-fn absolute_addressed_opcode<'a>(opcode: u8) -> impl parcel::Parser<'a, &'a [(usize, u8)], u12> {
-    parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-        .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-        .predicate(move |[first, _]| first[0] == opcode)
-        .map(|[[_, first], [second, third]]| {
-            let upper = 0x0f & first;
-            let lower = (second << 4) | third;
-            u12::new(u16::from_be_bytes([upper, lower]))
-        })
-}
-
 /// Represents all valid opcodes for the CHIP-8 architecture.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum OpcodeVariant {
     Cls(Cls),
     Ret(Ret),
-    Jp(Jp),
-    Call(Call),
+    Jp(Jp<addressing_mode::Absolute>),
+    Call(Call<addressing_mode::Absolute>),
     AddImmediate(Add<addressing_mode::Immediate>),
 }
 
@@ -50,7 +36,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
         parcel::one_of(vec![
             Cls::default().map(OpcodeVariant::Cls),
             Ret::default().map(OpcodeVariant::Ret),
-            Jp::default().map(OpcodeVariant::Jp),
+            <Jp<addressing_mode::Absolute>>::default().map(OpcodeVariant::Jp),
             Call::default().map(OpcodeVariant::Call),
             <Add<addressing_mode::Immediate>>::default().map(OpcodeVariant::AddImmediate),
         ])
@@ -60,12 +46,14 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
 
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Cls;
+pub struct Cls {
+    addressing_mode: addressing_mode::Implied,
+}
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
-            .map(|_| Cls)
+            .map(|_| Cls::default())
             .parse(input)
     }
 }
@@ -78,12 +66,14 @@ impl From<Cls> for u16 {
 
 /// Return from a subroutine.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Ret;
+pub struct Ret {
+    addressing_mode: addressing_mode::Implied,
+}
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret> for Ret {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Ret> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xee])
-            .map(|_| Ret)
+            .map(|_| Ret::default())
             .parse(input)
     }
 }
@@ -94,53 +84,71 @@ impl From<Ret> for u16 {
     }
 }
 
-/// Jump to location nnn.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Jp(u12);
+/// Jp the associated value to the value of the specified register. Setting
+/// the register to the sum.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Jp<A> {
+    pub addressing_mode: A,
+}
 
-impl Jp {
-    pub fn new(addr: u12) -> Self {
-        Self(addr)
-    }
-
-    pub fn addr(&self) -> u12 {
-        self.0
+impl<A> Jp<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp> for Jp {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Jp> {
-        absolute_addressed_opcode(0x01).map(Jp).parse(input)
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<addressing_mode::Absolute>>
+    for Jp<addressing_mode::Absolute>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<addressing_mode::Absolute>> {
+        matches_first_nibble_without_taking_input(0x1)
+            .and_then(|_| addressing_mode::Absolute::default())
+            .map(Jp::new)
+            .parse(input)
     }
 }
 
-impl From<Jp> for u16 {
-    fn from(src: Jp) -> Self {
-        0x1000 | u16::from(src.0)
-    }
-}
-
-impl From<Jp> for OpcodeVariant {
-    fn from(src: Jp) -> Self {
+impl From<Jp<addressing_mode::Absolute>> for OpcodeVariant {
+    fn from(src: Jp<addressing_mode::Absolute>) -> Self {
         OpcodeVariant::Jp(src)
     }
 }
 
 /// Call subroutine at nnn.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Call(u12);
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Call<A> {
+    pub addressing_mode: A,
+}
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Call> {
-        absolute_addressed_opcode(0x02).map(Call).parse(input)
+impl<A> Call<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
     }
 }
 
-impl From<Call> for u16 {
-    fn from(src: Call) -> Self {
-        0x2000 | u16::from(src.0)
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call<addressing_mode::Absolute>>
+    for Call<addressing_mode::Absolute>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Call<addressing_mode::Absolute>> {
+        matches_first_nibble_without_taking_input(0x2)
+            .and_then(|_| addressing_mode::Absolute::default())
+            .map(Call::new)
+            .parse(input)
     }
 }
+
+impl From<Call<addressing_mode::Absolute>> for OpcodeVariant {
+    fn from(src: Call<addressing_mode::Absolute>) -> Self {
+        OpcodeVariant::Call(src)
+    }
+}
+
 /// Adds the associated value to the value of the specified register. Setting
 /// the register to the sum.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
@@ -161,7 +169,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::Immediate>> {
-        matches_first_nibble_without_taking_input(0x70)
+        matches_first_nibble_without_taking_input(0x7)
             .and_then(|_| addressing_mode::Immediate::default())
             .map(Add::new)
             .parse(input)
@@ -177,7 +185,7 @@ impl From<Add<addressing_mode::Immediate>> for OpcodeVariant {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::chip8::register;
+    use crate::cpu::chip8::{register, u12::u12};
 
     #[test]
     fn should_parse_cls_opcode() {
@@ -191,9 +199,9 @@ mod tests {
             Ok(MatchStatus::Match {
                 span: 0..2,
                 remainder: &input[2..],
-                inner: Cls
+                inner: Cls::default()
             }),
-            Cls.parse(&input[..])
+            Cls::default().parse(&input[..])
         );
     }
 
@@ -209,7 +217,7 @@ mod tests {
             Ok(MatchStatus::Match {
                 span: 0..2,
                 remainder: &input[2..],
-                inner: Ret
+                inner: Ret::default()
             }),
             Ret::default().parse(&input[..])
         );
@@ -227,7 +235,7 @@ mod tests {
             Ok(MatchStatus::Match {
                 span: 0..2,
                 remainder: &input[2..],
-                inner: Jp(u12::new(0x0fff))
+                inner: Jp::new(addressing_mode::Absolute::new(u12::new(0xfff)))
             }),
             Jp::default().parse(&input[..])
         );
@@ -245,7 +253,7 @@ mod tests {
             Ok(MatchStatus::Match {
                 span: 0..2,
                 remainder: &input[2..],
-                inner: Call(u12::new(0x0fff))
+                inner: Call::new(addressing_mode::Absolute::new(u12::new(0xfff)))
             }),
             Call::default().parse(&input[..])
         );

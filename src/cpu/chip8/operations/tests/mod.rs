@@ -10,7 +10,7 @@ fn should_generate_jump_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x1fe
         ))],
-        opcodes::Jp::new(u12::new(0x200)).generate(&cpu)
+        opcodes::Jp::new(addressing_mode::Absolute::new(u12::new(0x200))).generate(&cpu)
     );
 
     assert_eq!(
@@ -24,7 +24,10 @@ fn should_generate_jump_with_pc_incrementer() {
                 2
             ))
         ],
-        opcodes::OpcodeVariant::from(opcodes::Jp::new(u12::new(0x200))).generate(&cpu)
+        opcodes::OpcodeVariant::from(opcodes::Jp::new(addressing_mode::Absolute::new(u12::new(
+            0x200
+        ))))
+        .generate(&cpu)
     )
 }
 

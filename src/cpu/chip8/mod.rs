@@ -58,9 +58,7 @@ impl Chip8 {
         reg_type: register::GpRegisters,
         reg: register::GeneralPurpose<u8>,
     ) -> Self {
-        self.gp_registers
-            .get_mut(reg_type as usize)
-            .map(|cpu_reg| *cpu_reg = reg);
+        self.gp_registers[reg_type as usize] = reg;
         self
     }
 

@@ -41,21 +41,6 @@ impl ToNibbleBytes for u8 {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Opcode<M, A> {
-    mnemonic: M,
-    addressing_mode: A,
-}
-
-impl<'a, M, A> parcel::Parser<'a, &'a [(usize, u8)], Opcode<M, A>> for Opcode<M, A> {
-    fn parse(
-        &self,
-        _input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Opcode<M, A>> {
-        todo!()
-    }
-}
-
 impl Generate<Chip8, Vec<Microcode>> for opcodes::OpcodeVariant {
     fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
         match self {
@@ -82,11 +67,11 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for opcodes::AddImmediate {
+impl Generate<Chip8, Vec<Microcode>> for opcodes::Add<addressing_mode::Immediate> {
     fn generate(self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
-            register::ByteRegisters::GpRegisters(self.register),
-            self.value,
+            register::ByteRegisters::GpRegisters(self.addressing_mode.register),
+            self.addressing_mode.value,
         ))]
     }
 }

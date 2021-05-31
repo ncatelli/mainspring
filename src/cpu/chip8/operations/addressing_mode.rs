@@ -37,8 +37,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Immediate {
-    register: register::GpRegisters,
-    value: u8,
+    pub register: register::GpRegisters,
+    pub value: u8,
 }
 
 impl AddressingMode for Immediate {}
@@ -80,5 +80,14 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
             })
             .map(|(register, value)| Immediate::new(register, value))
             .parse(input)
+    }
+}
+
+impl Default for Immediate {
+    fn default() -> Self {
+        Self {
+            register: register::GpRegisters::V0,
+            value: 0,
+        }
     }
 }

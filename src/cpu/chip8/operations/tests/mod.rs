@@ -36,7 +36,11 @@ fn should_generate_add_immediate() {
             register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
             0xff
         ))],
-        opcodes::AddImmediate::new(register::GpRegisters::V5, 0xff).generate(&cpu)
+        opcodes::Add::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V5,
+            0xff
+        ))
+        .generate(&cpu)
     );
 
     assert_eq!(
@@ -50,7 +54,10 @@ fn should_generate_add_immediate() {
                 2
             ))
         ],
-        opcodes::OpcodeVariant::from(opcodes::AddImmediate::new(register::GpRegisters::V5, 0xff))
-            .generate(&cpu)
+        opcodes::OpcodeVariant::from(opcodes::Add::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V5,
+            0xff
+        )))
+        .generate(&cpu)
     )
 }

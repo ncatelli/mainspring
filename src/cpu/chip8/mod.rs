@@ -22,22 +22,7 @@ pub struct Chip8 {
     pc: register::ProgramCounter,
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
-    v0: register::GeneralPurpose<u8>,
-    v1: register::GeneralPurpose<u8>,
-    v2: register::GeneralPurpose<u8>,
-    v3: register::GeneralPurpose<u8>,
-    v4: register::GeneralPurpose<u8>,
-    v5: register::GeneralPurpose<u8>,
-    v6: register::GeneralPurpose<u8>,
-    v7: register::GeneralPurpose<u8>,
-    v8: register::GeneralPurpose<u8>,
-    v9: register::GeneralPurpose<u8>,
-    va: register::GeneralPurpose<u8>,
-    vb: register::GeneralPurpose<u8>,
-    vc: register::GeneralPurpose<u8>,
-    vd: register::GeneralPurpose<u8>,
-    ve: register::GeneralPurpose<u8>,
-    vf: register::GeneralPurpose<u8>,
+    gp_registers: [register::GeneralPurpose<u8>; 0xf],
 }
 
 impl Chip8 {
@@ -73,48 +58,20 @@ impl Chip8 {
         reg_type: register::GpRegisters,
         reg: register::GeneralPurpose<u8>,
     ) -> Self {
-        match reg_type {
-            register::GpRegisters::V0 => self.v0 = reg,
-            register::GpRegisters::V1 => self.v1 = reg,
-            register::GpRegisters::V2 => self.v2 = reg,
-            register::GpRegisters::V3 => self.v3 = reg,
-            register::GpRegisters::V4 => self.v4 = reg,
-            register::GpRegisters::V5 => self.v5 = reg,
-            register::GpRegisters::V6 => self.v6 = reg,
-            register::GpRegisters::V7 => self.v7 = reg,
-            register::GpRegisters::V8 => self.v8 = reg,
-            register::GpRegisters::V9 => self.v9 = reg,
-            register::GpRegisters::Va => self.va = reg,
-            register::GpRegisters::Vb => self.vb = reg,
-            register::GpRegisters::Vc => self.vc = reg,
-            register::GpRegisters::Vd => self.vd = reg,
-            register::GpRegisters::Ve => self.ve = reg,
-            register::GpRegisters::Vf => self.vf = reg,
-        };
+        self.gp_registers
+            .get_mut(reg_type as usize)
+            .map(|cpu_reg| *cpu_reg = reg);
         self
     }
 
     /// Provides a convenient method for unwrapping a GpRegister enum to a
     /// corresponding read of it's namesake register.
     pub fn read_gp_register(&self, reg: register::GpRegisters) -> u8 {
-        match reg {
-            register::GpRegisters::V0 => self.v0.read(),
-            register::GpRegisters::V1 => self.v1.read(),
-            register::GpRegisters::V2 => self.v2.read(),
-            register::GpRegisters::V3 => self.v3.read(),
-            register::GpRegisters::V4 => self.v4.read(),
-            register::GpRegisters::V5 => self.v5.read(),
-            register::GpRegisters::V6 => self.v6.read(),
-            register::GpRegisters::V7 => self.v7.read(),
-            register::GpRegisters::V8 => self.v8.read(),
-            register::GpRegisters::V9 => self.v9.read(),
-            register::GpRegisters::Va => self.va.read(),
-            register::GpRegisters::Vb => self.vb.read(),
-            register::GpRegisters::Vc => self.vc.read(),
-            register::GpRegisters::Vd => self.vd.read(),
-            register::GpRegisters::Ve => self.ve.read(),
-            register::GpRegisters::Vf => self.vf.read(),
-        }
+        self.gp_registers
+            .get(reg as usize)
+            .map(|cpu_reg| cpu_reg.read())
+            // Should never fail due to bounded array.
+            .unwrap()
     }
 
     /// Resets a cpu to a clean state.
@@ -142,22 +99,7 @@ impl Default for Chip8 {
             pc: register::ProgramCounter::with_value(RESET_PC_VECTOR),
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
-            v0: register::GeneralPurpose::default(),
-            v1: register::GeneralPurpose::default(),
-            v2: register::GeneralPurpose::default(),
-            v3: register::GeneralPurpose::default(),
-            v4: register::GeneralPurpose::default(),
-            v5: register::GeneralPurpose::default(),
-            v6: register::GeneralPurpose::default(),
-            v7: register::GeneralPurpose::default(),
-            v8: register::GeneralPurpose::default(),
-            v9: register::GeneralPurpose::default(),
-            va: register::GeneralPurpose::default(),
-            vb: register::GeneralPurpose::default(),
-            vc: register::GeneralPurpose::default(),
-            vd: register::GeneralPurpose::default(),
-            ve: register::GeneralPurpose::default(),
-            vf: register::GeneralPurpose::default(),
+            gp_registers: [register::GeneralPurpose::default(); 0xf],
         }
     }
 }
@@ -364,6 +306,6 @@ mod tests {
         cpu.address_space.write(0x201, 0xfa).unwrap();
 
         let state = cpu.run(1).unwrap();
-        assert_eq!(0xff, state.v0.read())
+        assert_eq!(0xff, state.read_gp_register(register::GpRegisters::V0))
     }
 }

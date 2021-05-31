@@ -139,7 +139,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIn
                     _ => panic!("unreachable nibble should be limited to u4."),
                 }
             })
-            .map(|register| IRegisterIndexed::new(register))
+            .map(IRegisterIndexed::new)
             .parse(input)
     }
 }

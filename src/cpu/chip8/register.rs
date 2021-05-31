@@ -13,6 +13,7 @@ pub enum WordRegisters {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
+#[repr(usize)]
 pub enum GpRegisters {
     V0,
     V1,

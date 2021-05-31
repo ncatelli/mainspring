@@ -157,7 +157,7 @@ impl Iterator for Chip8IntoIterator {
         ];
 
         // Parse correct operation
-        let ops = match operations::opcodes::OpcodeVariantParser.parse(&opcodes[..]) {
+        let ops = match operations::OpcodeVariantParser.parse(&opcodes[..]) {
             Ok(parcel::MatchStatus::Match {
                 span: _,
                 remainder: _,

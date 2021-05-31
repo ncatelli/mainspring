@@ -2,6 +2,7 @@ use crate::cpu::chip8::register;
 use crate::cpu::chip8::{microcode::*, Chip8};
 use crate::cpu::Generate;
 
+pub mod addressing_mode;
 pub mod opcodes;
 
 #[cfg(test)]
@@ -37,6 +38,21 @@ impl ToNibbleBytes for u8 {
 
     fn to_le_nibbles(&self) -> [u8; 2] {
         [self.to_lower_nibble(), self.to_upper_nibble()]
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Opcode<M, A> {
+    mnemonic: M,
+    addressing_mode: A,
+}
+
+impl<'a, M, A> parcel::Parser<'a, &'a [(usize, u8)], Opcode<M, A>> for Opcode<M, A> {
+    fn parse(
+        &self,
+        _input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Opcode<M, A>> {
+        todo!()
     }
 }
 

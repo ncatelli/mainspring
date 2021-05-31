@@ -62,6 +62,7 @@ pub enum OpcodeVariant {
     Jp(Jp<addressing_mode::Absolute>),
     Call(Call<addressing_mode::Absolute>),
     AddImmediate(Add<addressing_mode::Immediate>),
+    AddIRegisterIndexed(Add<addressing_mode::IRegisterIndexed>),
 }
 
 /// Provides a Parser type for the OpcodeVariant enum. Constructing an
@@ -79,6 +80,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
             <Jp<addressing_mode::Absolute>>::default().map(OpcodeVariant::Jp),
             Call::default().map(OpcodeVariant::Call),
             <Add<addressing_mode::Immediate>>::default().map(OpcodeVariant::AddImmediate),
+            <Add<addressing_mode::IRegisterIndexed>>::default()
+                .map(OpcodeVariant::AddIRegisterIndexed),
         ])
         .parse(input)
     }
@@ -89,6 +92,7 @@ impl Generate<Chip8, Vec<Microcode>> for OpcodeVariant {
         match self {
             OpcodeVariant::Jp(op) => Generate::generate(op, cpu),
             OpcodeVariant::AddImmediate(op) => Generate::generate(op, cpu),
+            OpcodeVariant::AddIRegisterIndexed(op) => Generate::generate(op, cpu),
             // TODO: Empty placeholder representing a NOP
             _ => vec![],
         }
@@ -253,6 +257,41 @@ impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::Immediate> {
         vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
+        ))]
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::IRegisterIndexed>>
+    for Add<addressing_mode::IRegisterIndexed>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::IRegisterIndexed>> {
+        matches_first_nibble_without_taking_input(0xf)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte()
+                    .and_then(|_| parcel::parsers::byte::expect_byte(0x1e)),
+            )
+            .and_then(|_| addressing_mode::IRegisterIndexed::default())
+            .map(Add::new)
+            .parse(input)
+    }
+}
+
+impl From<Add<addressing_mode::IRegisterIndexed>> for OpcodeVariant {
+    fn from(src: Add<addressing_mode::IRegisterIndexed>) -> Self {
+        OpcodeVariant::AddIRegisterIndexed(src)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::IRegisterIndexed> {
+    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+        let gp_val = cpu.read_gp_register(self.addressing_mode.register);
+        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            register::WordRegisters::I,
+            gp_val as u16,
         ))]
     }
 }

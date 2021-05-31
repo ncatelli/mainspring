@@ -274,11 +274,15 @@ impl crate::cpu::Execute<Chip8> for microcode::Inc16bitRegister {
         match self.register {
             register::WordRegisters::I => {
                 let i = cpu.i.read();
-                cpu.with_i_register(register::GeneralPurpose::with_value(i + self.value))
+                cpu.with_i_register(register::GeneralPurpose::with_value(
+                    i.wrapping_add(self.value),
+                ))
             }
             register::WordRegisters::ProgramCounter => {
                 let pc = cpu.pc.read();
-                cpu.with_pc_register(register::ProgramCounter::with_value(pc + self.value))
+                cpu.with_pc_register(register::ProgramCounter::with_value(
+                    pc.wrapping_add(self.value),
+                ))
             }
         }
     }

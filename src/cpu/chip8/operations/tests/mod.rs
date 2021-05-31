@@ -32,7 +32,7 @@ fn should_generate_jump_with_pc_incrementer() {
 fn should_generate_add_immediate() {
     let cpu = Chip8::default();
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
             0xff
         ))],
@@ -41,7 +41,7 @@ fn should_generate_add_immediate() {
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Inc8bitRegister(Inc8bitRegister::new(
                 register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
                 0xff
             )),

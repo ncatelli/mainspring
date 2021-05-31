@@ -224,7 +224,31 @@ impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
 
 impl crate::cpu::Execute<Chip8> for microcode::Inc8bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
+        use register::{ByteRegisters, ClockDecrementing, GeneralPurpose, TimerRegisters};
+
+        match self.register {
+            register::ByteRegisters::GpRegisters(gpr) => {
+                let cpu_reg_value = cpu.read_gp_register(gpr);
+                let new_val = cpu_reg_value.wrapping_add(self.value);
+                cpu.with_gp_register(gpr, GeneralPurpose::with_value(new_val))
+            }
+            ByteRegisters::TimerRegisters(TimerRegisters::Delay) => {
+                let cpu_reg_value = cpu.dt.read();
+                let new_val = cpu_reg_value.wrapping_add(self.value);
+                cpu.with_timer_register(
+                    TimerRegisters::Delay,
+                    ClockDecrementing::with_value(new_val),
+                )
+            }
+            ByteRegisters::TimerRegisters(TimerRegisters::Sound) => {
+                let cpu_reg_value = cpu.st.read();
+                let new_val = cpu_reg_value.wrapping_add(self.value);
+                cpu.with_timer_register(
+                    TimerRegisters::Sound,
+                    ClockDecrementing::with_value(new_val),
+                )
+            }
+        }
     }
 }
 

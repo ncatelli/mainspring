@@ -67,12 +67,10 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for opcodes::AddImmediate {
-    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
-        let cpu_reg_value = cpu.read_gp_register(self.register);
-
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+    fn generate(self, _: &Chip8) -> Vec<Microcode> {
+        vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.register),
-            cpu_reg_value.wrapping_add(self.value),
+            self.value,
         ))]
     }
 }

@@ -1,6 +1,5 @@
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::{microcode::*, Chip8};
-use crate::cpu::register::Register;
 use crate::cpu::Generate;
 
 pub mod opcodes;
@@ -69,24 +68,8 @@ impl Generate<Chip8, Vec<Microcode>> for opcodes::Jp {
 
 impl Generate<Chip8, Vec<Microcode>> for opcodes::AddImmediate {
     fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
-        let cpu_reg_value = match self.register {
-            register::GpRegisters::V0 => cpu.v0.read(),
-            register::GpRegisters::V1 => cpu.v1.read(),
-            register::GpRegisters::V2 => cpu.v2.read(),
-            register::GpRegisters::V3 => cpu.v3.read(),
-            register::GpRegisters::V4 => cpu.v4.read(),
-            register::GpRegisters::V5 => cpu.v5.read(),
-            register::GpRegisters::V6 => cpu.v6.read(),
-            register::GpRegisters::V7 => cpu.v7.read(),
-            register::GpRegisters::V8 => cpu.v8.read(),
-            register::GpRegisters::V9 => cpu.v9.read(),
-            register::GpRegisters::Va => cpu.va.read(),
-            register::GpRegisters::Vb => cpu.vb.read(),
-            register::GpRegisters::Vc => cpu.vc.read(),
-            register::GpRegisters::Vd => cpu.vd.read(),
-            register::GpRegisters::Ve => cpu.ve.read(),
-            register::GpRegisters::Vf => cpu.vf.read(),
-        };
+        let cpu_reg_value = cpu.read_gp_register(self.register);
+
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.register),
             cpu_reg_value.wrapping_add(self.value),

@@ -94,6 +94,29 @@ impl Chip8 {
         self
     }
 
+    /// Provides a convenient method for unwrapping a GpRegister enum to a
+    /// corresponding read of it's namesake register.
+    pub fn read_gp_register(&self, reg: register::GpRegisters) -> u8 {
+        match reg {
+            register::GpRegisters::V0 => self.v0.read(),
+            register::GpRegisters::V1 => self.v1.read(),
+            register::GpRegisters::V2 => self.v2.read(),
+            register::GpRegisters::V3 => self.v3.read(),
+            register::GpRegisters::V4 => self.v4.read(),
+            register::GpRegisters::V5 => self.v5.read(),
+            register::GpRegisters::V6 => self.v6.read(),
+            register::GpRegisters::V7 => self.v7.read(),
+            register::GpRegisters::V8 => self.v8.read(),
+            register::GpRegisters::V9 => self.v9.read(),
+            register::GpRegisters::Va => self.va.read(),
+            register::GpRegisters::Vb => self.vb.read(),
+            register::GpRegisters::Vc => self.vc.read(),
+            register::GpRegisters::Vd => self.vd.read(),
+            register::GpRegisters::Ve => self.ve.read(),
+            register::GpRegisters::Vf => self.vf.read(),
+        }
+    }
+
     /// Resets a cpu to a clean state.
     pub fn reset() -> Self {
         Self::default()

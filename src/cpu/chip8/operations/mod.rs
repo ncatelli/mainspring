@@ -323,7 +323,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegister
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
                 parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&v| (v & 0x0f) == 0x04)
+                    parcel::parsers::byte::any_byte().predicate(|&v| (v & 0x0f) == 0x02)
                 }),
             )
             .and_then(|_| addressing_mode::ByteRegisterOperation::default())

@@ -212,7 +212,7 @@ fn should_generate_add_i_register_indexed() {
 
 #[test]
 fn should_parse_and_byte_register_operation_opcode() {
-    let input: Vec<(usize, u8)> = 0x8014u16
+    let input: Vec<(usize, u8)> = 0x8012u16
         .to_be_bytes()
         .iter()
         .copied()

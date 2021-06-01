@@ -117,3 +117,47 @@ impl Default for IRegisterIndexed {
         }
     }
 }
+
+/// Represents a register to register operation containing both a destination
+/// and source register as the second and third nibble in a two byte opcode.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ByteRegisterOperation {
+    pub src: register::GpRegisters,
+    pub dest: register::GpRegisters,
+}
+
+impl AddressingMode for ByteRegisterOperation {}
+
+impl ByteRegisterOperation {
+    pub fn new(src: register::GpRegisters, dest: register::GpRegisters) -> Self {
+        Self { src, dest }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], ByteRegisterOperation> for ByteRegisterOperation {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], ByteRegisterOperation> {
+        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+            .map(|[[_, first], [second, _]]| {
+                let dest = std::convert::TryFrom::<u8>::try_from(0x0f & first)
+                    .expect("unreachable nibble should be limited to u4.");
+                let src = std::convert::TryFrom::<u8>::try_from(0x0f & second)
+                    .expect("unreachable nibble should be limited to u4.");
+                (src, dest)
+            })
+            .map(|(src, dest)| ByteRegisterOperation::new(src, dest))
+            .parse(input)
+    }
+}
+
+impl Default for ByteRegisterOperation {
+    fn default() -> Self {
+        Self {
+            src: register::GpRegisters::V0,
+            dest: register::GpRegisters::V0,
+        }
+    }
+}

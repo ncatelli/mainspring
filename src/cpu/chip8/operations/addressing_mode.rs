@@ -1,5 +1,9 @@
 use crate::cpu::chip8::{operations::ToNibbleBytes, register, u12::u12};
 
+/// A placeholder constant error string until a u4 type is implemented. Other
+/// assertions are in place so that this should never be encountered.
+const NIBBLE_OVERFLOW: &str = "unreachable nibble should be limited to u4.";
+
 pub trait AddressingMode {}
 
 /// Implied represents a type that explicitly implies it's addressing mode through a 2-byte mnemonic code.
@@ -59,8 +63,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
             .map(|[[_, first], [second, third]]| {
                 let upper = 0x0f & first;
                 let lower = (second << 4) | third;
-                let reg = std::convert::TryFrom::<u8>::try_from(upper)
-                    .expect("unreachable nibble should be limited to u4.");
+                let reg = std::convert::TryFrom::<u8>::try_from(upper).expect(NIBBLE_OVERFLOW);
 
                 (reg, lower)
             })
@@ -102,8 +105,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIn
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], _]| {
                 let upper = 0x0f & first;
-                std::convert::TryFrom::<u8>::try_from(upper)
-                    .expect("unreachable nibble should be limited to u4.")
+                std::convert::TryFrom::<u8>::try_from(upper).expect(NIBBLE_OVERFLOW)
             })
             .map(IRegisterIndexed::new)
             .parse(input)
@@ -142,10 +144,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], ByteRegisterOperation> for ByteRe
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], [second, _]]| {
-                let dest = std::convert::TryFrom::<u8>::try_from(0x0f & first)
-                    .expect("unreachable nibble should be limited to u4.");
-                let src = std::convert::TryFrom::<u8>::try_from(0x0f & second)
-                    .expect("unreachable nibble should be limited to u4.");
+                let dest =
+                    std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW);
+                let src =
+                    std::convert::TryFrom::<u8>::try_from(0x0f & second).expect(NIBBLE_OVERFLOW);
+
                 (src, dest)
             })
             .map(|(src, dest)| ByteRegisterOperation::new(src, dest))

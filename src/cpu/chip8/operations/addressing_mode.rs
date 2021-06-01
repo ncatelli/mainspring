@@ -94,3 +94,60 @@ impl Default for Immediate {
         }
     }
 }
+
+/// Represents an operation on the I register indexed by a General-Purpose
+/// register.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct IRegisterIndexed {
+    pub register: register::GpRegisters,
+}
+
+impl AddressingMode for IRegisterIndexed {}
+
+impl IRegisterIndexed {
+    pub fn new(register: register::GpRegisters) -> Self {
+        Self { register }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIndexed {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], IRegisterIndexed> {
+        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+            .map(|[[_, first], _]| {
+                let upper = 0x0f & first;
+                match upper {
+                    0x0 => register::GpRegisters::V0,
+                    0x1 => register::GpRegisters::V1,
+                    0x2 => register::GpRegisters::V2,
+                    0x3 => register::GpRegisters::V3,
+                    0x4 => register::GpRegisters::V4,
+                    0x5 => register::GpRegisters::V5,
+                    0x6 => register::GpRegisters::V6,
+                    0x7 => register::GpRegisters::V7,
+                    0x8 => register::GpRegisters::V8,
+                    0x9 => register::GpRegisters::V9,
+                    0xa => register::GpRegisters::Va,
+                    0xb => register::GpRegisters::Vb,
+                    0xc => register::GpRegisters::Vc,
+                    0xd => register::GpRegisters::Vd,
+                    0xe => register::GpRegisters::Ve,
+                    0xf => register::GpRegisters::Vf,
+                    _ => panic!("unreachable nibble should be limited to u4."),
+                }
+            })
+            .map(IRegisterIndexed::new)
+            .parse(input)
+    }
+}
+
+impl Default for IRegisterIndexed {
+    fn default() -> Self {
+        Self {
+            register: register::GpRegisters::V0,
+        }
+    }
+}

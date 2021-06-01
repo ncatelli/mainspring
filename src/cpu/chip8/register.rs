@@ -33,6 +33,32 @@ pub enum GpRegisters {
     Vf,
 }
 
+impl std::convert::TryFrom<u8> for GpRegisters {
+    type Error = &'static str;
+
+    fn try_from(src: u8) -> Result<Self, Self::Error> {
+        match src {
+            0x0 => Ok(GpRegisters::V0),
+            0x1 => Ok(GpRegisters::V1),
+            0x2 => Ok(GpRegisters::V2),
+            0x3 => Ok(GpRegisters::V3),
+            0x4 => Ok(GpRegisters::V4),
+            0x5 => Ok(GpRegisters::V5),
+            0x6 => Ok(GpRegisters::V6),
+            0x7 => Ok(GpRegisters::V7),
+            0x8 => Ok(GpRegisters::V8),
+            0x9 => Ok(GpRegisters::V9),
+            0xa => Ok(GpRegisters::Va),
+            0xb => Ok(GpRegisters::Vb),
+            0xc => Ok(GpRegisters::Vc),
+            0xd => Ok(GpRegisters::Vd),
+            0xe => Ok(GpRegisters::Ve),
+            0xf => Ok(GpRegisters::Vf),
+            _ => Err("value is outside the bounds of a u4."),
+        }
+    }
+}
+
 /// Represents the special Timer registers that decrement at a pre-selected
 /// 60hz (1 second), clock-rate.
 #[derive(Debug, PartialEq, Clone, Copy)]

@@ -59,25 +59,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
             .map(|[[_, first], [second, third]]| {
                 let upper = 0x0f & first;
                 let lower = (second << 4) | third;
-                let reg = match upper {
-                    0x0 => register::GpRegisters::V0,
-                    0x1 => register::GpRegisters::V1,
-                    0x2 => register::GpRegisters::V2,
-                    0x3 => register::GpRegisters::V3,
-                    0x4 => register::GpRegisters::V4,
-                    0x5 => register::GpRegisters::V5,
-                    0x6 => register::GpRegisters::V6,
-                    0x7 => register::GpRegisters::V7,
-                    0x8 => register::GpRegisters::V8,
-                    0x9 => register::GpRegisters::V9,
-                    0xa => register::GpRegisters::Va,
-                    0xb => register::GpRegisters::Vb,
-                    0xc => register::GpRegisters::Vc,
-                    0xd => register::GpRegisters::Vd,
-                    0xe => register::GpRegisters::Ve,
-                    0xf => register::GpRegisters::Vf,
-                    _ => panic!("unreachable nibble should be limited to u4."),
-                };
+                let reg = std::convert::TryFrom::<u8>::try_from(upper)
+                    .expect("unreachable nibble should be limited to u4.");
 
                 (reg, lower)
             })
@@ -119,25 +102,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIn
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], _]| {
                 let upper = 0x0f & first;
-                match upper {
-                    0x0 => register::GpRegisters::V0,
-                    0x1 => register::GpRegisters::V1,
-                    0x2 => register::GpRegisters::V2,
-                    0x3 => register::GpRegisters::V3,
-                    0x4 => register::GpRegisters::V4,
-                    0x5 => register::GpRegisters::V5,
-                    0x6 => register::GpRegisters::V6,
-                    0x7 => register::GpRegisters::V7,
-                    0x8 => register::GpRegisters::V8,
-                    0x9 => register::GpRegisters::V9,
-                    0xa => register::GpRegisters::Va,
-                    0xb => register::GpRegisters::Vb,
-                    0xc => register::GpRegisters::Vc,
-                    0xd => register::GpRegisters::Vd,
-                    0xe => register::GpRegisters::Ve,
-                    0xf => register::GpRegisters::Vf,
-                    _ => panic!("unreachable nibble should be limited to u4."),
-                }
+                std::convert::TryFrom::<u8>::try_from(upper)
+                    .expect("unreachable nibble should be limited to u4.")
             })
             .map(IRegisterIndexed::new)
             .parse(input)

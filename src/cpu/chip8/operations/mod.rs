@@ -63,6 +63,7 @@ pub enum OpcodeVariant {
     Call(Call<addressing_mode::Absolute>),
     AddImmediate(Add<addressing_mode::Immediate>),
     AddIRegisterIndexed(Add<addressing_mode::IRegisterIndexed>),
+    AndByteRegisterOperation(And<addressing_mode::ByteRegisterOperation>),
 }
 
 /// Provides a Parser type for the OpcodeVariant enum. Constructing an
@@ -82,6 +83,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
             <Add<addressing_mode::Immediate>>::default().map(OpcodeVariant::AddImmediate),
             <Add<addressing_mode::IRegisterIndexed>>::default()
                 .map(OpcodeVariant::AddIRegisterIndexed),
+            <And<addressing_mode::ByteRegisterOperation>>::default()
+                .map(OpcodeVariant::AndByteRegisterOperation),
         ])
         .parse(input)
     }
@@ -93,6 +96,7 @@ impl Generate<Chip8, Vec<Microcode>> for OpcodeVariant {
             OpcodeVariant::Jp(op) => Generate::generate(op, cpu),
             OpcodeVariant::AddImmediate(op) => Generate::generate(op, cpu),
             OpcodeVariant::AddIRegisterIndexed(op) => Generate::generate(op, cpu),
+            OpcodeVariant::AndByteRegisterOperation(op) => Generate::generate(op, cpu),
             // TODO: Empty placeholder representing a NOP
             _ => vec![],
         }
@@ -292,6 +296,57 @@ impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::IRegisterIndexed> 
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
             register::WordRegisters::I,
             gp_val as u16,
+        ))]
+    }
+}
+
+/// And represents a binary & operation.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct And<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> And<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegisterOperation>>
+    for And<addressing_mode::ByteRegisterOperation>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], And<addressing_mode::ByteRegisterOperation>> {
+        matches_first_nibble_without_taking_input(0x8)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&v| (v & 0x0f) == 0x02)
+                }),
+            )
+            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .map(And::new)
+            .parse(input)
+    }
+}
+
+impl From<And<addressing_mode::ByteRegisterOperation>> for OpcodeVariant {
+    fn from(src: And<addressing_mode::ByteRegisterOperation>) -> Self {
+        OpcodeVariant::AndByteRegisterOperation(src)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for And<addressing_mode::ByteRegisterOperation> {
+    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.src);
+        let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
+        let result = dest_val & src_val;
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
+            result,
         ))]
     }
 }

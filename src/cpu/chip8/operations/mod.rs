@@ -1,4 +1,5 @@
 use crate::cpu::chip8::register;
+use crate::cpu::chip8::u12::u12;
 use crate::cpu::chip8::{microcode::*, Chip8};
 use crate::cpu::Generate;
 use parcel::prelude::v1::*;
@@ -59,7 +60,8 @@ pub fn matches_first_nibble_without_taking_input<'a>(
 pub enum OpcodeVariant {
     Cls(Cls),
     Ret(Ret),
-    Jp(Jp<addressing_mode::Absolute>),
+    JpAbsolute(Jp<addressing_mode::Absolute, 0x1>),
+    JpAbsoluteIndexedByV0(Jp<addressing_mode::Absolute, 0xb>),
     Call(Call<addressing_mode::Absolute>),
     AddImmediate(Add<addressing_mode::Immediate>),
     AddIRegisterIndexed(Add<addressing_mode::IRegisterIndexed>),
@@ -78,7 +80,9 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
         parcel::one_of(vec![
             Cls::default().map(OpcodeVariant::Cls),
             Ret::default().map(OpcodeVariant::Ret),
-            <Jp<addressing_mode::Absolute>>::default().map(OpcodeVariant::Jp),
+            <Jp<addressing_mode::Absolute, 0x1>>::default().map(OpcodeVariant::JpAbsolute),
+            <Jp<addressing_mode::Absolute, 0xb>>::default()
+                .map(OpcodeVariant::JpAbsoluteIndexedByV0),
             Call::default().map(OpcodeVariant::Call),
             <Add<addressing_mode::Immediate>>::default().map(OpcodeVariant::AddImmediate),
             <Add<addressing_mode::IRegisterIndexed>>::default()
@@ -93,7 +97,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
 impl Generate<Chip8, Vec<Microcode>> for OpcodeVariant {
     fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
         match self {
-            OpcodeVariant::Jp(op) => Generate::generate(op, cpu),
+            OpcodeVariant::JpAbsolute(op) => Generate::generate(op, cpu),
+            OpcodeVariant::JpAbsoluteIndexedByV0(op) => Generate::generate(op, cpu),
             OpcodeVariant::AddImmediate(op) => Generate::generate(op, cpu),
             OpcodeVariant::AddIRegisterIndexed(op) => Generate::generate(op, cpu),
             OpcodeVariant::AndByteRegisterOperation(op) => Generate::generate(op, cpu),
@@ -152,23 +157,23 @@ impl From<Ret> for u16 {
 /// Jp the associated value to the value of the specified register. Setting
 /// the register to the sum.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct Jp<A> {
+pub struct Jp<A, const O: u8> {
     pub addressing_mode: A,
 }
 
-impl<A> Jp<A> {
+impl<A, const O: u8> Jp<A, O> {
     pub fn new(addressing_mode: A) -> Self {
         Self { addressing_mode }
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<addressing_mode::Absolute>>
-    for Jp<addressing_mode::Absolute>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<addressing_mode::Absolute, 0x1>>
+    for Jp<addressing_mode::Absolute, 0x1>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<addressing_mode::Absolute>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<addressing_mode::Absolute, 0x1>> {
         matches_first_nibble_without_taking_input(0x1)
             .and_then(|_| addressing_mode::Absolute::default())
             .map(Jp::new)
@@ -176,17 +181,51 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<addressing_mode::Absolute>>
     }
 }
 
-impl From<Jp<addressing_mode::Absolute>> for OpcodeVariant {
-    fn from(src: Jp<addressing_mode::Absolute>) -> Self {
-        OpcodeVariant::Jp(src)
+impl From<Jp<addressing_mode::Absolute, 0x1>> for OpcodeVariant {
+    fn from(src: Jp<addressing_mode::Absolute, 0x1>) -> Self {
+        OpcodeVariant::JpAbsolute(src)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Jp<addressing_mode::Absolute> {
+impl Generate<Chip8, Vec<Microcode>> for Jp<addressing_mode::Absolute, 0x1> {
     fn generate(self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
             u16::from(self.addressing_mode.addr()).wrapping_sub(2),
+        ))]
+    }
+}
+
+// Jp Absolute + V0
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<addressing_mode::Absolute, 0xb>>
+    for Jp<addressing_mode::Absolute, 0xb>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<addressing_mode::Absolute, 0xb>> {
+        matches_first_nibble_without_taking_input(0xb)
+            .and_then(|_| addressing_mode::Absolute::default())
+            .map(Jp::new)
+            .parse(input)
+    }
+}
+
+impl From<Jp<addressing_mode::Absolute, 0xb>> for OpcodeVariant {
+    fn from(src: Jp<addressing_mode::Absolute, 0xb>) -> Self {
+        OpcodeVariant::JpAbsoluteIndexedByV0(src)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Jp<addressing_mode::Absolute, 0xb> {
+    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+        let v0_val = cpu.read_gp_register(register::GpRegisters::V0);
+        let abs_addr = self.addressing_mode.addr();
+        let jmp_addr = abs_addr.wrapping_add(u12::new(v0_val as u16));
+
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            u16::from(jmp_addr).wrapping_sub(2),
         ))]
     }
 }

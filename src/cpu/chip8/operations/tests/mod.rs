@@ -41,7 +41,7 @@ fn should_parse_ret_opcode() {
 }
 
 #[test]
-fn should_parse_jump_opcode() {
+fn should_parse_jump_absolute_opcode() {
     let input: Vec<(usize, u8)> = 0x1fffu16
         .to_be_bytes()
         .iter()
@@ -52,21 +52,24 @@ fn should_parse_jump_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::new(addressing_mode::Absolute::new(u12::new(0xfff)))
+            inner: Jp::<addressing_mode::Absolute, 0x1>::new(addressing_mode::Absolute::new(
+                u12::new(0xfff)
+            ))
         }),
         Jp::default().parse(&input[..])
     );
 }
 
 #[test]
-fn should_generate_jump_with_pc_incrementer() {
+fn should_generate_jump_absolute_with_pc_incrementer() {
     let cpu = Chip8::default();
     assert_eq!(
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
             0x1fe
         ))],
-        Jp::new(addressing_mode::Absolute::new(u12::new(0x200))).generate(&cpu)
+        Jp::<addressing_mode::Absolute, 0x1>::new(addressing_mode::Absolute::new(u12::new(0x200)))
+            .generate(&cpu)
     );
 
     assert_eq!(
@@ -80,8 +83,63 @@ fn should_generate_jump_with_pc_incrementer() {
                 2
             ))
         ],
-        OpcodeVariant::from(Jp::new(addressing_mode::Absolute::new(u12::new(0x200))))
+        OpcodeVariant::from(Jp::<addressing_mode::Absolute, 0x1>::new(
+            addressing_mode::Absolute::new(u12::new(0x200))
+        ))
+        .generate(&cpu)
+    )
+}
+
+#[test]
+fn should_parse_jump_absolute_indexed_by_v0_opcode() {
+    let input: Vec<(usize, u8)> = 0xbfffu16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Jp::<addressing_mode::Absolute, 0xb>::new(addressing_mode::Absolute::new(
+                u12::new(0xfff)
+            ))
+        }),
+        Jp::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
+    let cpu = Chip8::default().with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::with_value(0x05),
+    );
+    assert_eq!(
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            0x203
+        ))],
+        Jp::<addressing_mode::Absolute, 0xb>::new(addressing_mode::Absolute::new(u12::new(0x200)))
             .generate(&cpu)
+    );
+
+    assert_eq!(
+        vec![
+            Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                0x203
+            )),
+            Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2
+            ))
+        ],
+        OpcodeVariant::from(Jp::<addressing_mode::Absolute, 0xb>::new(
+            addressing_mode::Absolute::new(u12::new(0x200))
+        ))
+        .generate(&cpu)
     )
 }
 

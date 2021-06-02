@@ -52,9 +52,9 @@ fn should_parse_jump_absolute_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::<addressing_mode::Absolute, 0x1>::new(addressing_mode::Absolute::new(
-                u12::new(0xfff)
-            ))
+            inner: Jp::<NonV0Indexed, addressing_mode::Absolute>::new(
+                addressing_mode::Absolute::new(u12::new(0xfff))
+            )
         }),
         Jp::default().parse(&input[..])
     );
@@ -68,8 +68,10 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x1fe
         ))],
-        Jp::<addressing_mode::Absolute, 0x1>::new(addressing_mode::Absolute::new(u12::new(0x200)))
-            .generate(&cpu)
+        Jp::<NonV0Indexed, addressing_mode::Absolute>::new(addressing_mode::Absolute::new(
+            u12::new(0x200)
+        ))
+        .generate(&cpu)
     );
 
     assert_eq!(
@@ -83,7 +85,7 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
                 2
             ))
         ],
-        OpcodeVariant::from(Jp::<addressing_mode::Absolute, 0x1>::new(
+        OpcodeVariant::from(Jp::<NonV0Indexed, addressing_mode::Absolute>::new(
             addressing_mode::Absolute::new(u12::new(0x200))
         ))
         .generate(&cpu)
@@ -102,7 +104,7 @@ fn should_parse_jump_absolute_indexed_by_v0_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::<addressing_mode::Absolute, 0xb>::new(addressing_mode::Absolute::new(
+            inner: Jp::<V0Indexed, addressing_mode::Absolute>::new(addressing_mode::Absolute::new(
                 u12::new(0xfff)
             ))
         }),
@@ -121,8 +123,10 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x203
         ))],
-        Jp::<addressing_mode::Absolute, 0xb>::new(addressing_mode::Absolute::new(u12::new(0x200)))
-            .generate(&cpu)
+        Jp::<V0Indexed, addressing_mode::Absolute>::new(addressing_mode::Absolute::new(u12::new(
+            0x200
+        )))
+        .generate(&cpu)
     );
 
     assert_eq!(
@@ -136,7 +140,7 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
                 2
             ))
         ],
-        OpcodeVariant::from(Jp::<addressing_mode::Absolute, 0xb>::new(
+        OpcodeVariant::from(Jp::<V0Indexed, addressing_mode::Absolute>::new(
             addressing_mode::Absolute::new(u12::new(0x200))
         ))
         .generate(&cpu)

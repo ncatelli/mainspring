@@ -17,8 +17,17 @@ pub trait Generate<T, U> {
     fn generate(self, cpu: &T) -> U;
 }
 
+/// Defines a trait for implementing transformation on a CPU, returning the
+/// modified CPU.
 pub trait Execute<T> {
     fn execute(self, cpu: T) -> T;
+}
+
+/// Defines a trait for implementing transformation on a CPU, modifying a
+/// references to a CPU in place. The difference between Execute and ExecuteMut
+/// is that a ExecuteMut is implemented on the object (cpu) being modified.
+pub trait ExecuteMut<T> {
+    fn execute_mut(&mut self, operation: &T);
 }
 
 pub trait Cpu<T> {

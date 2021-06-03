@@ -3,6 +3,8 @@ use crate::cpu::Execute;
 use crate::cpu::{register::Register, Cpu, StepState};
 use parcel::Parser;
 
+use super::ExecuteMut;
+
 mod memory;
 mod microcode;
 mod operations;
@@ -188,18 +190,9 @@ impl Iterator for Chip8IntoIterator {
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Microcode {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        match self {
-            microcode::Microcode::WriteMemory(mc) => mc.execute(cpu),
-            microcode::Microcode::Write8bitRegister(mc) => mc.execute(cpu),
-            microcode::Microcode::Inc8bitRegister(mc) => mc.execute(cpu),
-            microcode::Microcode::Dec8bitRegister(mc) => mc.execute(cpu),
-            microcode::Microcode::Write16bitRegister(mc) => mc.execute(cpu),
-            microcode::Microcode::Inc16bitRegister(mc) => mc.execute(cpu),
-            microcode::Microcode::Dec16bitRegister(mc) => mc.execute(cpu),
-            microcode::Microcode::PushStack(mc) => mc.execute(cpu),
-            microcode::Microcode::PopStack(mc) => mc.execute(cpu),
-        }
+    fn execute(self, mut cpu: Chip8) -> Chip8 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -221,7 +214,7 @@ impl crate::cpu::ExecuteMut<microcode::Microcode> for Chip8 {
 
 impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
     fn execute(self, mut cpu: Chip8) -> Chip8 {
-        cpu.address_space.write(self.address, self.value).unwrap();
+        cpu.execute_mut(&self);
         cpu
     }
 }
@@ -233,19 +226,9 @@ impl crate::cpu::ExecuteMut<microcode::WriteMemory> for Chip8 {
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        use register::{ByteRegisters, ClockDecrementing, GeneralPurpose};
-
-        let new_val = self.value;
-
-        match self.register {
-            ByteRegisters::GpRegisters(gpr) => {
-                cpu.with_gp_register(gpr, GeneralPurpose::with_value(new_val))
-            }
-            ByteRegisters::TimerRegisters(tr) => {
-                cpu.with_timer_register(tr, ClockDecrementing::with_value(new_val))
-            }
-        }
+    fn execute(self, mut cpu: Chip8) -> Chip8 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -268,32 +251,9 @@ impl crate::cpu::ExecuteMut<microcode::Write8bitRegister> for Chip8 {
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Inc8bitRegister {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        use register::{ByteRegisters, ClockDecrementing, GeneralPurpose, TimerRegisters};
-
-        match self.register {
-            register::ByteRegisters::GpRegisters(gpr) => {
-                let cpu_reg_value = cpu.read_gp_register(gpr);
-                let new_val = cpu_reg_value.wrapping_add(self.value);
-                cpu.with_gp_register(gpr, GeneralPurpose::with_value(new_val))
-            }
-            ByteRegisters::TimerRegisters(TimerRegisters::Delay) => {
-                let cpu_reg_value = cpu.dt.read();
-                let new_val = cpu_reg_value.wrapping_add(self.value);
-                cpu.with_timer_register(
-                    TimerRegisters::Delay,
-                    ClockDecrementing::with_value(new_val),
-                )
-            }
-            ByteRegisters::TimerRegisters(TimerRegisters::Sound) => {
-                let cpu_reg_value = cpu.st.read();
-                let new_val = cpu_reg_value.wrapping_add(self.value);
-                cpu.with_timer_register(
-                    TimerRegisters::Sound,
-                    ClockDecrementing::with_value(new_val),
-                )
-            }
-        }
+    fn execute(self, mut cpu: Chip8) -> Chip8 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -334,15 +294,9 @@ impl crate::cpu::ExecuteMut<microcode::Dec8bitRegister> for Chip8 {
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Write16bitRegister {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        match self.register {
-            register::WordRegisters::I => {
-                cpu.with_i_register(register::GeneralPurpose::with_value(self.value))
-            }
-            register::WordRegisters::ProgramCounter => {
-                cpu.with_pc_register(register::ProgramCounter::with_value(self.value))
-            }
-        }
+    fn execute(self, mut cpu: Chip8) -> Chip8 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -360,21 +314,9 @@ impl crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8 {
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Inc16bitRegister {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        match self.register {
-            register::WordRegisters::I => {
-                let i = cpu.i.read();
-                cpu.with_i_register(register::GeneralPurpose::with_value(
-                    i.wrapping_add(self.value),
-                ))
-            }
-            register::WordRegisters::ProgramCounter => {
-                let pc = cpu.pc.read();
-                cpu.with_pc_register(register::ProgramCounter::with_value(
-                    pc.wrapping_add(self.value),
-                ))
-            }
-        }
+    fn execute(self, mut cpu: Chip8) -> Chip8 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 

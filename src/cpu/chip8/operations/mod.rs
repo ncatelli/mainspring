@@ -62,6 +62,7 @@ pub struct OpcodeVariantParser;
 impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
     for OpcodeVariantParser
 {
+    #[allow(clippy::clippy::type_complexity)]
     fn parse(
         &self,
         input: &'a [(usize, u8)],

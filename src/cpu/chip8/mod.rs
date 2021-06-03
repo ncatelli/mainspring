@@ -288,9 +288,7 @@ impl crate::cpu::Execute<Chip8> for microcode::Dec8bitRegister {
 }
 
 impl crate::cpu::ExecuteMut<microcode::Dec8bitRegister> for Chip8 {
-    fn execute_mut(&mut self, _: &microcode::Dec8bitRegister) {
-        ()
-    }
+    fn execute_mut(&mut self, _: &microcode::Dec8bitRegister) {}
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::Write16bitRegister {
@@ -342,9 +340,7 @@ impl crate::cpu::Execute<Chip8> for microcode::Dec16bitRegister {
 }
 
 impl crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8 {
-    fn execute_mut(&mut self, _: &microcode::Dec16bitRegister) {
-        ()
-    }
+    fn execute_mut(&mut self, _: &microcode::Dec16bitRegister) {}
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::PushStack {
@@ -354,9 +350,7 @@ impl crate::cpu::Execute<Chip8> for microcode::PushStack {
 }
 
 impl crate::cpu::ExecuteMut<microcode::PushStack> for Chip8 {
-    fn execute_mut(&mut self, _: &microcode::PushStack) {
-        ()
-    }
+    fn execute_mut(&mut self, _: &microcode::PushStack) {}
 }
 
 impl crate::cpu::Execute<Chip8> for microcode::PopStack {
@@ -366,9 +360,7 @@ impl crate::cpu::Execute<Chip8> for microcode::PopStack {
 }
 
 impl crate::cpu::ExecuteMut<microcode::PopStack> for Chip8 {
-    fn execute_mut(&mut self, _: &microcode::PopStack) {
-        ()
-    }
+    fn execute_mut(&mut self, _: &microcode::PopStack) {}
 }
 
 #[cfg(test)]

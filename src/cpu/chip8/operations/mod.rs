@@ -55,62 +55,30 @@ pub fn matches_first_nibble_without_taking_input<'a>(
     }
 }
 
-/// Represents all valid opcodes for the CHIP-8 architecture.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum OpcodeVariant {
-    Cls(Cls),
-    Ret(Ret),
-    JpAbsolute(Jp<NonV0Indexed, addressing_mode::Absolute>),
-    JpAbsoluteIndexedByV0(Jp<V0Indexed, addressing_mode::Absolute>),
-    Call(Call<addressing_mode::Absolute>),
-    AddImmediate(Add<addressing_mode::Immediate>),
-    AddIRegisterIndexed(Add<addressing_mode::IRegisterIndexed>),
-    AndByteRegisterOperation(And<addressing_mode::ByteRegisterOperation>),
-}
-
 /// Provides a Parser type for the OpcodeVariant enum. Constructing an
 /// OpcodeVariant from a stream of bytes.
 pub struct OpcodeVariantParser;
 
-impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
+impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
+    for OpcodeVariantParser
+{
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], OpcodeVariant> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>> {
         parcel::one_of(vec![
-            Cls::default().map(OpcodeVariant::Cls),
-            Ret::default().map(OpcodeVariant::Ret),
-            <Jp<NonV0Indexed, addressing_mode::Absolute>>::default().map(OpcodeVariant::JpAbsolute),
+            <Jp<NonV0Indexed, addressing_mode::Absolute>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Jp<V0Indexed, addressing_mode::Absolute>>::default()
-                .map(OpcodeVariant::JpAbsoluteIndexedByV0),
-            Call::default().map(OpcodeVariant::Call),
-            <Add<addressing_mode::Immediate>>::default().map(OpcodeVariant::AddImmediate),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+            <Add<addressing_mode::Immediate>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()
-                .map(OpcodeVariant::AddIRegisterIndexed),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <And<addressing_mode::ByteRegisterOperation>>::default()
-                .map(OpcodeVariant::AndByteRegisterOperation),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
         ])
         .parse(input)
-    }
-}
-
-impl Generate<Chip8, Vec<Microcode>> for OpcodeVariant {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
-        match self {
-            OpcodeVariant::JpAbsolute(op) => Generate::generate(op, cpu),
-            OpcodeVariant::JpAbsoluteIndexedByV0(op) => Generate::generate(op, cpu),
-            OpcodeVariant::AddImmediate(op) => Generate::generate(op, cpu),
-            OpcodeVariant::AddIRegisterIndexed(op) => Generate::generate(op, cpu),
-            OpcodeVariant::AndByteRegisterOperation(op) => Generate::generate(op, cpu),
-            // TODO: Empty placeholder representing a NOP
-            _ => vec![],
-        }
-        .into_iter()
-        .chain(vec![Microcode::Inc16bitRegister(
-            // increment the PC by instruction size.
-            Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
-        )])
-        .collect()
     }
 }
 
@@ -193,12 +161,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<NonV0Indexed, addressing_mode:
     }
 }
 
-impl From<Jp<NonV0Indexed, addressing_mode::Absolute>> for OpcodeVariant {
-    fn from(src: Jp<NonV0Indexed, addressing_mode::Absolute>) -> Self {
-        OpcodeVariant::JpAbsolute(src)
-    }
-}
-
 impl Generate<Chip8, Vec<Microcode>> for Jp<NonV0Indexed, addressing_mode::Absolute> {
     fn generate(&self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
@@ -220,12 +182,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Ab
             .and_then(|_| addressing_mode::Absolute::default())
             .map(Jp::new)
             .parse(input)
-    }
-}
-
-impl From<Jp<V0Indexed, addressing_mode::Absolute>> for OpcodeVariant {
-    fn from(src: Jp<V0Indexed, addressing_mode::Absolute>) -> Self {
-        OpcodeVariant::JpAbsoluteIndexedByV0(src)
     }
 }
 
@@ -268,12 +224,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call<addressing_mode::Absolute>>
     }
 }
 
-impl From<Call<addressing_mode::Absolute>> for OpcodeVariant {
-    fn from(src: Call<addressing_mode::Absolute>) -> Self {
-        OpcodeVariant::Call(src)
-    }
-}
-
 /// Adds the associated value to the value of the specified register. Setting
 /// the register to the sum.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
@@ -298,12 +248,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::Immediate>>
             .and_then(|_| addressing_mode::Immediate::default())
             .map(Add::new)
             .parse(input)
-    }
-}
-
-impl From<Add<addressing_mode::Immediate>> for OpcodeVariant {
-    fn from(src: Add<addressing_mode::Immediate>) -> Self {
-        OpcodeVariant::AddImmediate(src)
     }
 }
 
@@ -332,12 +276,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::IRegisterInd
             .and_then(|_| addressing_mode::IRegisterIndexed::default())
             .map(Add::new)
             .parse(input)
-    }
-}
-
-impl From<Add<addressing_mode::IRegisterIndexed>> for OpcodeVariant {
-    fn from(src: Add<addressing_mode::IRegisterIndexed>) -> Self {
-        OpcodeVariant::AddIRegisterIndexed(src)
     }
 }
 
@@ -380,12 +318,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegister
             .and_then(|_| addressing_mode::ByteRegisterOperation::default())
             .map(And::new)
             .parse(input)
-    }
-}
-
-impl From<And<addressing_mode::ByteRegisterOperation>> for OpcodeVariant {
-    fn from(src: And<addressing_mode::ByteRegisterOperation>) -> Self {
-        OpcodeVariant::AndByteRegisterOperation(src)
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::address_map::{AddressMap, Addressable};
+use crate::cpu::Execute;
 use crate::cpu::{register::Register, Cpu, StepState};
-use crate::cpu::{Execute, Generate};
 use parcel::Parser;
 
 mod memory;
@@ -170,7 +170,14 @@ impl Iterator for Chip8IntoIterator {
         }
         .unwrap();
 
-        let microcode_steps = ops.generate(&self.state);
+        let microcode_steps: Vec<microcode::Microcode> = ops
+            .generate(&self.state)
+            .into_iter()
+            .chain(vec![microcode::Microcode::Inc16bitRegister(
+                // increment the PC by instruction size.
+                microcode::Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
+            )])
+            .collect();
 
         self.state = microcode_steps
             .iter()

@@ -73,23 +73,6 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
         ))
         .generate(&cpu)
     );
-
-    assert_eq!(
-        vec![
-            Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                0x1fe
-            )),
-            Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                2
-            ))
-        ],
-        OpcodeVariant::from(Jp::<NonV0Indexed, addressing_mode::Absolute>::new(
-            addressing_mode::Absolute::new(u12::new(0x200))
-        ))
-        .generate(&cpu)
-    )
 }
 
 #[test]
@@ -128,23 +111,6 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
         )))
         .generate(&cpu)
     );
-
-    assert_eq!(
-        vec![
-            Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                0x203
-            )),
-            Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                2
-            ))
-        ],
-        OpcodeVariant::from(Jp::<V0Indexed, addressing_mode::Absolute>::new(
-            addressing_mode::Absolute::new(u12::new(0x200))
-        ))
-        .generate(&cpu)
-    )
 }
 
 #[test]
@@ -200,24 +166,6 @@ fn should_generate_add_immediate() {
         ))
         .generate(&cpu)
     );
-
-    assert_eq!(
-        vec![
-            Microcode::Inc8bitRegister(Inc8bitRegister::new(
-                register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
-                0xff
-            )),
-            Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                2
-            ))
-        ],
-        OpcodeVariant::from(Add::new(addressing_mode::Immediate::new(
-            register::GpRegisters::V5,
-            0xff
-        )))
-        .generate(&cpu)
-    )
 }
 
 #[test]
@@ -256,20 +204,6 @@ fn should_generate_add_i_register_indexed() {
         ))
         .generate(&cpu)
     );
-
-    assert_eq!(
-        vec![
-            Microcode::Inc16bitRegister(Inc16bitRegister::new(register::WordRegisters::I, 0xff)),
-            Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                2
-            ))
-        ],
-        OpcodeVariant::from(Add::new(addressing_mode::IRegisterIndexed::new(
-            register::GpRegisters::V5,
-        )))
-        .generate(&cpu)
-    )
 }
 
 #[test]
@@ -315,22 +249,4 @@ fn should_generate_and_byte_register_operation() {
         ))
         .generate(&cpu)
     );
-
-    assert_eq!(
-        vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
-                register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
-                0x0f
-            )),
-            Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                2
-            ))
-        ],
-        OpcodeVariant::from(And::new(addressing_mode::ByteRegisterOperation::new(
-            register::GpRegisters::V1,
-            register::GpRegisters::V0
-        )))
-        .generate(&cpu)
-    )
 }

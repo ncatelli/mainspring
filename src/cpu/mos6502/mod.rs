@@ -304,9 +304,8 @@ impl ExecuteMut<microcode::Microcode> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::WriteMemory {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let mut cpu = cpu;
-        cpu.address_map.write(self.address, self.value).unwrap();
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
         cpu
     }
 }
@@ -318,20 +317,9 @@ impl ExecuteMut<microcode::WriteMemory> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::SetProgramStatusFlagState {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let mut status = cpu.ps;
-
-        match self.flag {
-            ProgramStatusFlags::Negative => status.negative = self.value,
-            ProgramStatusFlags::Overflow => status.overflow = self.value,
-            ProgramStatusFlags::Break => status.brk = self.value,
-            ProgramStatusFlags::Decimal => status.decimal = self.value,
-            ProgramStatusFlags::Interrupt => status.interrupt_disable = self.value,
-            ProgramStatusFlags::Zero => status.zero = self.value,
-            ProgramStatusFlags::Carry => status.carry = self.value,
-        };
-
-        cpu.with_ps_register(status)
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -354,23 +342,9 @@ impl ExecuteMut<microcode::SetProgramStatusFlagState> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::Write8bitRegister {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let register = self.register;
-        let value = self.value;
-
-        match register {
-            ByteRegisters::Acc => {
-                cpu.with_gp_register(GpRegister::Acc, GeneralPurpose::with_value(value))
-            }
-            ByteRegisters::X => {
-                cpu.with_gp_register(GpRegister::X, GeneralPurpose::with_value(value))
-            }
-            ByteRegisters::Y => {
-                cpu.with_gp_register(GpRegister::Y, GeneralPurpose::with_value(value))
-            }
-            ByteRegisters::Sp => cpu.with_sp_register(StackPointer::with_value(value)),
-            ByteRegisters::Ps => cpu.with_ps_register(ProcessorStatus::with_value(value)),
-        }
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -396,43 +370,9 @@ impl ExecuteMut<microcode::Write8bitRegister> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::Inc8bitRegister {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let register = self.register;
-        let value = self.value;
-
-        match register {
-            ByteRegisters::Acc => {
-                let old_val = cpu.acc.read();
-                cpu.with_gp_register(
-                    GpRegister::Acc,
-                    GeneralPurpose::with_value(old_val.overflowing_add(value).0),
-                )
-            }
-            ByteRegisters::X => {
-                let old_val = cpu.x.read();
-                cpu.with_gp_register(
-                    GpRegister::X,
-                    GeneralPurpose::with_value(old_val.overflowing_add(value).0),
-                )
-            }
-            ByteRegisters::Y => {
-                let old_val = cpu.y.read();
-                cpu.with_gp_register(
-                    GpRegister::Y,
-                    GeneralPurpose::with_value(old_val.overflowing_add(value).0),
-                )
-            }
-            ByteRegisters::Sp => {
-                let old_val = cpu.sp.read();
-                cpu.with_sp_register(StackPointer::with_value(old_val.overflowing_add(value).0))
-            }
-            ByteRegisters::Ps => {
-                let old_val = cpu.ps.read();
-                cpu.with_ps_register(ProcessorStatus::with_value(
-                    old_val.overflowing_add(value).0,
-                ))
-            }
-        }
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -467,43 +407,9 @@ impl ExecuteMut<microcode::Inc8bitRegister> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::Dec8bitRegister {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let register = self.register;
-        let value = self.value;
-
-        match register {
-            ByteRegisters::Acc => {
-                let old_val = cpu.acc.read();
-                cpu.with_gp_register(
-                    GpRegister::Acc,
-                    GeneralPurpose::with_value(old_val.overflowing_sub(value).0),
-                )
-            }
-            ByteRegisters::X => {
-                let old_val = cpu.x.read();
-                cpu.with_gp_register(
-                    GpRegister::X,
-                    GeneralPurpose::with_value(old_val.overflowing_sub(value).0),
-                )
-            }
-            ByteRegisters::Y => {
-                let old_val = cpu.y.read();
-                cpu.with_gp_register(
-                    GpRegister::Y,
-                    GeneralPurpose::with_value(old_val.overflowing_sub(value).0),
-                )
-            }
-            ByteRegisters::Sp => {
-                let old_val = cpu.sp.read();
-                cpu.with_sp_register(StackPointer::with_value(old_val.overflowing_sub(value).0))
-            }
-            ByteRegisters::Ps => {
-                let old_val = cpu.ps.read();
-                cpu.with_ps_register(ProcessorStatus::with_value(
-                    old_val.overflowing_sub(value).0,
-                ))
-            }
-        }
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -538,8 +444,9 @@ impl ExecuteMut<microcode::Dec8bitRegister> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::Write16bitRegister {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        cpu.with_pc_register(ProgramCounter::with_value(self.value))
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -550,9 +457,9 @@ impl ExecuteMut<microcode::Write16bitRegister> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::Inc16bitRegister {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let pc = cpu.pc.read().overflowing_add(self.value).0;
-        cpu.with_pc_register(ProgramCounter::with_value(pc))
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 
@@ -564,9 +471,9 @@ impl ExecuteMut<microcode::Inc16bitRegister> for Mos6502 {
 }
 
 impl Execute<Mos6502> for microcode::Dec16bitRegister {
-    fn execute(self, cpu: Mos6502) -> Mos6502 {
-        let pc = cpu.pc.read().overflowing_sub(self.value).0;
-        cpu.with_pc_register(ProgramCounter::with_value(pc))
+    fn execute(self, mut cpu: Mos6502) -> Mos6502 {
+        cpu.execute_mut(&self);
+        cpu
     }
 }
 

@@ -203,10 +203,32 @@ impl crate::cpu::Execute<Chip8> for microcode::Microcode {
     }
 }
 
+impl crate::cpu::ExecuteMut<microcode::Microcode> for Chip8 {
+    fn execute_mut(&mut self, mc: &microcode::Microcode) {
+        match mc {
+            microcode::Microcode::WriteMemory(mc) => self.execute_mut(mc),
+            microcode::Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::Write16bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::Inc16bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::Dec16bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::PushStack(mc) => self.execute_mut(mc),
+            microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
+        }
+    }
+}
+
 impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
     fn execute(self, mut cpu: Chip8) -> Chip8 {
         cpu.address_space.write(self.address, self.value).unwrap();
         cpu
+    }
+}
+
+impl crate::cpu::ExecuteMut<microcode::WriteMemory> for Chip8 {
+    fn execute_mut(&mut self, mc: &microcode::WriteMemory) {
+        self.address_space.write(mc.address, mc.value).unwrap();
     }
 }
 
@@ -222,6 +244,24 @@ impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
             }
             ByteRegisters::TimerRegisters(tr) => {
                 cpu.with_timer_register(tr, ClockDecrementing::with_value(new_val))
+            }
+        }
+    }
+}
+
+impl crate::cpu::ExecuteMut<microcode::Write8bitRegister> for Chip8 {
+    fn execute_mut(&mut self, mc: &microcode::Write8bitRegister) {
+        use register::{ByteRegisters, ClockDecrementing, GeneralPurpose, TimerRegisters};
+
+        match mc.register {
+            register::ByteRegisters::GpRegisters(gpr) => {
+                self.gp_registers[gpr as usize] = GeneralPurpose::with_value(mc.value);
+            }
+            ByteRegisters::TimerRegisters(TimerRegisters::Delay) => {
+                self.dt = ClockDecrementing::with_value(mc.value);
+            }
+            ByteRegisters::TimerRegisters(TimerRegisters::Sound) => {
+                self.st = ClockDecrementing::with_value(mc.value);
             }
         }
     }
@@ -257,9 +297,39 @@ impl crate::cpu::Execute<Chip8> for microcode::Inc8bitRegister {
     }
 }
 
+impl crate::cpu::ExecuteMut<microcode::Inc8bitRegister> for Chip8 {
+    fn execute_mut(&mut self, mc: &microcode::Inc8bitRegister) {
+        use register::{ByteRegisters, ClockDecrementing, GeneralPurpose, TimerRegisters};
+
+        match mc.register {
+            register::ByteRegisters::GpRegisters(gpr) => {
+                let cpu_reg_value = self.read_gp_register(gpr);
+                let new_val = cpu_reg_value.wrapping_add(mc.value);
+                self.gp_registers[gpr as usize] = GeneralPurpose::with_value(new_val);
+            }
+            ByteRegisters::TimerRegisters(TimerRegisters::Delay) => {
+                let cpu_reg_value = self.dt.read();
+                let new_val = cpu_reg_value.wrapping_add(mc.value);
+                self.dt = ClockDecrementing::with_value(new_val);
+            }
+            ByteRegisters::TimerRegisters(TimerRegisters::Sound) => {
+                let cpu_reg_value = self.st.read();
+                let new_val = cpu_reg_value.wrapping_add(mc.value);
+                self.st = ClockDecrementing::with_value(new_val);
+            }
+        }
+    }
+}
+
 impl crate::cpu::Execute<Chip8> for microcode::Dec8bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
         cpu
+    }
+}
+
+impl crate::cpu::ExecuteMut<microcode::Dec8bitRegister> for Chip8 {
+    fn execute_mut(&mut self, _: &microcode::Dec8bitRegister) {
+        ()
     }
 }
 
@@ -271,6 +341,19 @@ impl crate::cpu::Execute<Chip8> for microcode::Write16bitRegister {
             }
             register::WordRegisters::ProgramCounter => {
                 cpu.with_pc_register(register::ProgramCounter::with_value(self.value))
+            }
+        }
+    }
+}
+
+impl crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8 {
+    fn execute_mut(&mut self, mc: &microcode::Write16bitRegister) {
+        match mc.register {
+            register::WordRegisters::I => {
+                self.i = register::GeneralPurpose::with_value(mc.value);
+            }
+            register::WordRegisters::ProgramCounter => {
+                self.pc = register::ProgramCounter::with_value(mc.value);
             }
         }
     }
@@ -295,9 +378,30 @@ impl crate::cpu::Execute<Chip8> for microcode::Inc16bitRegister {
     }
 }
 
+impl crate::cpu::ExecuteMut<microcode::Inc16bitRegister> for Chip8 {
+    fn execute_mut(&mut self, mc: &microcode::Inc16bitRegister) {
+        match mc.register {
+            register::WordRegisters::I => {
+                let i = self.i.read();
+                self.i = register::GeneralPurpose::with_value(i.wrapping_add(mc.value));
+            }
+            register::WordRegisters::ProgramCounter => {
+                let pc = self.pc.read();
+                self.pc = register::ProgramCounter::with_value(pc.wrapping_add(mc.value));
+            }
+        }
+    }
+}
+
 impl crate::cpu::Execute<Chip8> for microcode::Dec16bitRegister {
     fn execute(self, cpu: Chip8) -> Chip8 {
         cpu
+    }
+}
+
+impl crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8 {
+    fn execute_mut(&mut self, _: &microcode::Dec16bitRegister) {
+        ()
     }
 }
 
@@ -307,9 +411,21 @@ impl crate::cpu::Execute<Chip8> for microcode::PushStack {
     }
 }
 
+impl crate::cpu::ExecuteMut<microcode::PushStack> for Chip8 {
+    fn execute_mut(&mut self, _: &microcode::PushStack) {
+        ()
+    }
+}
+
 impl crate::cpu::Execute<Chip8> for microcode::PopStack {
     fn execute(self, cpu: Chip8) -> Chip8 {
         cpu
+    }
+}
+
+impl crate::cpu::ExecuteMut<microcode::PopStack> for Chip8 {
+    fn execute_mut(&mut self, _: &microcode::PopStack) {
+        ()
     }
 }
 

@@ -95,7 +95,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], OpcodeVariant> for OpcodeVariantParser {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for OpcodeVariant {
-    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         match self {
             OpcodeVariant::JpAbsolute(op) => Generate::generate(op, cpu),
             OpcodeVariant::JpAbsoluteIndexedByV0(op) => Generate::generate(op, cpu),
@@ -200,7 +200,7 @@ impl From<Jp<NonV0Indexed, addressing_mode::Absolute>> for OpcodeVariant {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for Jp<NonV0Indexed, addressing_mode::Absolute> {
-    fn generate(self, _: &Chip8) -> Vec<Microcode> {
+    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
             u16::from(self.addressing_mode.addr()).wrapping_sub(2),
@@ -230,7 +230,7 @@ impl From<Jp<V0Indexed, addressing_mode::Absolute>> for OpcodeVariant {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for Jp<V0Indexed, addressing_mode::Absolute> {
-    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let v0_val = cpu.read_gp_register(register::GpRegisters::V0);
         let abs_addr = self.addressing_mode.addr();
         let jmp_addr = abs_addr.wrapping_add(u12::new(v0_val as u16));
@@ -308,7 +308,7 @@ impl From<Add<addressing_mode::Immediate>> for OpcodeVariant {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::Immediate> {
-    fn generate(self, _: &Chip8) -> Vec<Microcode> {
+    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
         vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
@@ -342,7 +342,7 @@ impl From<Add<addressing_mode::IRegisterIndexed>> for OpcodeVariant {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::IRegisterIndexed> {
-    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let gp_val = cpu.read_gp_register(self.addressing_mode.register);
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
             register::WordRegisters::I,
@@ -390,7 +390,7 @@ impl From<And<addressing_mode::ByteRegisterOperation>> for OpcodeVariant {
 }
 
 impl Generate<Chip8, Vec<Microcode>> for And<addressing_mode::ByteRegisterOperation> {
-    fn generate(self, cpu: &Chip8) -> Vec<Microcode> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
         let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
         let result = dest_val & src_val;

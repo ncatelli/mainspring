@@ -14,7 +14,7 @@ pub trait Offset {
 }
 
 pub trait Generate<T, U> {
-    fn generate(self, cpu: &T) -> U;
+    fn generate(&self, cpu: &T) -> U;
 }
 
 /// Defines a trait for implementing transformation on a CPU, returning the

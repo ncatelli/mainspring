@@ -78,6 +78,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Jp<V0Indexed, addressing_mode::Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+            <Ld<addressing_mode::Absolute>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()
@@ -201,6 +203,41 @@ impl Generate<Chip8, Vec<Microcode>> for Jp<V0Indexed, addressing_mode::Absolute
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
             u16::from(jmp_addr).wrapping_sub(2),
+        ))]
+    }
+}
+
+/// Load the absolute value specified into the I register
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Ld<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Ld<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Absolute>>
+    for Ld<addressing_mode::Absolute>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Absolute>> {
+        matches_first_nibble_without_taking_input(0xA)
+            .and_then(|_| addressing_mode::Absolute::default())
+            .map(Ld::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
+    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::I,
+            u16::from(self.addressing_mode.addr()),
         ))]
     }
 }

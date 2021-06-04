@@ -6,6 +6,12 @@ use parcel::prelude::v1::*;
 
 pub mod addressing_mode;
 
+/// Represents a mask to binary and against a u8 to return the upper nibble.
+const UPPER_NIBBLE_MASK: u8 = 0xf0;
+
+/// Represents a mask to binary and against a u8 to return the lower nibble.
+const LOWER_NIBBLE_MASK: u8 = 0x0f;
+
 #[cfg(test)]
 mod tests;
 
@@ -17,11 +23,11 @@ pub trait ToNibble {
 
 impl ToNibble for u8 {
     fn to_upper_nibble(&self) -> u8 {
-        (self & 0xf0) >> 4
+        (self & UPPER_NIBBLE_MASK) >> 4
     }
 
     fn to_lower_nibble(&self) -> u8 {
-        self & 0x0f
+        self & LOWER_NIBBLE_MASK
     }
 }
 
@@ -313,7 +319,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegister
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
                 parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&v| (v & 0x0f) == 0x02)
+                    parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x02)
                 }),
             )
             .and_then(|_| addressing_mode::ByteRegisterOperation::default())
@@ -327,6 +333,51 @@ impl Generate<Chip8, Vec<Microcode>> for And<addressing_mode::ByteRegisterOperat
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
         let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
         let result = dest_val & src_val;
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
+            result,
+        ))]
+    }
+}
+
+/// Or represents a binary | operation.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Or<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Or<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::ByteRegisterOperation>>
+    for Or<addressing_mode::ByteRegisterOperation>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Or<addressing_mode::ByteRegisterOperation>> {
+        matches_first_nibble_without_taking_input(0x8)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x01)
+                }),
+            )
+            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .map(Or::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Or<addressing_mode::ByteRegisterOperation> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.src);
+        let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
+        let result = dest_val | src_val;
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.dest),

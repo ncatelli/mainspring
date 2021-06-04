@@ -189,7 +189,13 @@ impl Iterator for Chip8IntoIterator {
     }
 }
 
-impl crate::cpu::Execute<Chip8> for microcode::Microcode {
+// microcode execution
+
+// For any implementation of ExecuteMut<M> for a given CPU Execute is implemented.
+impl<M> crate::cpu::Execute<Chip8> for M
+where
+    Chip8: ExecuteMut<M>,
+{
     fn execute(self, mut cpu: Chip8) -> Chip8 {
         cpu.execute_mut(&self);
         cpu
@@ -212,23 +218,9 @@ impl crate::cpu::ExecuteMut<microcode::Microcode> for Chip8 {
     }
 }
 
-impl crate::cpu::Execute<Chip8> for microcode::WriteMemory {
-    fn execute(self, mut cpu: Chip8) -> Chip8 {
-        cpu.execute_mut(&self);
-        cpu
-    }
-}
-
 impl crate::cpu::ExecuteMut<microcode::WriteMemory> for Chip8 {
     fn execute_mut(&mut self, mc: &microcode::WriteMemory) {
         self.address_space.write(mc.address, mc.value).unwrap();
-    }
-}
-
-impl crate::cpu::Execute<Chip8> for microcode::Write8bitRegister {
-    fn execute(self, mut cpu: Chip8) -> Chip8 {
-        cpu.execute_mut(&self);
-        cpu
     }
 }
 
@@ -247,13 +239,6 @@ impl crate::cpu::ExecuteMut<microcode::Write8bitRegister> for Chip8 {
                 self.st = ClockDecrementing::with_value(mc.value);
             }
         }
-    }
-}
-
-impl crate::cpu::Execute<Chip8> for microcode::Inc8bitRegister {
-    fn execute(self, mut cpu: Chip8) -> Chip8 {
-        cpu.execute_mut(&self);
-        cpu
     }
 }
 
@@ -281,21 +266,8 @@ impl crate::cpu::ExecuteMut<microcode::Inc8bitRegister> for Chip8 {
     }
 }
 
-impl crate::cpu::Execute<Chip8> for microcode::Dec8bitRegister {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
-    }
-}
-
 impl crate::cpu::ExecuteMut<microcode::Dec8bitRegister> for Chip8 {
     fn execute_mut(&mut self, _: &microcode::Dec8bitRegister) {}
-}
-
-impl crate::cpu::Execute<Chip8> for microcode::Write16bitRegister {
-    fn execute(self, mut cpu: Chip8) -> Chip8 {
-        cpu.execute_mut(&self);
-        cpu
-    }
 }
 
 impl crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8 {
@@ -308,13 +280,6 @@ impl crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8 {
                 self.pc = register::ProgramCounter::with_value(mc.value);
             }
         }
-    }
-}
-
-impl crate::cpu::Execute<Chip8> for microcode::Inc16bitRegister {
-    fn execute(self, mut cpu: Chip8) -> Chip8 {
-        cpu.execute_mut(&self);
-        cpu
     }
 }
 
@@ -333,30 +298,12 @@ impl crate::cpu::ExecuteMut<microcode::Inc16bitRegister> for Chip8 {
     }
 }
 
-impl crate::cpu::Execute<Chip8> for microcode::Dec16bitRegister {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
-    }
-}
-
 impl crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8 {
     fn execute_mut(&mut self, _: &microcode::Dec16bitRegister) {}
 }
 
-impl crate::cpu::Execute<Chip8> for microcode::PushStack {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
-    }
-}
-
 impl crate::cpu::ExecuteMut<microcode::PushStack> for Chip8 {
     fn execute_mut(&mut self, _: &microcode::PushStack) {}
-}
-
-impl crate::cpu::Execute<Chip8> for microcode::PopStack {
-    fn execute(self, cpu: Chip8) -> Chip8 {
-        cpu
-    }
 }
 
 impl crate::cpu::ExecuteMut<microcode::PopStack> for Chip8 {

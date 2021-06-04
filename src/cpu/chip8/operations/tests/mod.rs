@@ -76,6 +76,39 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
 }
 
 #[test]
+fn should_parse_load_absolute_into_i_opcode() {
+    let input: Vec<(usize, u8)> = 0xafffu16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Ld::<addressing_mode::Absolute>::new(addressing_mode::Absolute::new(u12::new(
+                0xfff
+            )))
+        }),
+        Ld::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_load_absolute_into_i_incrementer() {
+    let cpu = Chip8::default();
+    assert_eq!(
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::I,
+            0xfff
+        ))],
+        Ld::<addressing_mode::Absolute>::new(addressing_mode::Absolute::new(u12::new(0xfff)))
+            .generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_jump_absolute_indexed_by_v0_opcode() {
     let input: Vec<(usize, u8)> = 0xbfffu16
         .to_be_bytes()

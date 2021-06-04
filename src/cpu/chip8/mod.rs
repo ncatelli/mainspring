@@ -189,6 +189,9 @@ impl Iterator for Chip8IntoIterator {
     }
 }
 
+// microcode execution
+
+// For any implementation of ExecuteMut<M> for a given CPU Execute is implemented.
 impl<M> crate::cpu::Execute<Chip8> for M
 where
     Chip8: ExecuteMut<M>,

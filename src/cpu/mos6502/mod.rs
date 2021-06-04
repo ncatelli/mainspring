@@ -273,6 +273,7 @@ impl Iterator for Mos6502IntoIterator {
 
 // microcode execution
 
+// For any implementation of ExecuteMut<M> for a given CPU Execute is implemented.
 impl<M> crate::cpu::Execute<Mos6502> for M
 where
     Mos6502: ExecuteMut<M>,

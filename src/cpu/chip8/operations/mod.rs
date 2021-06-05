@@ -422,3 +422,48 @@ impl Generate<Chip8, Vec<Microcode>> for Or<addressing_mode::ByteRegisterOperati
         ))]
     }
 }
+
+/// Xor represents a binary ^ operation.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Xor<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Xor<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::ByteRegisterOperation>>
+    for Xor<addressing_mode::ByteRegisterOperation>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Xor<addressing_mode::ByteRegisterOperation>> {
+        matches_first_nibble_without_taking_input(0x8)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x03)
+                }),
+            )
+            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .map(Xor::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Xor<addressing_mode::ByteRegisterOperation> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.src);
+        let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
+        let result = dest_val ^ src_val;
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
+            result,
+        ))]
+    }
+}

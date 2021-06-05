@@ -328,3 +328,48 @@ fn should_generate_or_byte_register_operation() {
         .generate(&cpu)
     );
 }
+
+#[test]
+fn should_parse_xor_byte_register_operation_opcode() {
+    let input: Vec<(usize, u8)> = 0x8013u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Xor::new(addressing_mode::ByteRegisterOperation::new(
+                register::GpRegisters::V1,
+                register::GpRegisters::V0
+            ))
+        }),
+        <Xor<addressing_mode::ByteRegisterOperation>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_xor_byte_register_operation() {
+    let cpu = Chip8::default()
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x0f),
+        );
+    assert_eq!(
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
+            0xf0
+        ))],
+        Xor::new(addressing_mode::ByteRegisterOperation::new(
+            register::GpRegisters::V1,
+            register::GpRegisters::V0
+        ))
+        .generate(&cpu)
+    );
+}

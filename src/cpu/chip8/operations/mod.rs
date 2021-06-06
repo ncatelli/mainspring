@@ -80,6 +80,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Ld<addressing_mode::Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+            <Ld<addressing_mode::ByteRegisterOperation>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()

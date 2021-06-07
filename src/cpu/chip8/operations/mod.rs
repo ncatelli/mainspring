@@ -80,17 +80,19 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Ld<addressing_mode::Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
-            <Ld<addressing_mode::ByteRegisterOperation>>::default()
+            <Ld<addressing_mode::ByteRegisterTx>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+            <Ld<addressing_mode::SoundTimerTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
-            <And<addressing_mode::ByteRegisterOperation>>::default()
+            <And<addressing_mode::ByteRegisterTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
-            <Or<addressing_mode::ByteRegisterOperation>>::default()
+            <Or<addressing_mode::ByteRegisterTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
-            <Xor<addressing_mode::ByteRegisterOperation>>::default()
+            <Xor<addressing_mode::ByteRegisterTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
         ])
         .parse(input)
@@ -248,13 +250,13 @@ impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::ByteRegisterOperation>>
-    for Ld<addressing_mode::ByteRegisterOperation>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::ByteRegisterTx>>
+    for Ld<addressing_mode::ByteRegisterTx>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::ByteRegisterOperation>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::ByteRegisterTx>> {
         matches_first_nibble_without_taking_input(0x8)
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
@@ -262,18 +264,49 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::ByteRegisterO
                     parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x0)
                 }),
             )
-            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .and_then(|_| addressing_mode::ByteRegisterTx::default())
             .map(Ld::new)
             .parse(input)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::ByteRegisterOperation> {
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::ByteRegisterTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
+            src_val,
+        ))]
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerTx>>
+    for Ld<addressing_mode::SoundTimerTx>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::SoundTimerTx>> {
+        matches_first_nibble_without_taking_input(0xF)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x18)
+                }),
+            )
+            .and_then(|_| addressing_mode::SoundTimerTx::default())
+            .map(Ld::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::SoundTimerTx> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.src);
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
             src_val,
         ))]
     }
@@ -382,13 +415,13 @@ impl<A> And<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegisterOperation>>
-    for And<addressing_mode::ByteRegisterOperation>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegisterTx>>
+    for And<addressing_mode::ByteRegisterTx>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], And<addressing_mode::ByteRegisterOperation>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], And<addressing_mode::ByteRegisterTx>> {
         matches_first_nibble_without_taking_input(0x8)
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
@@ -396,13 +429,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::ByteRegister
                     parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x02)
                 }),
             )
-            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .and_then(|_| addressing_mode::ByteRegisterTx::default())
             .map(And::new)
             .parse(input)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for And<addressing_mode::ByteRegisterOperation> {
+impl Generate<Chip8, Vec<Microcode>> for And<addressing_mode::ByteRegisterTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
         let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
@@ -427,13 +460,13 @@ impl<A> Or<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::ByteRegisterOperation>>
-    for Or<addressing_mode::ByteRegisterOperation>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::ByteRegisterTx>>
+    for Or<addressing_mode::ByteRegisterTx>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Or<addressing_mode::ByteRegisterOperation>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Or<addressing_mode::ByteRegisterTx>> {
         matches_first_nibble_without_taking_input(0x8)
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
@@ -441,13 +474,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::ByteRegisterO
                     parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x01)
                 }),
             )
-            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .and_then(|_| addressing_mode::ByteRegisterTx::default())
             .map(Or::new)
             .parse(input)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Or<addressing_mode::ByteRegisterOperation> {
+impl Generate<Chip8, Vec<Microcode>> for Or<addressing_mode::ByteRegisterTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
         let dest_val = cpu.read_gp_register(self.addressing_mode.dest);
@@ -472,13 +505,13 @@ impl<A> Xor<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::ByteRegisterOperation>>
-    for Xor<addressing_mode::ByteRegisterOperation>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::ByteRegisterTx>>
+    for Xor<addressing_mode::ByteRegisterTx>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Xor<addressing_mode::ByteRegisterOperation>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Xor<addressing_mode::ByteRegisterTx>> {
         matches_first_nibble_without_taking_input(0x8)
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
@@ -486,13 +519,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::ByteRegister
                     parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x03)
                 }),
             )
-            .and_then(|_| addressing_mode::ByteRegisterOperation::default())
+            .and_then(|_| addressing_mode::ByteRegisterTx::default())
             .map(Xor::new)
             .parse(input)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Xor<addressing_mode::ByteRegisterOperation> {
+impl Generate<Chip8, Vec<Microcode>> for Xor<addressing_mode::ByteRegisterTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
         let dest_val = cpu.read_gp_register(self.addressing_mode.dest);

@@ -202,3 +202,41 @@ impl Default for SoundTimerTx {
         }
     }
 }
+
+/// Represents a register to register operation transfering a value from a
+/// register to the Delay Timer register.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DelayTimerTx {
+    pub src: register::GpRegisters,
+}
+
+impl AddressingMode for DelayTimerTx {}
+
+impl DelayTimerTx {
+    pub fn new(src: register::GpRegisters) -> Self {
+        Self { src }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerTx> for DelayTimerTx {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerTx> {
+        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+            .map(|[[_, first], _]| {
+                std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
+            })
+            .map(DelayTimerTx::new)
+            .parse(input)
+    }
+}
+
+impl Default for DelayTimerTx {
+    fn default() -> Self {
+        Self {
+            src: register::GpRegisters::V0,
+        }
+    }
+}

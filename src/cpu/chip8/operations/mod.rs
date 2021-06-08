@@ -84,6 +84,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Ld<addressing_mode::SoundTimerTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+            <Ld<addressing_mode::DelayTimerTx>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()
@@ -302,6 +304,37 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerTx>
 }
 
 impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::SoundTimerTx> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.src);
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
+            src_val,
+        ))]
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerTx>>
+    for Ld<addressing_mode::DelayTimerTx>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerTx>> {
+        matches_first_nibble_without_taking_input(0xF)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x15)
+                }),
+            )
+            .and_then(|_| addressing_mode::DelayTimerTx::default())
+            .map(Ld::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::DelayTimerTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
 

@@ -174,6 +174,44 @@ fn should_parse_load_byte_into_sound_timer_opcode() {
 }
 
 #[test]
+fn should_generate_load_byte_into_delay_timer_operation() {
+    let cpu = Chip8::default().with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::<u8>::with_value(0xff),
+    );
+    assert_eq!(
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
+            0xff
+        ))],
+        Ld::new(addressing_mode::SoundTimerTx::new(
+            register::GpRegisters::V0,
+        ))
+        .generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_load_byte_into_delay_timer_opcode() {
+    let input: Vec<(usize, u8)> = 0xF815u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Ld::new(addressing_mode::DelayTimerTx::new(
+                register::GpRegisters::V8,
+            ))
+        }),
+        <Ld<addressing_mode::DelayTimerTx>>::default().parse(&input[..])
+    );
+}
+
+#[test]
 fn should_generate_load_byte_into_sound_timer_operation() {
     let cpu = Chip8::default().with_gp_register(
         register::GpRegisters::V0,

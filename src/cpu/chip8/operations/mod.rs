@@ -252,6 +252,29 @@ impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
     }
 }
 
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Immediate>>
+    for Ld<addressing_mode::Immediate>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Immediate>> {
+        matches_first_nibble_without_taking_input(0x6)
+            .and_then(|_| addressing_mode::Immediate::default())
+            .map(Ld::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::Immediate> {
+    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.addressing_mode.register),
+            self.addressing_mode.value,
+        ))]
+    }
+}
+
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::ByteRegisterTx>>
     for Ld<addressing_mode::ByteRegisterTx>
 {

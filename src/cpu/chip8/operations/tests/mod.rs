@@ -109,6 +109,43 @@ fn should_generate_load_absolute_into_i_incrementer() {
 }
 
 #[test]
+fn should_parse_load_immediate_into_i_opcode() {
+    let input: Vec<(usize, u8)> = 0x68ffu16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Ld::<addressing_mode::Immediate>::new(addressing_mode::Immediate::new(
+                register::GpRegisters::V8,
+                0xff
+            ))
+        }),
+        Ld::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_load_immediate_into_i_incrementer() {
+    let cpu = Chip8::default();
+    assert_eq!(
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(register::GpRegisters::V8),
+            0xff
+        ))],
+        Ld::<addressing_mode::Immediate>::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V8,
+            0xff
+        ))
+        .generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_load_byte_register_operation_opcode() {
     let input: Vec<(usize, u8)> = 0x8010u16
         .to_be_bytes()

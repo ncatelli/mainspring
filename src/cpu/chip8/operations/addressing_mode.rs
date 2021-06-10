@@ -168,34 +168,34 @@ impl Default for ByteRegisterTx {
 /// Represents a register to register operation transfering a value from a
 /// register to the Sound Timer register.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct SoundTimerTx {
+pub struct SoundTimerDestTx {
     pub src: register::GpRegisters,
 }
 
-impl AddressingMode for SoundTimerTx {}
+impl AddressingMode for SoundTimerDestTx {}
 
-impl SoundTimerTx {
+impl SoundTimerDestTx {
     pub fn new(src: register::GpRegisters) -> Self {
         Self { src }
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], SoundTimerTx> for SoundTimerTx {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], SoundTimerDestTx> for SoundTimerDestTx {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], SoundTimerTx> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], SoundTimerDestTx> {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], _]| {
                 std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
             })
-            .map(SoundTimerTx::new)
+            .map(SoundTimerDestTx::new)
             .parse(input)
     }
 }
 
-impl Default for SoundTimerTx {
+impl Default for SoundTimerDestTx {
     fn default() -> Self {
         Self {
             src: register::GpRegisters::V0,
@@ -206,37 +206,75 @@ impl Default for SoundTimerTx {
 /// Represents a register to register operation transfering a value from a
 /// register to the Delay Timer register.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DelayTimerTx {
+pub struct DelayTimerDestTx {
     pub src: register::GpRegisters,
 }
 
-impl AddressingMode for DelayTimerTx {}
+impl AddressingMode for DelayTimerDestTx {}
 
-impl DelayTimerTx {
+impl DelayTimerDestTx {
     pub fn new(src: register::GpRegisters) -> Self {
         Self { src }
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerTx> for DelayTimerTx {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerDestTx> for DelayTimerDestTx {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerTx> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerDestTx> {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], _]| {
                 std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
             })
-            .map(DelayTimerTx::new)
+            .map(DelayTimerDestTx::new)
             .parse(input)
     }
 }
 
-impl Default for DelayTimerTx {
+impl Default for DelayTimerDestTx {
     fn default() -> Self {
         Self {
             src: register::GpRegisters::V0,
+        }
+    }
+}
+
+/// Represents a register to register operation transfering a value from a
+/// register to the Delay Timer register.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DelayTimerSrcTx {
+    pub dest: register::GpRegisters,
+}
+
+impl AddressingMode for DelayTimerSrcTx {}
+
+impl DelayTimerSrcTx {
+    pub fn new(dest: register::GpRegisters) -> Self {
+        Self { dest }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerSrcTx> for DelayTimerSrcTx {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerSrcTx> {
+        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+            .map(|[[_, first], _]| {
+                std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
+            })
+            .map(DelayTimerSrcTx::new)
+            .parse(input)
+    }
+}
+
+impl Default for DelayTimerSrcTx {
+    fn default() -> Self {
+        Self {
+            dest: register::GpRegisters::V0,
         }
     }
 }

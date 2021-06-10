@@ -82,9 +82,11 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Ld<addressing_mode::ByteRegisterTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
-            <Ld<addressing_mode::SoundTimerTx>>::default()
+            <Ld<addressing_mode::SoundTimerDestTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
-            <Ld<addressing_mode::DelayTimerTx>>::default()
+            <Ld<addressing_mode::DelayTimerDestTx>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+            <Ld<addressing_mode::DelayTimerSrcTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
@@ -306,13 +308,13 @@ impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::ByteRegisterTx> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerTx>>
-    for Ld<addressing_mode::SoundTimerTx>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerDestTx>>
+    for Ld<addressing_mode::SoundTimerDestTx>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::SoundTimerTx>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::SoundTimerDestTx>> {
         matches_first_nibble_without_taking_input(0xF)
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
@@ -320,13 +322,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerTx>
                     parcel::parsers::byte::any_byte().predicate(|&second| second == 0x18)
                 }),
             )
-            .and_then(|_| addressing_mode::SoundTimerTx::default())
+            .and_then(|_| addressing_mode::SoundTimerDestTx::default())
             .map(Ld::new)
             .parse(input)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::SoundTimerTx> {
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::SoundTimerDestTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
 
@@ -337,13 +339,13 @@ impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::SoundTimerTx> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerTx>>
-    for Ld<addressing_mode::DelayTimerTx>
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerDestTx>>
+    for Ld<addressing_mode::DelayTimerDestTx>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerTx>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerDestTx>> {
         matches_first_nibble_without_taking_input(0xF)
             .peek_next(
                 // discard the first byte since the previous parser takes nothing.
@@ -351,18 +353,49 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerTx>
                     parcel::parsers::byte::any_byte().predicate(|&second| second == 0x15)
                 }),
             )
-            .and_then(|_| addressing_mode::DelayTimerTx::default())
+            .and_then(|_| addressing_mode::DelayTimerDestTx::default())
             .map(Ld::new)
             .parse(input)
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::DelayTimerTx> {
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::DelayTimerDestTx> {
     fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
+            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Delay),
+            src_val,
+        ))]
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrcTx>>
+    for Ld<addressing_mode::DelayTimerSrcTx>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrcTx>> {
+        matches_first_nibble_without_taking_input(0xF)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x07)
+                }),
+            )
+            .and_then(|_| addressing_mode::DelayTimerSrcTx::default())
+            .map(Ld::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::DelayTimerSrcTx> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+        let src_val = crate::cpu::register::Register::read(&cpu.dt);
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
             src_val,
         ))]
     }

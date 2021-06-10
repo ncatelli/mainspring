@@ -202,16 +202,16 @@ fn should_parse_load_byte_into_sound_timer_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::SoundTimerTx::new(
+            inner: Ld::new(addressing_mode::SoundTimerDestTx::new(
                 register::GpRegisters::V8,
             ))
         }),
-        <Ld<addressing_mode::SoundTimerTx>>::default().parse(&input[..])
+        <Ld<addressing_mode::SoundTimerDestTx>>::default().parse(&input[..])
     );
 }
 
 #[test]
-fn should_generate_load_byte_into_delay_timer_operation() {
+fn should_generate_load_byte_into_sound_timer_operation() {
     let cpu = Chip8::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0xff),
@@ -221,7 +221,7 @@ fn should_generate_load_byte_into_delay_timer_operation() {
             register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
             0xff
         ))],
-        Ld::new(addressing_mode::SoundTimerTx::new(
+        Ld::new(addressing_mode::SoundTimerDestTx::new(
             register::GpRegisters::V0,
         ))
         .generate(&cpu)
@@ -240,26 +240,64 @@ fn should_parse_load_byte_into_delay_timer_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::DelayTimerTx::new(
+            inner: Ld::new(addressing_mode::DelayTimerDestTx::new(
                 register::GpRegisters::V8,
             ))
         }),
-        <Ld<addressing_mode::DelayTimerTx>>::default().parse(&input[..])
+        <Ld<addressing_mode::DelayTimerDestTx>>::default().parse(&input[..])
     );
 }
 
 #[test]
-fn should_generate_load_byte_into_sound_timer_operation() {
+fn should_generate_load_byte_into_delay_timer_operation() {
     let cpu = Chip8::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
     assert_eq!(
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
+            register::ByteRegisters::TimerRegisters(register::TimerRegisters::Delay),
             0xff
         ))],
-        Ld::new(addressing_mode::SoundTimerTx::new(
+        Ld::new(addressing_mode::DelayTimerDestTx::new(
+            register::GpRegisters::V0,
+        ))
+        .generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_load_byte_into_register_fromdelay_timer_opcode() {
+    let input: Vec<(usize, u8)> = 0xF807u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Ld::new(addressing_mode::DelayTimerSrcTx::new(
+                register::GpRegisters::V8,
+            ))
+        }),
+        <Ld<addressing_mode::DelayTimerSrcTx>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_load_byte_into_register_from_delay_timer_operation() {
+    let cpu = Chip8::default().with_timer_register(
+        register::TimerRegisters::Delay,
+        register::ClockDecrementing::with_value(0xff),
+    );
+    assert_eq!(
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
+            0xff
+        ))],
+        Ld::new(addressing_mode::DelayTimerSrcTx::new(
             register::GpRegisters::V0,
         ))
         .generate(&cpu)

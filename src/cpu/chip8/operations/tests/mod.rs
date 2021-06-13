@@ -157,12 +157,12 @@ fn should_parse_load_byte_register_operation_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::ByteRegisterTx::new(
+            inner: Ld::new(addressing_mode::VxVy::new(
                 register::GpRegisters::V1,
                 register::GpRegisters::V0
             ))
         }),
-        <Ld<addressing_mode::ByteRegisterTx>>::default().parse(&input[..])
+        <Ld<addressing_mode::VxVy>>::default().parse(&input[..])
     );
 }
 
@@ -182,7 +182,7 @@ fn should_generate_load_byte_register_operation() {
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0x0f
         ))],
-        Ld::new(addressing_mode::ByteRegisterTx::new(
+        Ld::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
         ))
@@ -447,12 +447,12 @@ fn should_parse_and_byte_register_operation_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: And::new(addressing_mode::ByteRegisterTx::new(
+            inner: And::new(addressing_mode::VxVy::new(
                 register::GpRegisters::V1,
                 register::GpRegisters::V0
             ))
         }),
-        <And<addressing_mode::ByteRegisterTx>>::default().parse(&input[..])
+        <And<addressing_mode::VxVy>>::default().parse(&input[..])
     );
 }
 
@@ -472,7 +472,7 @@ fn should_generate_and_byte_register_operation() {
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0x0f
         ))],
-        And::new(addressing_mode::ByteRegisterTx::new(
+        And::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
         ))
@@ -492,12 +492,12 @@ fn should_parse_or_byte_register_operation_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Or::new(addressing_mode::ByteRegisterTx::new(
+            inner: Or::new(addressing_mode::VxVy::new(
                 register::GpRegisters::V1,
                 register::GpRegisters::V0
             ))
         }),
-        <Or<addressing_mode::ByteRegisterTx>>::default().parse(&input[..])
+        <Or<addressing_mode::VxVy>>::default().parse(&input[..])
     );
 }
 
@@ -517,7 +517,7 @@ fn should_generate_or_byte_register_operation() {
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0xff
         ))],
-        Or::new(addressing_mode::ByteRegisterTx::new(
+        Or::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
         ))
@@ -537,12 +537,12 @@ fn should_parse_xor_byte_register_operation_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Xor::new(addressing_mode::ByteRegisterTx::new(
+            inner: Xor::new(addressing_mode::VxVy::new(
                 register::GpRegisters::V1,
                 register::GpRegisters::V0
             ))
         }),
-        <Xor<addressing_mode::ByteRegisterTx>>::default().parse(&input[..])
+        <Xor<addressing_mode::VxVy>>::default().parse(&input[..])
     );
 }
 
@@ -562,7 +562,7 @@ fn should_generate_xor_byte_register_operation() {
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0xf0
         ))],
-        Xor::new(addressing_mode::ByteRegisterTx::new(
+        Xor::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
         ))

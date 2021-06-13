@@ -120,27 +120,39 @@ impl Default for IRegisterIndexed {
     }
 }
 
-/// Represents a register to register operation containing both a destination
-/// and source register as the second and third nibble in a two byte opcode.
+/// Represents a register to register general-purpose operation.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct ByteRegisterTx {
-    pub src: register::GpRegisters,
-    pub dest: register::GpRegisters,
+pub struct VxVy {
+    /// Represents the first register defined in this address mode. Often
+    /// times this will represent a destination register.
+    ///
+    /// # Example
+    ///
+    /// `<mnemonic> <first> <second>` or `Add <first> <second>`
+    pub first: register::GpRegisters,
+
+    /// Represents the second register defined in this address mode. Often
+    /// times this will represent a source register.
+    ///
+    /// # Example
+    ///
+    /// `<mnemonic> <first> <second>` or `Add <first> <second>`
+    pub second: register::GpRegisters,
 }
 
-impl AddressingMode for ByteRegisterTx {}
+impl AddressingMode for VxVy {}
 
-impl ByteRegisterTx {
+impl VxVy {
     pub fn new(src: register::GpRegisters, dest: register::GpRegisters) -> Self {
-        Self { src, dest }
+        Self {
+            first: src,
+            second: dest,
+        }
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], ByteRegisterTx> for ByteRegisterTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], ByteRegisterTx> {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxVy> for VxVy {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], VxVy> {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], [second, _]]| {
@@ -151,16 +163,16 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], ByteRegisterTx> for ByteRegisterT
 
                 (src, dest)
             })
-            .map(|(src, dest)| ByteRegisterTx::new(src, dest))
+            .map(|(src, dest)| VxVy::new(src, dest))
             .parse(input)
     }
 }
 
-impl Default for ByteRegisterTx {
+impl Default for VxVy {
     fn default() -> Self {
         Self {
-            src: register::GpRegisters::V0,
-            dest: register::GpRegisters::V0,
+            first: register::GpRegisters::V0,
+            second: register::GpRegisters::V0,
         }
     }
 }

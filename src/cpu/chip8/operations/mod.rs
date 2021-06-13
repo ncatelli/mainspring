@@ -626,3 +626,48 @@ impl Generate<Chip8, Vec<Microcode>> for Xor<addressing_mode::VxVy> {
         ))]
     }
 }
+
+/// Se skips the next instruction if the operands are equivalent.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Se<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Se<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::VxVy>>
+    for Se<addressing_mode::VxVy>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::VxVy>> {
+        matches_first_nibble_without_taking_input(0x5)
+            .peek_next(parcel::parsers::byte::any_byte().and_then(|_| {
+                parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x00)
+            }))
+            .and_then(|_| addressing_mode::VxVy::default())
+            .map(Se::new)
+            .parse(input)
+    }
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Se<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+        let first_reg_val = cpu.read_gp_register(self.addressing_mode.first);
+        let second_reg_val = cpu.read_gp_register(self.addressing_mode.second);
+
+        if first_reg_val == second_reg_val {
+            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))]
+        } else {
+            vec![]
+        }
+    }
+}

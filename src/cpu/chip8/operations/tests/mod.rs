@@ -569,3 +569,66 @@ fn should_generate_xor_byte_register_operation() {
         .generate(&cpu)
     );
 }
+
+#[test]
+fn should_parse_se_byte_register_operation_opcode() {
+    let input: Vec<(usize, u8)> = 0x5010u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Se::new(addressing_mode::VxVy::new(
+                register::GpRegisters::V1,
+                register::GpRegisters::V0
+            ))
+        }),
+        <Se<addressing_mode::VxVy>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_se_byte_register_operation() {
+    let cpu_eq = Chip8::default()
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0x0f),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x0f),
+        );
+    assert_eq!(
+        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            2
+        ))],
+        Se::new(addressing_mode::VxVy::new(
+            register::GpRegisters::V1,
+            register::GpRegisters::V0
+        ))
+        .generate(&cpu_eq)
+    );
+
+    let cpu_ne = Chip8::default()
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x0f),
+        );
+    assert_eq!(
+        Vec::<Microcode>::new(),
+        Se::new(addressing_mode::VxVy::new(
+            register::GpRegisters::V1,
+            register::GpRegisters::V0
+        ))
+        .generate(&cpu_ne)
+    );
+}

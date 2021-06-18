@@ -632,3 +632,76 @@ fn should_generate_se_byte_register_operation() {
         .generate(&cpu_ne)
     );
 }
+
+#[test]
+fn should_parse_rnd_immediate_operation_opcode() {
+    let input: Vec<(usize, u8)> = 0xc0ffu16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Rnd::new(addressing_mode::Immediate::new(
+                register::GpRegisters::V0,
+                0xff
+            ))
+        }),
+        <Rnd<addressing_mode::Immediate>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_rnd_immediate_operation() {
+    let cpu = Chip8::default().with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::<u8>::with_value(0x00),
+    );
+
+    // run many times
+    for _ in 0..256 {
+        // Assert 0x00 mask returns 0x00
+        assert_eq!(
+            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
+                0
+            ))],
+            Rnd::new(addressing_mode::Immediate::new(
+                register::GpRegisters::V0,
+                0x00
+            ))
+            .generate(&cpu.clone())
+        );
+
+        // Assert 0x0f mask returns 0x00 - 0x0f
+        let write_value = match Rnd::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V0,
+            0x00,
+        ))
+        .generate(&cpu.clone())
+        .get(0)
+        {
+            Some(Microcode::Write8bitRegister(op)) => op.value,
+            _ => panic!("should container Write8BitRegister operation"),
+        };
+
+        assert!(write_value <= 0x0f);
+
+        // Assert 0xf0 mask returns 0xf0 - 0xff
+        let write_value = match Rnd::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V0,
+            0xf0,
+        ))
+        .generate(&cpu.clone())
+        .get(0)
+        {
+            Some(Microcode::Write8bitRegister(op)) => op.value,
+            _ => panic!("should container Write8BitRegister operation"),
+        };
+
+        assert!(write_value <= 0xf0);
+    }
+}

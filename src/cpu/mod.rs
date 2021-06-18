@@ -1,6 +1,3 @@
-#[cfg(test)]
-mod tests;
-
 pub trait Cyclable {
     fn cycles(&self) -> usize {
         1

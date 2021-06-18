@@ -671,3 +671,53 @@ impl Generate<Chip8, Vec<Microcode>> for Se<addressing_mode::VxVy> {
         }
     }
 }
+
+/// Rnd generates a random 8-bit value to be applied against a mask.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Rnd<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Rnd<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Rnd { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Rnd<addressing_mode::Immediate>>
+    for Rnd<addressing_mode::Immediate>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Rnd<addressing_mode::Immediate>> {
+        matches_first_nibble_without_taking_input(0xC)
+            .and_then(|_| addressing_mode::Immediate::default())
+            .map(Rnd::new)
+            .parse(input)
+    }
+}
+
+fn generate_random_byte() -> u8 {
+    use std::fs;
+    use std::io::prelude::*;
+
+    let mut buf: [u8; 1] = [0];
+    fs::File::open("/dev/random")
+        .and_then(|mut f| f.read_exact(&mut buf))
+        .expect("cannot read exactly one byte from /dev/random.");
+
+    buf[0]
+}
+
+impl Generate<Chip8, Vec<Microcode>> for Rnd<addressing_mode::Immediate> {
+    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+        let rand = generate_random_byte();
+        let value = rand & self.addressing_mode.value;
+
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(self.addressing_mode.register),
+            value,
+        ))]
+    }
+}

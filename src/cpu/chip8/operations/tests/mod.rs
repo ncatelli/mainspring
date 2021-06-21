@@ -1,7 +1,7 @@
 use super::*;
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::u12::u12;
-use crate::cpu::chip8::Chip8;
+use crate::cpu::chip8::{Chip8, ZeroValueGenerator};
 use crate::cpu::register::Register;
 
 #[test]
@@ -62,7 +62,7 @@ fn should_parse_jump_absolute_opcode() {
 
 #[test]
 fn should_generate_jump_absolute_with_pc_incrementer() {
-    let cpu = Chip8::default();
+    let cpu = Chip8::<ZeroValueGenerator>::default();
     assert_eq!(
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
@@ -97,7 +97,7 @@ fn should_parse_load_absolute_into_i_opcode() {
 
 #[test]
 fn should_generate_load_absolute_into_i_incrementer() {
-    let cpu = Chip8::default();
+    let cpu = Chip8::<ZeroValueGenerator>::default();
     assert_eq!(
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::I,
@@ -131,7 +131,7 @@ fn should_parse_load_immediate_into_i_opcode() {
 
 #[test]
 fn should_generate_load_immediate_into_i_incrementer() {
-    let cpu = Chip8::default();
+    let cpu = Chip8::<ZeroValueGenerator>::default();
     assert_eq!(
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V8),
@@ -168,7 +168,7 @@ fn should_parse_load_byte_register_operation_opcode() {
 
 #[test]
 fn should_generate_load_byte_register_operation() {
-    let cpu = Chip8::default()
+    let cpu = Chip8::<ZeroValueGenerator>::default()
         .with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0xff),
@@ -212,7 +212,7 @@ fn should_parse_load_byte_into_sound_timer_opcode() {
 
 #[test]
 fn should_generate_load_byte_into_sound_timer_operation() {
-    let cpu = Chip8::default().with_gp_register(
+    let cpu = Chip8::<ZeroValueGenerator>::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
@@ -250,7 +250,7 @@ fn should_parse_load_byte_into_delay_timer_opcode() {
 
 #[test]
 fn should_generate_load_byte_into_delay_timer_operation() {
-    let cpu = Chip8::default().with_gp_register(
+    let cpu = Chip8::<ZeroValueGenerator>::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
@@ -288,7 +288,7 @@ fn should_parse_load_byte_into_register_fromdelay_timer_opcode() {
 
 #[test]
 fn should_generate_load_byte_into_register_from_delay_timer_operation() {
-    let cpu = Chip8::default().with_timer_register(
+    let cpu = Chip8::<ZeroValueGenerator>::default().with_timer_register(
         register::TimerRegisters::Delay,
         register::ClockDecrementing::with_value(0xff),
     );
@@ -326,7 +326,7 @@ fn should_parse_jump_absolute_indexed_by_v0_opcode() {
 
 #[test]
 fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
-    let cpu = Chip8::default().with_gp_register(
+    let cpu = Chip8::<ZeroValueGenerator>::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::with_value(0x05),
     );
@@ -383,7 +383,7 @@ fn should_parse_add_immediate_opcode() {
 
 #[test]
 fn should_generate_add_immediate() {
-    let cpu = Chip8::default();
+    let cpu = Chip8::<ZeroValueGenerator>::default();
     assert_eq!(
         vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
@@ -419,7 +419,7 @@ fn should_parse_add_i_register_indexed_opcode() {
 
 #[test]
 fn should_generate_add_i_register_indexed() {
-    let cpu = Chip8::default().with_gp_register(
+    let cpu = Chip8::<ZeroValueGenerator>::default().with_gp_register(
         register::GpRegisters::V5,
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
@@ -458,7 +458,7 @@ fn should_parse_and_byte_register_operation_opcode() {
 
 #[test]
 fn should_generate_and_byte_register_operation() {
-    let cpu = Chip8::default()
+    let cpu = Chip8::<ZeroValueGenerator>::default()
         .with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0xff),
@@ -503,7 +503,7 @@ fn should_parse_or_byte_register_operation_opcode() {
 
 #[test]
 fn should_generate_or_byte_register_operation() {
-    let cpu = Chip8::default()
+    let cpu = Chip8::<ZeroValueGenerator>::default()
         .with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0xff),
@@ -548,7 +548,7 @@ fn should_parse_xor_byte_register_operation_opcode() {
 
 #[test]
 fn should_generate_xor_byte_register_operation() {
-    let cpu = Chip8::default()
+    let cpu = Chip8::<ZeroValueGenerator>::default()
         .with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0xff),
@@ -593,7 +593,7 @@ fn should_parse_se_byte_register_operation_opcode() {
 
 #[test]
 fn should_generate_se_byte_register_operation() {
-    let cpu_eq = Chip8::default()
+    let cpu_eq = Chip8::<ZeroValueGenerator>::default()
         .with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0x0f),
@@ -614,7 +614,7 @@ fn should_generate_se_byte_register_operation() {
         .generate(&cpu_eq)
     );
 
-    let cpu_ne = Chip8::default()
+    let cpu_ne = Chip8::<ZeroValueGenerator>::default()
         .with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0xff),
@@ -656,7 +656,7 @@ fn should_parse_rnd_immediate_operation_opcode() {
 
 #[test]
 fn should_generate_rnd_immediate_operation() {
-    let cpu = Chip8::default().with_gp_register(
+    let cpu = Chip8::<ZeroValueGenerator>::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0x00),
     );

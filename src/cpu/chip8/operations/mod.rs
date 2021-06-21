@@ -1,6 +1,6 @@
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::u12::u12;
-use crate::cpu::chip8::{microcode::*, Chip8};
+use crate::cpu::chip8::{microcode::*, Chip8, GenerateRandom};
 use crate::cpu::Generate;
 use parcel::prelude::v1::*;
 
@@ -65,39 +65,41 @@ pub fn matches_first_nibble_without_taking_input<'a>(
 /// OpcodeVariant from a stream of bytes.
 pub struct OpcodeVariantParser;
 
-impl<'a> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>>
+impl<'a, R> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microcode>>>>
     for OpcodeVariantParser
+where
+    R: 'static,
 {
     #[allow(clippy::clippy::type_complexity)]
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8, Vec<Microcode>>>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microcode>>>> {
         parcel::one_of(vec![
             <Jp<NonV0Indexed, addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Jp<V0Indexed, addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::SoundTimerDestTx>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::DelayTimerDestTx>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::DelayTimerSrcTx>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <And<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Or<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Xor<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8, Vec<Microcode>>>),
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
         ])
         .parse(input)
     }
@@ -182,8 +184,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<NonV0Indexed, addressing_mode:
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Jp<NonV0Indexed, addressing_mode::Absolute> {
-    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<NonV0Indexed, addressing_mode::Absolute> {
+    fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
             u16::from(self.addressing_mode.addr()).wrapping_sub(2),
@@ -206,8 +208,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Ab
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Jp<V0Indexed, addressing_mode::Absolute> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<V0Indexed, addressing_mode::Absolute> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let v0_val = cpu.read_gp_register(register::GpRegisters::V0);
         let abs_addr = self.addressing_mode.addr();
         let jmp_addr = abs_addr.wrapping_add(u12::new(v0_val as u16));
@@ -245,8 +247,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Absolute>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
-    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
+    fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::I,
             u16::from(self.addressing_mode.addr()),
@@ -268,8 +270,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Immediate>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::Immediate> {
-    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::Immediate> {
+    fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
@@ -297,8 +299,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxVy>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::VxVy> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
@@ -328,8 +330,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerDes
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::SoundTimerDestTx> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::SoundTimerDestTx> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
@@ -359,8 +361,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerDes
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::DelayTimerDestTx> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::DelayTimerDestTx> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
@@ -390,8 +392,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrc
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Ld<addressing_mode::DelayTimerSrcTx> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::DelayTimerSrcTx> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = crate::cpu::register::Register::read(&cpu.dt);
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
@@ -454,8 +456,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::Immediate>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::Immediate> {
-    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::Immediate> {
+    fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
@@ -482,8 +484,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::IRegisterInd
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Add<addressing_mode::IRegisterIndexed> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::IRegisterIndexed> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let gp_val = cpu.read_gp_register(self.addressing_mode.register);
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
             register::WordRegisters::I,
@@ -524,8 +526,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::VxVy>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for And<addressing_mode::VxVy> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for And<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let result = dest_val & src_val;
@@ -569,8 +571,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::VxVy>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Or<addressing_mode::VxVy> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Or<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let result = dest_val | src_val;
@@ -614,8 +616,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::VxVy>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Xor<addressing_mode::VxVy> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Xor<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let result = dest_val ^ src_val;
@@ -656,8 +658,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::VxVy>>
     }
 }
 
-impl Generate<Chip8, Vec<Microcode>> for Se<addressing_mode::VxVy> {
-    fn generate(&self, cpu: &Chip8) -> Vec<Microcode> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let first_reg_val = cpu.read_gp_register(self.addressing_mode.first);
         let second_reg_val = cpu.read_gp_register(self.addressing_mode.second);
 
@@ -698,21 +700,12 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Rnd<addressing_mode::Immediate>>
     }
 }
 
-fn generate_random_byte() -> u8 {
-    use std::fs;
-    use std::io::prelude::*;
-
-    let mut buf: [u8; 1] = [0];
-    fs::File::open("/dev/random")
-        .and_then(|mut f| f.read_exact(&mut buf))
-        .expect("cannot read exactly one byte from /dev/random.");
-
-    buf[0]
-}
-
-impl Generate<Chip8, Vec<Microcode>> for Rnd<addressing_mode::Immediate> {
-    fn generate(&self, _: &Chip8) -> Vec<Microcode> {
-        let rand = generate_random_byte();
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Rnd<addressing_mode::Immediate>
+where
+    R: GenerateRandom<u8>,
+{
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let rand = cpu.rng.random();
         let value = rand & self.addressing_mode.value;
 
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(

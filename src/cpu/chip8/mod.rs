@@ -11,12 +11,45 @@ mod operations;
 mod register;
 mod u12;
 
+/// Defines a trait for implementing random number generation.
+pub trait GenerateRandom<T> {
+    /// Random should return a value of a constrained type T on each invocation.
+    fn random(&self) -> T;
+}
+
+impl<F> GenerateRandom<u8> for F
+where
+    F: Fn() -> u8,
+{
+    fn random(&self) -> u8 {
+        (self)()
+    }
+}
+
+/// Generates a random byte using `/dev/random` as the seed for data.
+#[derive(Default, Debug, Clone, Copy)]
+pub struct UnixRandomNumberGenerator;
+
+impl GenerateRandom<u8> for UnixRandomNumberGenerator {
+    fn random(&self) -> u8 {
+        use std::fs;
+        use std::io::prelude::*;
+
+        let mut buf: [u8; 1] = [0];
+        fs::File::open("/dev/random")
+            .and_then(|mut f| f.read_exact(&mut buf))
+            .expect("cannot read exactly one byte from /dev/random.");
+
+        buf[0]
+    }
+}
+
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 
 /// Chip8 represents a CHIP-8 CPU.
 #[derive(Debug, Clone)]
-pub struct Chip8 {
+pub struct Chip8<R> {
     stack: memory::Ring<u16>,
     address_space: AddressMap<u16, u8>,
     dt: register::ClockDecrementing,
@@ -25,9 +58,10 @@ pub struct Chip8 {
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
     gp_registers: [register::GeneralPurpose<u8>; 0xf],
+    rng: R,
 }
 
-impl Chip8 {
+impl<R> Chip8<R> {
     pub fn with_pc_register(mut self, reg: register::ProgramCounter) -> Self {
         self.pc = reg;
         self
@@ -74,13 +108,36 @@ impl Chip8 {
             .unwrap()
     }
 
+    /// Returns an instance of Chip8 with a new random number generator.
+    pub fn with_rng<NR>(self, rng: NR) -> Chip8<NR> {
+        Chip8 {
+            stack: self.stack,
+            address_space: self.address_space,
+            dt: self.dt,
+            st: self.st,
+            pc: self.pc,
+            sp: self.sp,
+            i: self.i,
+            gp_registers: self.gp_registers,
+            rng,
+        }
+    }
+}
+
+impl<R> Chip8<R>
+where
+    R: Default,
+{
     /// Resets a cpu to a clean state.
     pub fn reset() -> Self {
         Self::default()
     }
 }
 
-impl Default for Chip8 {
+impl<R> Default for Chip8<R>
+where
+    R: Default,
+{
     fn default() -> Self {
         type Rom =
             crate::address_map::memory::Memory<crate::address_map::memory::ReadOnly, u16, u8>;
@@ -100,12 +157,16 @@ impl Default for Chip8 {
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
             gp_registers: [register::GeneralPurpose::default(); 0xf],
+            rng: <R>::default(),
         }
     }
 }
 
-impl Cpu<Chip8> for Chip8 {
-    fn run(self, cycles: usize) -> StepState<Chip8> {
+impl<R> Cpu<Chip8<R>> for Chip8<R>
+where
+    R: 'static + Clone,
+{
+    fn run(self, cycles: usize) -> StepState<Chip8<R>> {
         let state = self
             .clone()
             .into_iter()
@@ -116,39 +177,48 @@ impl Cpu<Chip8> for Chip8 {
     }
 }
 
-impl Cpu<Chip8> for StepState<Chip8> {
-    fn run(self, cycles: usize) -> StepState<Chip8> {
+impl<R> Cpu<Chip8<R>> for StepState<Chip8<R>>
+where
+    R: 'static + Clone,
+{
+    fn run(self, cycles: usize) -> Self {
         // CHIP-8 instructions are all single cycle. It's always ready.
         self.unwrap().run(cycles)
     }
 }
 
-impl IntoIterator for Chip8 {
+impl<R> IntoIterator for Chip8<R>
+where
+    R: 'static + Clone,
+{
     type Item = Vec<microcode::Microcode>;
-    type IntoIter = Chip8IntoIterator;
+    type IntoIter = Chip8IntoIterator<R>;
 
     fn into_iter(self) -> Self::IntoIter {
         Chip8IntoIterator::new(self)
     }
 }
 
-pub struct Chip8IntoIterator {
-    state: Chip8,
+pub struct Chip8IntoIterator<R> {
+    state: Chip8<R>,
 }
 
-impl From<Chip8IntoIterator> for Chip8 {
-    fn from(src: Chip8IntoIterator) -> Self {
+impl<R> From<Chip8IntoIterator<R>> for Chip8<R> {
+    fn from(src: Chip8IntoIterator<R>) -> Self {
         src.state
     }
 }
 
-impl Chip8IntoIterator {
-    fn new(state: Chip8) -> Self {
+impl<R> Chip8IntoIterator<R> {
+    fn new(state: Chip8<R>) -> Self {
         Chip8IntoIterator { state }
     }
 }
 
-impl Iterator for Chip8IntoIterator {
+impl<R> Iterator for Chip8IntoIterator<R>
+where
+    R: 'static + Clone,
+{
     type Item = Vec<microcode::Microcode>;
 
     fn next(&mut self) -> Option<Vec<microcode::Microcode>> {
@@ -192,17 +262,17 @@ impl Iterator for Chip8IntoIterator {
 // microcode execution
 
 // For any implementation of ExecuteMut<M> for a given CPU Execute is implemented.
-impl<M> crate::cpu::Execute<Chip8> for M
+impl<M, R> crate::cpu::Execute<Chip8<R>> for M
 where
-    Chip8: ExecuteMut<M>,
+    Chip8<R>: ExecuteMut<M>,
 {
-    fn execute(self, mut cpu: Chip8) -> Chip8 {
+    fn execute(self, mut cpu: Chip8<R>) -> Chip8<R> {
         cpu.execute_mut(&self);
         cpu
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::Microcode> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::Microcode) {
         match mc {
             microcode::Microcode::WriteMemory(mc) => self.execute_mut(mc),
@@ -218,13 +288,13 @@ impl crate::cpu::ExecuteMut<microcode::Microcode> for Chip8 {
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::WriteMemory> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::WriteMemory> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::WriteMemory) {
         self.address_space.write(mc.address, mc.value).unwrap();
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::Write8bitRegister> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Write8bitRegister> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::Write8bitRegister) {
         use register::{ByteRegisters, ClockDecrementing, GeneralPurpose, TimerRegisters};
 
@@ -242,7 +312,7 @@ impl crate::cpu::ExecuteMut<microcode::Write8bitRegister> for Chip8 {
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::Inc8bitRegister> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Inc8bitRegister> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::Inc8bitRegister) {
         use register::{ByteRegisters, ClockDecrementing, GeneralPurpose, TimerRegisters};
 
@@ -266,11 +336,11 @@ impl crate::cpu::ExecuteMut<microcode::Inc8bitRegister> for Chip8 {
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::Dec8bitRegister> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Dec8bitRegister> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::Dec8bitRegister) {}
 }
 
-impl crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::Write16bitRegister) {
         match mc.register {
             register::WordRegisters::I => {
@@ -283,7 +353,7 @@ impl crate::cpu::ExecuteMut<microcode::Write16bitRegister> for Chip8 {
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::Inc16bitRegister> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Inc16bitRegister> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::Inc16bitRegister) {
         match mc.register {
             register::WordRegisters::I => {
@@ -298,15 +368,15 @@ impl crate::cpu::ExecuteMut<microcode::Inc16bitRegister> for Chip8 {
     }
 }
 
-impl crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::Dec16bitRegister) {}
 }
 
-impl crate::cpu::ExecuteMut<microcode::PushStack> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::PushStack> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::PushStack) {}
 }
 
-impl crate::cpu::ExecuteMut<microcode::PopStack> for Chip8 {
+impl<R> crate::cpu::ExecuteMut<microcode::PopStack> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::PopStack) {}
 }
 
@@ -317,7 +387,7 @@ mod tests {
 
     #[test]
     fn should_execute_infinitely_on_jump_to_reset_vector() {
-        let mut cpu = Chip8::default();
+        let mut cpu = Chip8::<()>::default().with_rng(|| 0u8);
         cpu.address_space.write(0x200, 0x12).unwrap();
         cpu.address_space.write(0x201, 0x00).unwrap();
 
@@ -328,7 +398,7 @@ mod tests {
 
     #[test]
     fn should_execute_add_immediate() {
-        let mut cpu = Chip8::default().with_gp_register(
+        let mut cpu = Chip8::<()>::default().with_rng(|| 0u8).with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::with_value(0x05),
         );

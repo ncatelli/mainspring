@@ -13,6 +13,7 @@ mod u12;
 
 /// Defines a trait for implementing random number generation.
 pub trait GenerateRandom<T> {
+    /// Random should return a value of a constrained type T on each invocation.
     fn random(&self) -> T;
 }
 
@@ -27,7 +28,7 @@ where
 
 /// Generates a random byte using `/dev/random` as the seed for data.
 #[derive(Default, Debug, Clone, Copy)]
-pub struct UnixRandomNumberGenerator {}
+pub struct UnixRandomNumberGenerator;
 
 impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     fn random(&self) -> u8 {

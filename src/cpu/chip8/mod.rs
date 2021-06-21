@@ -11,26 +11,25 @@ mod operations;
 mod register;
 mod u12;
 
-/// Defines a minimal trait for random number generation.
+/// Defines a trait for implementing random number generation.
 pub trait GenerateRandom<T> {
     fn random(&self) -> T;
 }
 
-/// Generates a constant 0 value.
-#[derive(Default, Debug, Clone, Copy)]
-pub(crate) struct ZeroValueGenerator;
-
-impl GenerateRandom<u8> for ZeroValueGenerator {
+impl<F> GenerateRandom<u8> for F
+where
+    F: Fn() -> u8,
+{
     fn random(&self) -> u8 {
-        0
+        (self)()
     }
 }
 
-/// Generates a random byte using `/etc/random` as the seed for data.
+/// Generates a random byte using `/dev/random` as the seed for data.
 #[derive(Default, Debug, Clone, Copy)]
-pub struct EtcRandomNumberGenerator {}
+pub struct UnixRandomNumberGenerator {}
 
-impl GenerateRandom<u8> for EtcRandomNumberGenerator {
+impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     fn random(&self) -> u8 {
         use std::fs;
         use std::io::prelude::*;
@@ -106,6 +105,21 @@ impl<R> Chip8<R> {
             .map(|cpu_reg| cpu_reg.read())
             // Should never fail due to bounded array.
             .unwrap()
+    }
+
+    /// Returns an instance of Chip8 with a new random number generator.
+    pub fn with_rng<NR>(self, rng: NR) -> Chip8<NR> {
+        Chip8 {
+            stack: self.stack,
+            address_space: self.address_space,
+            dt: self.dt,
+            st: self.st,
+            pc: self.pc,
+            sp: self.sp,
+            i: self.i,
+            gp_registers: self.gp_registers,
+            rng,
+        }
     }
 }
 
@@ -372,7 +386,7 @@ mod tests {
 
     #[test]
     fn should_execute_infinitely_on_jump_to_reset_vector() {
-        let mut cpu = Chip8::<ZeroValueGenerator>::default();
+        let mut cpu = Chip8::<()>::default().with_rng(|| 0u8);
         cpu.address_space.write(0x200, 0x12).unwrap();
         cpu.address_space.write(0x201, 0x00).unwrap();
 
@@ -383,7 +397,7 @@ mod tests {
 
     #[test]
     fn should_execute_add_immediate() {
-        let mut cpu = Chip8::<ZeroValueGenerator>::default().with_gp_register(
+        let mut cpu = Chip8::<()>::default().with_rng(|| 0u8).with_gp_register(
             register::GpRegisters::V0,
             register::GeneralPurpose::with_value(0x05),
         );

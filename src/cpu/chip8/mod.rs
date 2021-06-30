@@ -177,16 +177,6 @@ where
     }
 }
 
-impl<R> Cpu<Chip8<R>> for StepState<Chip8<R>>
-where
-    R: 'static + Clone,
-{
-    fn run(self, cycles: usize) -> Self {
-        // CHIP-8 instructions are all single cycle. It's always ready.
-        self.unwrap().run(cycles)
-    }
-}
-
 impl<R> IntoIterator for Chip8<R>
 where
     R: 'static + Clone,

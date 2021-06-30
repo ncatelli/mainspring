@@ -65,6 +65,21 @@ impl<T> StepState<T> {
     }
 }
 
+impl<T> Cpu<T> for StepState<T>
+where
+    T: Cpu<T>,
+{
+    fn run(self, cycles: usize) -> StepState<T> {
+        match self {
+            StepState::Ready(cpu) => cpu.run(cycles),
+            StepState::NotReady(remaining, cpu) if cycles < remaining => {
+                StepState::NotReady(0, cpu)
+            }
+            StepState::NotReady(remaining, cpu) => cpu.run(cycles - remaining),
+        }
+    }
+}
+
 impl<T> From<T> for StepState<T> {
     fn from(src: T) -> Self {
         StepState::new(1, src)

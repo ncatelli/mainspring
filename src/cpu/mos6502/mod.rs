@@ -201,18 +201,6 @@ impl Cpu<Mos6502> for Mos6502 {
     }
 }
 
-impl Cpu<Mos6502> for StepState<Mos6502> {
-    fn run(self, cycles: usize) -> StepState<Mos6502> {
-        match self {
-            StepState::Ready(cpu) => cpu.run(cycles),
-            StepState::NotReady(remaining, cpu) if cycles < remaining => {
-                StepState::NotReady(0, cpu)
-            }
-            StepState::NotReady(remaining, cpu) => cpu.run(cycles - remaining),
-        }
-    }
-}
-
 impl IntoIterator for Mos6502 {
     type Item = operations::Operations;
     type IntoIter = Mos6502IntoIterator;

@@ -1,4 +1,4 @@
-//! A small demonstration example of mainspring showing a basic custom Addressable implementation.
+//! A small demonstration example of mainspring showing a basic custom execution-time hook implementation.
 
 use mainspring::address_map::memory::{Memory, ReadOnly, ReadWrite};
 use mainspring::cpu::mos6502::microcode::{Microcode, WriteMemory};
@@ -12,8 +12,7 @@ type Rom = Memory<ReadOnly, u16, u8>;
 type Ram = Memory<ReadWrite, u16, u8>;
 
 /// VIA functions as an analogy to the 6522 VIA chip. However, only a subset of
-/// functionality has been implemented for this demo. For the case of this example,
-/// all ports are configured in write mode with predefined addresses.
+/// functionality has been implemented for this demo.
 #[derive(Clone)]
 pub struct Via {
     port_a_addr: u16, // address connected to enable port a CS

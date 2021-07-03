@@ -268,7 +268,7 @@ fn should_generate_load_byte_into_delay_timer_operation() {
 }
 
 #[test]
-fn should_parse_load_byte_into_register_fromdelay_timer_opcode() {
+fn should_parse_load_byte_into_register_from_delay_timer_opcode() {
     let input: Vec<(usize, u8)> = 0xF807u16
         .to_be_bytes()
         .iter()
@@ -302,6 +302,44 @@ fn should_generate_load_byte_into_register_from_delay_timer_operation() {
             register::GpRegisters::V0,
         ))
         .generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_load_bcd_from_vx_operation() {
+    let input: Vec<(usize, u8)> = 0xF818u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Ld::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V8,))
+        }),
+        <Ld<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_load_bcd_from_vx_operation() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xfe),
+        )
+        .with_i_register(register::GeneralPurpose::<u16>::with_value(0x0100));
+
+    assert_eq!(
+        vec![
+            Microcode::WriteMemory(WriteMemory::new(0x0100, 2)),
+            Microcode::WriteMemory(WriteMemory::new(0x0101, 5)),
+            Microcode::WriteMemory(WriteMemory::new(0x0102, 4)),
+        ],
+        Ld::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V0,)).generate(&cpu)
     );
 }
 

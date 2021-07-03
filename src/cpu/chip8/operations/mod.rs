@@ -2,6 +2,7 @@ use crate::cpu::chip8::register;
 use crate::cpu::chip8::u12::u12;
 use crate::cpu::chip8::{microcode::*, Chip8, GenerateRandom};
 use crate::cpu::Generate;
+use crate::prelude::v1::Register;
 use parcel::prelude::v1::*;
 
 pub mod addressing_mode;
@@ -89,6 +90,8 @@ where
             <Ld<addressing_mode::DelayTimerDestTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::DelayTimerSrcTx>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+            <Ld<addressing_mode::VxIIndirect>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
@@ -400,6 +403,53 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::DelayTimerSrc
             register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
             src_val,
         ))]
+    }
+}
+
+const fn extract_hundreds_place(x: u8) -> u8 {
+    x / 100
+}
+
+const fn extract_tens_place(x: u8) -> u8 {
+    (x % 100) / 10
+}
+
+const fn extract_ones_place(x: u8) -> u8 {
+    (x % 100) % 10
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxIIndirect>>
+    for Ld<addressing_mode::VxIIndirect>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::VxIIndirect>> {
+        matches_first_nibble_without_taking_input(0xF)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x18)
+                }),
+            )
+            .and_then(|_| addressing_mode::VxIIndirect::default())
+            .map(Ld::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::VxIIndirect> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.src);
+        let hundreds = extract_hundreds_place(src_val);
+        let tens = extract_tens_place(src_val);
+        let ones = extract_ones_place(src_val);
+
+        vec![
+            Microcode::WriteMemory(WriteMemory::new(cpu.i.read(), hundreds)),
+            Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 1, tens)),
+            Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 2, ones)),
+        ]
     }
 }
 

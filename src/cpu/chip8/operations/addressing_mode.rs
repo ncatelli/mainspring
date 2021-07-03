@@ -237,9 +237,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerDestTx> for DelayTimerD
     ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerDestTx> {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| {
-                std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
-            })
+            .map(|[[_, first], _]| 0x0f & first)
+            .map(|dest| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
             .map(DelayTimerDestTx::new)
             .parse(input)
     }
@@ -275,9 +274,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerSrcTx> for DelayTimerSr
     ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerSrcTx> {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| {
-                std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
-            })
+            .map(|[[_, first], _]| 0x0f & first)
+            .map(|dest| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
             .map(DelayTimerSrcTx::new)
             .parse(input)
     }
@@ -287,6 +285,43 @@ impl Default for DelayTimerSrcTx {
     fn default() -> Self {
         Self {
             dest: register::GpRegisters::V0,
+        }
+    }
+}
+
+/// Represents a register to memory operation taking a value in Vx and storing
+/// the result in an indirect address stored in register I.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct VxIIndirect {
+    pub src: register::GpRegisters,
+}
+
+impl AddressingMode for VxIIndirect {}
+
+impl VxIIndirect {
+    pub fn new(src: register::GpRegisters) -> Self {
+        Self { src }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxIIndirect> for VxIIndirect {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], VxIIndirect> {
+        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+            .map(|[[_, reg_id], _]| 0x0f & reg_id)
+            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
+            .map(VxIIndirect::new)
+            .parse(input)
+    }
+}
+
+impl Default for VxIIndirect {
+    fn default() -> Self {
+        Self {
+            src: register::GpRegisters::V0,
         }
     }
 }

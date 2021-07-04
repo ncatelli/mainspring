@@ -1,12 +1,31 @@
+use super::instruction_as_nibbles;
 use crate::cpu::chip8::{operations::ToNibbleBytes, register, u12::u12};
 
 /// A placeholder constant error string until a u4 type is implemented. Other
 /// assertions are in place so that this should never be encountered.
 const NIBBLE_OVERFLOW: &str = "unreachable nibble should be limited to u4.";
 
+/// Returns a u8 representing the input byte with the most significant
+/// masked limiting the maximum value to 0x0f.
+const fn least_significant_nibble_from_u8(x: u8) -> u8 {
+    x & 0x0f
+}
+
+/// Generates a u8 from two nibbles. This expectes both input values to
+/// respect the maximum value range of a nibble as the most significant bits
+/// are left shifted to accommodate the least significant bits.
+const fn u8_from_nibbles(msb: u8, lsb: u8) -> u8 {
+    let masked_lsb = least_significant_nibble_from_u8(lsb);
+    (msb << 4) | masked_lsb
+}
+
 pub trait AddressingMode {}
 
-/// Implied represents a type that explicitly implies it's addressing mode through a 2-byte mnemonic code.
+/// Implied represents a type that explicitly implies it's addressing mode
+/// through a 2-byte mnemonic code.
+/// # Note
+/// Implied addressing mode does not implement Parser as the parsing should be
+/// defined on the implementing opcode.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Implied;
 
@@ -30,13 +49,14 @@ impl Absolute {
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Absolute> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], [second, third]]| {
-                let upper = 0x0f & first;
-                let lower = (second << 4) | third;
-                u12::new(u16::from_be_bytes([upper, lower]))
+        instruction_as_nibbles()
+            .map(|[_, first, second, third]| {
+                (
+                    least_significant_nibble_from_u8(first),
+                    u8_from_nibbles(second, third),
+                )
             })
+            .map(|(upper, lower)| u12::new(u16::from_be_bytes([upper, lower])))
             .map(Absolute)
             .parse(input)
     }
@@ -58,14 +78,16 @@ impl Immediate {
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Immediate> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], [second, third]]| {
-                let upper = 0x0f & first;
-                let lower = (second << 4) | third;
-                let reg = std::convert::TryFrom::<u8>::try_from(upper).expect(NIBBLE_OVERFLOW);
-
-                (reg, lower)
+        instruction_as_nibbles()
+            .map(|[_, first, second, third]| {
+                (
+                    least_significant_nibble_from_u8(first),
+                    u8_from_nibbles(second, third),
+                )
+            })
+            .map(|(reg_id, value)| {
+                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
+                (reg, value)
             })
             .map(|(register, value)| Immediate::new(register, value))
             .parse(input)
@@ -103,9 +125,10 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIn
     ) -> parcel::ParseResult<&'a [(usize, u8)], IRegisterIndexed> {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| {
-                let upper = 0x0f & first;
-                std::convert::TryFrom::<u8>::try_from(upper).expect(NIBBLE_OVERFLOW)
+            .map(|[[_, first], _]| first)
+            .map(|reg_id| {
+                std::convert::TryFrom::<u8>::try_from(least_significant_nibble_from_u8(reg_id))
+                    .expect(NIBBLE_OVERFLOW)
             })
             .map(IRegisterIndexed::new)
             .parse(input)
@@ -156,10 +179,14 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxVy> for VxVy {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[_, first], [second, _]]| {
-                let dest =
-                    std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW);
-                let src =
-                    std::convert::TryFrom::<u8>::try_from(0x0f & second).expect(NIBBLE_OVERFLOW);
+                (
+                    least_significant_nibble_from_u8(first),
+                    least_significant_nibble_from_u8(second),
+                )
+            })
+            .map(|(dest_id, src_id)| {
+                let dest = std::convert::TryFrom::<u8>::try_from(dest_id).expect(NIBBLE_OVERFLOW);
+                let src = std::convert::TryFrom::<u8>::try_from(src_id).expect(NIBBLE_OVERFLOW);
 
                 (src, dest)
             })
@@ -197,11 +224,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], SoundTimerDestTx> for SoundTimerD
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], SoundTimerDestTx> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| {
-                std::convert::TryFrom::<u8>::try_from(0x0f & first).expect(NIBBLE_OVERFLOW)
-            })
+        instruction_as_nibbles()
+            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
+            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
             .map(SoundTimerDestTx::new)
             .parse(input)
     }
@@ -235,10 +260,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerDestTx> for DelayTimerD
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerDestTx> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| 0x0f & first)
-            .map(|dest| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
+        instruction_as_nibbles()
+            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
+            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
             .map(DelayTimerDestTx::new)
             .parse(input)
     }
@@ -272,10 +296,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerSrcTx> for DelayTimerSr
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerSrcTx> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| 0x0f & first)
-            .map(|dest| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
+        instruction_as_nibbles()
+            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
+            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
             .map(DelayTimerSrcTx::new)
             .parse(input)
     }
@@ -309,9 +332,8 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxIIndirect> for VxIIndirect {
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], VxIIndirect> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, reg_id], _]| 0x0f & reg_id)
+        instruction_as_nibbles()
+            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
             .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
             .map(VxIIndirect::new)
             .parse(input)

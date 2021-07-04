@@ -49,7 +49,17 @@ impl ToNibbleBytes for u8 {
     }
 }
 
-pub fn matches_first_nibble_without_taking_input<'a>(
+/// Instruction as nibbles takes the next 2 bytes from input and splits them
+/// into an array of two bytes split into nibbles.
+/// # Example
+/// `0x1234` would be converted to `[0x1, 0x2, 0x3, 0x4]`.
+pub(crate) fn instruction_as_nibbles<'a>() -> impl Parser<'a, &'a [(usize, u8)], [u8; 4]> {
+    parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+        .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+        .map(|[[first, second], [third, fourth]]| [first, second, third, fourth])
+}
+
+pub(crate) fn matches_first_nibble_without_taking_input<'a>(
     opcode: u8,
 ) -> impl Parser<'a, &'a [(usize, u8)], u8> {
     move |input: &'a [(usize, u8)]| match input.get(0) {
@@ -110,40 +120,50 @@ where
 
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Cls {
-    addressing_mode: addressing_mode::Implied,
+pub struct Cls<A> {
+    addressing_mode: std::marker::PhantomData<A>,
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls<addressing_mode::Implied>>
+    for Cls<addressing_mode::Implied>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Cls<addressing_mode::Implied>> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
             .map(|_| Cls::default())
             .parse(input)
     }
 }
 
-impl From<Cls> for u16 {
-    fn from(_: Cls) -> Self {
+impl From<Cls<addressing_mode::Implied>> for u16 {
+    fn from(_: Cls<addressing_mode::Implied>) -> Self {
         0x00e0
     }
 }
 
 /// Return from a subroutine.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Ret {
-    addressing_mode: addressing_mode::Implied,
+pub struct Ret<A> {
+    addressing_mode: std::marker::PhantomData<A>,
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret> for Ret {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Ret> {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret<addressing_mode::Implied>>
+    for Ret<addressing_mode::Implied>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Ret<addressing_mode::Implied>> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xee])
             .map(|_| Ret::default())
             .parse(input)
     }
 }
 
-impl From<Ret> for u16 {
-    fn from(_: Ret) -> Self {
+impl From<Ret<addressing_mode::Implied>> for u16 {
+    fn from(_: Ret<addressing_mode::Implied>) -> Self {
         0x00ee
     }
 }

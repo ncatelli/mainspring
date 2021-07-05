@@ -1,4 +1,5 @@
 use crate::cpu::chip8::register;
+use crate::cpu::chip8::register::GpRegisters;
 use crate::cpu::chip8::u12::u12;
 use crate::cpu::chip8::{microcode::*, Chip8, GenerateRandom};
 use crate::cpu::Generate;
@@ -106,6 +107,8 @@ where
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Add<addressing_mode::IRegisterIndexed>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+            <Add<addressing_mode::VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <And<addressing_mode::VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
@@ -561,6 +564,46 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::IRegisterInd
             register::WordRegisters::I,
             gp_val as u16,
         ))]
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::VxVy>>
+    for Add<addressing_mode::VxVy>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::VxVy>> {
+        matches_first_nibble_without_taking_input(0x8)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x04)
+                }),
+            )
+            .and_then(|_| addressing_mode::VxVy::default())
+            .map(Add::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.first);
+        let dest_val = cpu.read_gp_register(self.addressing_mode.second);
+        let (result, overflows) = dest_val.overflowing_add(src_val);
+        let flag_val = if overflows { 1u8 } else { 0u8 };
+
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(self.addressing_mode.second),
+                result,
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                flag_val,
+            )),
+        ]
     }
 }
 

@@ -306,7 +306,7 @@ fn should_generate_load_byte_into_register_from_delay_timer_operation() {
 }
 
 #[test]
-fn should_parse_load_bcd_from_vx_operation() {
+fn should_parse_load_bcd_from_vx_i_indirect_operation() {
     let input: Vec<(usize, u8)> = 0xF818u16
         .to_be_bytes()
         .iter()
@@ -324,7 +324,7 @@ fn should_parse_load_bcd_from_vx_operation() {
 }
 
 #[test]
-fn should_generate_load_bcd_from_vx_operation() {
+fn should_generate_load_bcd_from_vx_i_indirect_operation() {
     let cpu = Chip8::<()>::default()
         .with_rng(|| 0u8)
         .with_gp_register(
@@ -471,6 +471,80 @@ fn should_generate_add_i_register_indexed() {
             register::GpRegisters::V5
         ))
         .generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_add_vxvy_with_carry_operation() {
+    let input: Vec<(usize, u8)> = 0x8014u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Add::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
+        }),
+        <Add<addressing_mode::VxVy>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_add_vxvy_with_carry_operation_that_overflows_when_sum_overflows_byte_capacity() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xfe),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x05),
+        );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0x03
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x01
+            ))
+        ],
+        Add::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_add_vxvy_with_carry_operation_that_does_not_set_overflow_when_under_byte() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xfe),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x01),
+        );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0xff
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x00
+            ))
+        ],
+        Add::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
 }
 

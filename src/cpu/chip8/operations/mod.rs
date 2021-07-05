@@ -110,6 +110,8 @@ where
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Add<addressing_mode::VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+            <Subn<addressing_mode::VxVy>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <And<addressing_mode::VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Or<addressing_mode::VxVy>>::default()
@@ -593,6 +595,60 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::VxVy> {
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let (result, overflows) = dest_val.overflowing_add(src_val);
         let flag_val = if overflows { 1u8 } else { 0u8 };
+
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(self.addressing_mode.second),
+                result,
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                flag_val,
+            )),
+        ]
+    }
+}
+
+/// Subtracts the associated value from the value of the specified register.
+/// Setting the register to the difference. Sets the borrow flag if the
+/// difference does not underflow
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Subn<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Subn<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Subn<addressing_mode::VxVy>>
+    for Subn<addressing_mode::VxVy>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Subn<addressing_mode::VxVy>> {
+        matches_first_nibble_without_taking_input(0x8)
+            .peek_next(
+                // discard the first byte since the previous parser takes nothing.
+                parcel::parsers::byte::any_byte().and_then(|_| {
+                    parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x07)
+                }),
+            )
+            .and_then(|_| addressing_mode::VxVy::default())
+            .map(Subn::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Subn<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.first);
+        let dest_val = cpu.read_gp_register(self.addressing_mode.second);
+        let (result, underflows) = src_val.overflowing_sub(dest_val);
+        let flag_val = if underflows { 0u8 } else { 1u8 };
 
         vec![
             Microcode::Write8bitRegister(Write8bitRegister::new(

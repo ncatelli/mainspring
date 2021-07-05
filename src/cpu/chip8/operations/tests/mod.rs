@@ -549,6 +549,82 @@ fn should_generate_add_vxvy_with_carry_operation_that_does_not_set_overflow_when
 }
 
 #[test]
+fn should_parse_subn_vxvy_without_borrow_operation() {
+    let input: Vec<(usize, u8)> = 0x8017u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Subn::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
+        }),
+        <Subn<addressing_mode::VxVy>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_subn_vxvy_without_borrow_operation_that_doesnt_set_underflow_when_difference_underflows_byte_capacity(
+) {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x05),
+        );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0x06
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x00
+            ))
+        ],
+        Subn::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_subn_vxvy_without_underflow_operation_that_does_set_underflow_when_difference_fits_within_byte(
+) {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0x01),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0xfe
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x01
+            ))
+        ],
+        Subn::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_and_byte_register_operation_opcode() {
     let input: Vec<(usize, u8)> = 0x8012u16
         .to_be_bytes()

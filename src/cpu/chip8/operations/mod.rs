@@ -622,13 +622,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::IRegisterInd
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::IRegisterIndexed>> {
-        matches_first_nibble_without_taking_input(0xf)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte()
-                    .and_then(|_| parcel::parsers::byte::expect_byte(0x1e)),
-            )
-            .and_then(|_| addressing_mode::IRegisterIndexed::default())
+        expect_instruction_with_mask([Some(0xf), None, Some(0x1), Some(0xe)])
+            .map(|[_, reg_id, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+            })
+            .map(addressing_mode::IRegisterIndexed::new)
             .map(Add::new)
             .parse(input)
     }

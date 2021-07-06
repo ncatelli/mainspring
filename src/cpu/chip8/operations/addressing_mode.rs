@@ -1,5 +1,5 @@
 use super::instruction_as_nibbles;
-use crate::cpu::chip8::{operations::ToNibbleBytes, register, u12::u12};
+use crate::cpu::chip8::{register, u12::u12};
 
 /// A placeholder constant error string until a u4 type is implemented. Other
 /// assertions are in place so that this should never be encountered.
@@ -74,23 +74,6 @@ impl AddressingMode for IRegisterIndexed {}
 impl IRegisterIndexed {
     pub fn new(register: register::GpRegisters) -> Self {
         Self { register }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIndexed {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], IRegisterIndexed> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| first)
-            .map(|reg_id| {
-                std::convert::TryFrom::<u8>::try_from(least_significant_nibble_from_u8(reg_id))
-                    .expect(NIBBLE_OVERFLOW)
-            })
-            .map(IRegisterIndexed::new)
-            .parse(input)
     }
 }
 

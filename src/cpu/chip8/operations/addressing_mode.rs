@@ -174,27 +174,6 @@ impl VxVy {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxVy> for VxVy {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], VxVy> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], [second, _]]| {
-                (
-                    least_significant_nibble_from_u8(first),
-                    least_significant_nibble_from_u8(second),
-                )
-            })
-            .map(|(dest_id, src_id)| {
-                let dest = std::convert::TryFrom::<u8>::try_from(dest_id).expect(NIBBLE_OVERFLOW);
-                let src = std::convert::TryFrom::<u8>::try_from(src_id).expect(NIBBLE_OVERFLOW);
-
-                (src, dest)
-            })
-            .map(|(src, dest)| VxVy::new(src, dest))
-            .parse(input)
-    }
-}
-
 impl Default for VxVy {
     fn default() -> Self {
         Self {

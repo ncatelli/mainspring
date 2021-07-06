@@ -8,6 +8,10 @@ use parcel::prelude::v1::*;
 
 pub mod addressing_mode;
 
+/// A placeholder constant error string until a u4 type is implemented. Other
+/// assertions are in place so that this should never be encountered.
+const NIBBLE_OVERFLOW: &str = "unreachable nibble should be limited to u4.";
+
 /// Represents a mask to binary and against a u8 to return the upper nibble.
 const UPPER_NIBBLE_MASK: u8 = 0xf0;
 
@@ -58,6 +62,51 @@ pub(crate) fn instruction_as_nibbles<'a>() -> impl Parser<'a, &'a [(usize, u8)],
     parcel::take_n(parcel::parsers::byte::any_byte(), 2)
         .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
         .map(|[[first, second], [third, fourth]]| [first, second, third, fourth])
+}
+
+pub(crate) fn expect_instruction_with_mask<'a>(
+    expected: [Option<u8>; 4],
+) -> impl Parser<'a, &'a [(usize, u8)], [u8; 4]> {
+    move |input: &'a [(usize, u8)]| {
+        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
+            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
+            .map(|[[first, second], [third, fourth]]| [first, second, third, fourth])
+            .predicate(move |nibbles| instruction_matches_nibble_mask(*nibbles, expected).is_ok())
+            .parse(&input[..])
+    }
+}
+
+fn nibble_matches_mask(input: u8, expected: Option<u8>) -> bool {
+    match expected {
+        // return true if any value matches.
+        None => true,
+        // return true if the exected value matches input.
+        Some(e) if e == input => true,
+        // return false in all other cases
+        Some(_) => false,
+    }
+}
+
+fn instruction_matches_nibble_mask(
+    input: [u8; 4],
+    expected: [Option<u8>; 4],
+) -> Result<[u8; 4], String> {
+    let nibble_matches = input
+        .iter()
+        .zip(expected.iter())
+        .map(|(&i, &e)| nibble_matches_mask(i, e))
+        .take_while(|v| *v == true)
+        .collect::<Vec<bool>>()
+        .len();
+
+    if nibble_matches == 4 {
+        Ok(input)
+    } else {
+        Err(format!(
+            "failed to match nibble at position: {}. got: {}, wanted: {:?}",
+            nibble_matches, input[nibble_matches], expected[nibble_matches]
+        ))
+    }
 }
 
 pub(crate) fn matches_first_nibble_without_taking_input<'a>(
@@ -314,14 +363,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x8)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x0)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x0)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(Ld::new)
             .parse(input)
     }
@@ -576,14 +624,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x8)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x04)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x4)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(Add::new)
             .parse(input)
     }
@@ -630,14 +677,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Subn<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Subn<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x8)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x07)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x7)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(Subn::new)
             .parse(input)
     }
@@ -682,14 +728,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], And<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x8)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&v| v.to_lower_nibble() == 0x02)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x2)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(And::new)
             .parse(input)
     }
@@ -727,14 +772,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Or<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x8)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x01)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x1)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(Or::new)
             .parse(input)
     }
@@ -772,14 +816,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Xor<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x8)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x03)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x3)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(Xor::new)
             .parse(input)
     }
@@ -817,11 +860,13 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::VxVy>> {
-        matches_first_nibble_without_taking_input(0x5)
-            .peek_next(parcel::parsers::byte::any_byte().and_then(|_| {
-                parcel::parsers::byte::any_byte().predicate(|v| v.to_lower_nibble() == 0x00)
-            }))
-            .and_then(|_| addressing_mode::VxVy::default())
+        expect_instruction_with_mask([Some(0x5), None, None, Some(0x0)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
             .map(Se::new)
             .parse(input)
     }

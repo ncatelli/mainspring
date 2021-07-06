@@ -18,6 +18,20 @@ const UPPER_NIBBLE_MASK: u8 = 0xf0;
 /// Represents a mask to binary and against a u8 to return the lower nibble.
 const LOWER_NIBBLE_MASK: u8 = 0x0f;
 
+/// Returns a u8 representing the input byte with the most significant
+/// masked limiting the maximum value to 0x0f.
+const fn least_significant_nibble_from_u8(x: u8) -> u8 {
+    x & LOWER_NIBBLE_MASK
+}
+
+/// Generates a u8 from two nibbles. This expectes both input values to
+/// respect the maximum value range of a nibble as the most significant bits
+/// are left shifted to accommodate the least significant bits.
+const fn u8_from_nibbles(msb: u8, lsb: u8) -> u8 {
+    let masked_lsb = least_significant_nibble_from_u8(lsb);
+    (msb << 4) | masked_lsb
+}
+
 #[cfg(test)]
 mod tests;
 
@@ -344,8 +358,12 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Immediate>> {
-        matches_first_nibble_without_taking_input(0x6)
-            .and_then(|_| addressing_mode::Immediate::default())
+        expect_instruction_with_mask([Some(0x6), None, None, None])
+            .map(|[_, dest, msb, lsb]| {
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (dest_reg, u8_from_nibbles(msb, lsb))
+            })
+            .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
             .map(Ld::new)
             .parse(input)
     }
@@ -577,8 +595,12 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::Immediate>> {
-        matches_first_nibble_without_taking_input(0x7)
-            .and_then(|_| addressing_mode::Immediate::default())
+        expect_instruction_with_mask([Some(0x7), None, None, None])
+            .map(|[_, dest, msb, lsb]| {
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (dest_reg, u8_from_nibbles(msb, lsb))
+            })
+            .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
             .map(Add::new)
             .parse(input)
     }
@@ -912,8 +934,12 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Rnd<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Rnd<addressing_mode::Immediate>> {
-        matches_first_nibble_without_taking_input(0xC)
-            .and_then(|_| addressing_mode::Immediate::default())
+        expect_instruction_with_mask([Some(0xC), None, None, None])
+            .map(|[_, dest, msb, lsb]| {
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (dest_reg, u8_from_nibbles(msb, lsb))
+            })
+            .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
             .map(Rnd::new)
             .parse(input)
     }

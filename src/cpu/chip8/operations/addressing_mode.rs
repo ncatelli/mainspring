@@ -11,14 +11,6 @@ const fn least_significant_nibble_from_u8(x: u8) -> u8 {
     x & 0x0f
 }
 
-/// Generates a u8 from two nibbles. This expectes both input values to
-/// respect the maximum value range of a nibble as the most significant bits
-/// are left shifted to accommodate the least significant bits.
-const fn u8_from_nibbles(msb: u8, lsb: u8) -> u8 {
-    let masked_lsb = least_significant_nibble_from_u8(lsb);
-    (msb << 4) | masked_lsb
-}
-
 pub trait AddressingMode {}
 
 /// Implied represents a type that explicitly implies it's addressing mode
@@ -58,24 +50,6 @@ impl AddressingMode for Immediate {}
 impl Immediate {
     pub fn new(register: register::GpRegisters, value: u8) -> Self {
         Self { register, value }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Immediate> {
-        instruction_as_nibbles()
-            .map(|[_, first, second, third]| {
-                (
-                    least_significant_nibble_from_u8(first),
-                    u8_from_nibbles(second, third),
-                )
-            })
-            .map(|(reg_id, value)| {
-                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-                (reg, value)
-            })
-            .map(|(register, value)| Immediate::new(register, value))
-            .parse(input)
     }
 }
 

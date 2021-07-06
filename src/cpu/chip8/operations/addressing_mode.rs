@@ -1,15 +1,4 @@
-use super::instruction_as_nibbles;
 use crate::cpu::chip8::{register, u12::u12};
-
-/// A placeholder constant error string until a u4 type is implemented. Other
-/// assertions are in place so that this should never be encountered.
-const NIBBLE_OVERFLOW: &str = "unreachable nibble should be limited to u4.";
-
-/// Returns a u8 representing the input byte with the most significant
-/// masked limiting the maximum value to 0x0f.
-const fn least_significant_nibble_from_u8(x: u8) -> u8 {
-    x & 0x0f
-}
 
 pub trait AddressingMode {}
 
@@ -206,19 +195,6 @@ impl AddressingMode for VxIIndirect {}
 impl VxIIndirect {
     pub fn new(src: register::GpRegisters) -> Self {
         Self { src }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxIIndirect> for VxIIndirect {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], VxIIndirect> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(VxIIndirect::new)
-            .parse(input)
     }
 }
 

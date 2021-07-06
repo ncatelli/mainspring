@@ -68,17 +68,12 @@ impl ToNibbleBytes for u8 {
     }
 }
 
-/// Instruction as nibbles takes the next 2 bytes from input and splits them
-/// into an array of two bytes split into nibbles.
-/// # Example
-/// `0x1234` would be converted to `[0x1, 0x2, 0x3, 0x4]`.
-pub(crate) fn instruction_as_nibbles<'a>() -> impl Parser<'a, &'a [(usize, u8)], [u8; 4]> {
-    parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-        .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-        .map(|[[first, second], [third, fourth]]| [first, second, third, fourth])
-}
-
-pub(crate) fn expect_instruction_with_mask<'a>(
+/// This function takes an array of four optional u8 values representing
+/// nibbles of an instruction. If the `Option` is set to `None`, any value will
+/// match for that nibble. If the `Option` is `Some`, the enclosed value will
+/// need to match the corresponding nibble of associated instruction.
+/// i.e. `[Some(0xf), None, None, None]` would match `[0xf, 0x1, 0x2, 0x3]`.
+fn expect_instruction_with_mask<'a>(
     expected: [Option<u8>; 4],
 ) -> impl Parser<'a, &'a [(usize, u8)], [u8; 4]> {
     move |input: &'a [(usize, u8)]| {
@@ -120,19 +115,6 @@ fn instruction_matches_nibble_mask(
             "failed to match nibble at position: {}. got: {}, wanted: {:?}",
             nibble_matches, input[nibble_matches], expected[nibble_matches]
         ))
-    }
-}
-
-pub(crate) fn matches_first_nibble_without_taking_input<'a>(
-    opcode: u8,
-) -> impl Parser<'a, &'a [(usize, u8)], u8> {
-    move |input: &'a [(usize, u8)]| match input.get(0) {
-        Some(&(pos, next)) if ((next & 0xf0) >> 4) == opcode => Ok(MatchStatus::Match {
-            span: pos..pos + 1,
-            remainder: &input[0..],
-            inner: opcode,
-        }),
-        _ => Ok(MatchStatus::NoMatch(input)),
     }
 }
 
@@ -511,14 +493,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxIIndirect>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::VxIIndirect>> {
-        matches_first_nibble_without_taking_input(0xF)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x18)
-                }),
-            )
-            .and_then(|_| addressing_mode::VxIIndirect::default())
+        expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x8)])
+            .map(|[_, reg_id, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+            })
+            .map(addressing_mode::VxIIndirect::new)
             .map(Ld::new)
             .parse(input)
     }

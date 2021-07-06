@@ -415,14 +415,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerDes
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::SoundTimerDestTx>> {
-        matches_first_nibble_without_taking_input(0xF)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x18)
-                }),
-            )
-            .and_then(|_| addressing_mode::SoundTimerDestTx::default())
+        expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x8)])
+            .map(|[_, reg_id, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+            })
+            .map(addressing_mode::SoundTimerDestTx::new)
             .map(Ld::new)
             .parse(input)
     }
@@ -446,14 +443,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerDes
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerDestTx>> {
-        matches_first_nibble_without_taking_input(0xF)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x15)
-                }),
-            )
-            .and_then(|_| addressing_mode::DelayTimerDestTx::default())
+        expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x5)])
+            .map(|[_, reg_id, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+            })
+            .map(addressing_mode::DelayTimerDestTx::new)
             .map(Ld::new)
             .parse(input)
     }
@@ -477,14 +471,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrc
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrcTx>> {
-        matches_first_nibble_without_taking_input(0xF)
-            .peek_next(
-                // discard the first byte since the previous parser takes nothing.
-                parcel::parsers::byte::any_byte().and_then(|_| {
-                    parcel::parsers::byte::any_byte().predicate(|&second| second == 0x07)
-                }),
-            )
-            .and_then(|_| addressing_mode::DelayTimerSrcTx::default())
+        expect_instruction_with_mask([Some(0xF), None, Some(0x0), Some(0x7)])
+            .map(|[_, reg_id, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+            })
+            .map(addressing_mode::DelayTimerSrcTx::new)
             .map(Ld::new)
             .parse(input)
     }

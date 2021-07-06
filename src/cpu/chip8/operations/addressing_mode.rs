@@ -140,19 +140,6 @@ impl SoundTimerDestTx {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], SoundTimerDestTx> for SoundTimerDestTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], SoundTimerDestTx> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(SoundTimerDestTx::new)
-            .parse(input)
-    }
-}
-
 impl Default for SoundTimerDestTx {
     fn default() -> Self {
         Self {
@@ -176,19 +163,6 @@ impl DelayTimerDestTx {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerDestTx> for DelayTimerDestTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerDestTx> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(DelayTimerDestTx::new)
-            .parse(input)
-    }
-}
-
 impl Default for DelayTimerDestTx {
     fn default() -> Self {
         Self {
@@ -209,19 +183,6 @@ impl AddressingMode for DelayTimerSrcTx {}
 impl DelayTimerSrcTx {
     pub fn new(dest: register::GpRegisters) -> Self {
         Self { dest }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerSrcTx> for DelayTimerSrcTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerSrcTx> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(DelayTimerSrcTx::new)
-            .parse(input)
     }
 }
 

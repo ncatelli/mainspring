@@ -98,6 +98,7 @@ fn instruction_matches_nibble_mask(
         .take_while(|v| *v)
         .count();
 
+    // validate that all nibbles passed their mask
     if nibble_matches == 4 {
         Ok(input)
     } else {

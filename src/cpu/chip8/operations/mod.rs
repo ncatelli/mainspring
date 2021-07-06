@@ -72,7 +72,7 @@ pub(crate) fn expect_instruction_with_mask<'a>(
             .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
             .map(|[[first, second], [third, fourth]]| [first, second, third, fourth])
             .predicate(move |nibbles| instruction_matches_nibble_mask(*nibbles, expected).is_ok())
-            .parse(&input[..])
+            .parse(input)
     }
 }
 
@@ -95,9 +95,8 @@ fn instruction_matches_nibble_mask(
         .iter()
         .zip(expected.iter())
         .map(|(&i, &e)| nibble_matches_mask(i, e))
-        .take_while(|v| *v == true)
-        .collect::<Vec<bool>>()
-        .len();
+        .take_while(|v| *v)
+        .count();
 
     if nibble_matches == 4 {
         Ok(input)

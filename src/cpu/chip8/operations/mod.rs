@@ -254,8 +254,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<NonV0Indexed, addressing_mode:
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<NonV0Indexed, addressing_mode::Absolute>> {
-        matches_first_nibble_without_taking_input(0x1)
-            .and_then(|_| addressing_mode::Absolute::default())
+        expect_instruction_with_mask([Some(0x1), None, None, None])
+            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+            .map(addressing_mode::Absolute::new)
             .map(Jp::new)
             .parse(input)
     }
@@ -271,6 +272,7 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<NonV0Indexed, addressing_mode:
 }
 
 // Jp Absolute + V0
+
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Absolute>>
     for Jp<V0Indexed, addressing_mode::Absolute>
 {
@@ -278,8 +280,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Ab
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Absolute>> {
-        matches_first_nibble_without_taking_input(0xb)
-            .and_then(|_| addressing_mode::Absolute::default())
+        expect_instruction_with_mask([Some(0xB), None, None, None])
+            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+            .map(addressing_mode::Absolute::new)
             .map(Jp::new)
             .parse(input)
     }
@@ -317,8 +320,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Absolute>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Absolute>> {
-        matches_first_nibble_without_taking_input(0xA)
-            .and_then(|_| addressing_mode::Absolute::default())
+        expect_instruction_with_mask([Some(0xA), None, None, None])
+            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+            .map(addressing_mode::Absolute::new)
             .map(Ld::new)
             .parse(input)
     }
@@ -545,8 +549,9 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call<addressing_mode::Absolute>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Call<addressing_mode::Absolute>> {
-        matches_first_nibble_without_taking_input(0x2)
-            .and_then(|_| addressing_mode::Absolute::default())
+        expect_instruction_with_mask([Some(0x2), None, None, None])
+            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+            .map(addressing_mode::Absolute::new)
             .map(Call::new)
             .parse(input)
     }

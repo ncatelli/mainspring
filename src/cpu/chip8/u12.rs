@@ -13,6 +13,16 @@ impl u12 {
 }
 
 impl u12 {
+    /// Takes a 3 value array representing the nibblees in a big-endian format
+    /// and attempts to covert the nibbles to a corresponding u12. All nibbles
+    /// are masked and will be truncated to a maximum value of 0x0f.
+    pub fn from_be_nibbles(src: [u8; 3]) -> u12 {
+        let masked_src = [src[0] & 0x0f, src[1] & 0x0f, src[2] & 0x0f];
+        u12::from(masked_src)
+    }
+}
+
+impl u12 {
     /// Instantiates a new u12.
     pub fn new(value: u16) -> Self {
         if value > Self::MAX.0 {
@@ -164,6 +174,16 @@ macro_rules! impl_from_u12_for_uX {
 }
 
 impl_from_u12_for_uX!(u16, u32, u64, u128,);
+
+impl From<[u8; 3]> for u12 {
+    fn from(src: [u8; 3]) -> Self {
+        let msb = src[0] & 0x0f;
+        let lsb = ((src[1] & 0x0f) << 4) | (src[2] & 0x0f);
+        let val = u16::from_be_bytes([msb, lsb]);
+
+        u12::new(val)
+    }
+}
 
 trait MaskU12 {
     fn mask(self) -> Self;

@@ -47,21 +47,6 @@ impl Absolute {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Absolute> {
-        instruction_as_nibbles()
-            .map(|[_, first, second, third]| {
-                (
-                    least_significant_nibble_from_u8(first),
-                    u8_from_nibbles(second, third),
-                )
-            })
-            .map(|(upper, lower)| u12::new(u16::from_be_bytes([upper, lower])))
-            .map(Absolute)
-            .parse(input)
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Immediate {
     pub register: register::GpRegisters,

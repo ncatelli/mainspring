@@ -1239,3 +1239,21 @@ fn should_generate_rnd_immediate_operation() {
         assert!(write_value <= 0xf0);
     }
 }
+
+#[test]
+fn should_parse_skp_opcode() {
+    let input: Vec<(usize, u8)> = 0xE09Eu16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Skp::new(register::GpRegisters::V0)
+        }),
+        <Skp>::default().parse(&input[..])
+    );
+}

@@ -71,6 +71,16 @@ impl<C> InputWrapper<C> {
     }
 }
 
+impl<M, C> crate::cpu::Execute<InputWrapper<C>> for M
+where
+    InputWrapper<C>: ExecuteMut<M>,
+{
+    fn execute(self, mut cpu: InputWrapper<C>) -> InputWrapper<C> {
+        cpu.execute_mut(&self);
+        cpu
+    }
+}
+
 impl<C> crate::cpu::ExecuteMut<microcode::Microcode> for InputWrapper<C>
 where
     C: crate::cpu::ExecuteMut<microcode::Microcode>,

@@ -1,23 +1,4 @@
-use super::instruction_as_nibbles;
-use crate::cpu::chip8::{operations::ToNibbleBytes, register, u12::u12};
-
-/// A placeholder constant error string until a u4 type is implemented. Other
-/// assertions are in place so that this should never be encountered.
-const NIBBLE_OVERFLOW: &str = "unreachable nibble should be limited to u4.";
-
-/// Returns a u8 representing the input byte with the most significant
-/// masked limiting the maximum value to 0x0f.
-const fn least_significant_nibble_from_u8(x: u8) -> u8 {
-    x & 0x0f
-}
-
-/// Generates a u8 from two nibbles. This expectes both input values to
-/// respect the maximum value range of a nibble as the most significant bits
-/// are left shifted to accommodate the least significant bits.
-const fn u8_from_nibbles(msb: u8, lsb: u8) -> u8 {
-    let masked_lsb = least_significant_nibble_from_u8(lsb);
-    (msb << 4) | masked_lsb
-}
+use crate::cpu::chip8::{register, u12::u12};
 
 pub trait AddressingMode {}
 
@@ -47,21 +28,6 @@ impl Absolute {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Absolute> {
-        instruction_as_nibbles()
-            .map(|[_, first, second, third]| {
-                (
-                    least_significant_nibble_from_u8(first),
-                    u8_from_nibbles(second, third),
-                )
-            })
-            .map(|(upper, lower)| u12::new(u16::from_be_bytes([upper, lower])))
-            .map(Absolute)
-            .parse(input)
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Immediate {
     pub register: register::GpRegisters,
@@ -73,24 +39,6 @@ impl AddressingMode for Immediate {}
 impl Immediate {
     pub fn new(register: register::GpRegisters, value: u8) -> Self {
         Self { register, value }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Immediate> {
-        instruction_as_nibbles()
-            .map(|[_, first, second, third]| {
-                (
-                    least_significant_nibble_from_u8(first),
-                    u8_from_nibbles(second, third),
-                )
-            })
-            .map(|(reg_id, value)| {
-                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-                (reg, value)
-            })
-            .map(|(register, value)| Immediate::new(register, value))
-            .parse(input)
     }
 }
 
@@ -115,23 +63,6 @@ impl AddressingMode for IRegisterIndexed {}
 impl IRegisterIndexed {
     pub fn new(register: register::GpRegisters) -> Self {
         Self { register }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], IRegisterIndexed> for IRegisterIndexed {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], IRegisterIndexed> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], _]| first)
-            .map(|reg_id| {
-                std::convert::TryFrom::<u8>::try_from(least_significant_nibble_from_u8(reg_id))
-                    .expect(NIBBLE_OVERFLOW)
-            })
-            .map(IRegisterIndexed::new)
-            .parse(input)
     }
 }
 
@@ -174,27 +105,6 @@ impl VxVy {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxVy> for VxVy {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], VxVy> {
-        parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-            .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-            .map(|[[_, first], [second, _]]| {
-                (
-                    least_significant_nibble_from_u8(first),
-                    least_significant_nibble_from_u8(second),
-                )
-            })
-            .map(|(dest_id, src_id)| {
-                let dest = std::convert::TryFrom::<u8>::try_from(dest_id).expect(NIBBLE_OVERFLOW);
-                let src = std::convert::TryFrom::<u8>::try_from(src_id).expect(NIBBLE_OVERFLOW);
-
-                (src, dest)
-            })
-            .map(|(src, dest)| VxVy::new(src, dest))
-            .parse(input)
-    }
-}
-
 impl Default for VxVy {
     fn default() -> Self {
         Self {
@@ -216,19 +126,6 @@ impl AddressingMode for SoundTimerDestTx {}
 impl SoundTimerDestTx {
     pub fn new(src: register::GpRegisters) -> Self {
         Self { src }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], SoundTimerDestTx> for SoundTimerDestTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], SoundTimerDestTx> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(SoundTimerDestTx::new)
-            .parse(input)
     }
 }
 
@@ -255,19 +152,6 @@ impl DelayTimerDestTx {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerDestTx> for DelayTimerDestTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerDestTx> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(DelayTimerDestTx::new)
-            .parse(input)
-    }
-}
-
 impl Default for DelayTimerDestTx {
     fn default() -> Self {
         Self {
@@ -291,19 +175,6 @@ impl DelayTimerSrcTx {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], DelayTimerSrcTx> for DelayTimerSrcTx {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], DelayTimerSrcTx> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(DelayTimerSrcTx::new)
-            .parse(input)
-    }
-}
-
 impl Default for DelayTimerSrcTx {
     fn default() -> Self {
         Self {
@@ -324,19 +195,6 @@ impl AddressingMode for VxIIndirect {}
 impl VxIIndirect {
     pub fn new(src: register::GpRegisters) -> Self {
         Self { src }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], VxIIndirect> for VxIIndirect {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], VxIIndirect> {
-        instruction_as_nibbles()
-            .map(|[_, first, _, _]| least_significant_nibble_from_u8(first))
-            .map(|reg_id| std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW))
-            .map(VxIIndirect::new)
-            .parse(input)
     }
 }
 

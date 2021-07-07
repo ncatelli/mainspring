@@ -44,6 +44,42 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
+/// InputWrapper takes a cpu, typically a chip8 and provides an interface for implementing input on.
+#[derive(Debug, Clone)]
+pub struct InputWrapper<C> {
+    input: Option<u8>,
+    inner: C,
+}
+
+impl<C> InputWrapper<C> {
+    pub fn new(input: Option<u8>, inner: C) -> Self {
+        Self { input, inner }
+    }
+
+    pub fn set_input(self, input: u8) -> Self {
+        Self {
+            input: Some(input),
+            inner: self.inner,
+        }
+    }
+
+    pub fn clear_input(self) -> Self {
+        Self {
+            input: None,
+            inner: self.inner,
+        }
+    }
+}
+
+impl<C> crate::cpu::ExecuteMut<microcode::Microcode> for InputWrapper<C>
+where
+    C: crate::cpu::ExecuteMut<microcode::Microcode>,
+{
+    fn execute_mut(&mut self, mc: &microcode::Microcode) {
+        self.inner.execute_mut(mc)
+    }
+}
+
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 

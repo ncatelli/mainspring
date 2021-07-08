@@ -655,6 +655,59 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::VxVy> {
 /// Setting the register to the difference. Sets the borrow flag if the
 /// difference does not underflow
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Sub<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Sub<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sub<addressing_mode::VxVy>>
+    for Sub<addressing_mode::VxVy>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Sub<addressing_mode::VxVy>> {
+        expect_instruction_with_mask([Some(0x8), None, None, Some(0x5)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+            .map(Sub::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sub<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.addressing_mode.first);
+        let dest_val = cpu.read_gp_register(self.addressing_mode.second);
+        let (result, underflows) = dest_val.overflowing_sub(src_val);
+        let flag_val = if underflows { 0u8 } else { 1u8 };
+
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(self.addressing_mode.second),
+                result,
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                flag_val,
+            )),
+        ]
+    }
+}
+
+/// Subtracts the associated value from the value of the specified register.
+/// Setting the register to the difference. Sets the borrow flag if the
+/// difference does not underflow
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Subn<A> {
     pub addressing_mode: A,
 }

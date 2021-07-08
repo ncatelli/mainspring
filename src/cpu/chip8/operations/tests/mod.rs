@@ -549,6 +549,80 @@ fn should_generate_add_vxvy_with_carry_operation_that_does_not_set_overflow_when
 }
 
 #[test]
+fn should_parse_sub_vxvy_without_borrow_operation() {
+    let input: Vec<(usize, u8)> = 0x8015u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Sub::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
+        }),
+        <Sub<addressing_mode::VxVy>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_set_borrow_for_sub_vxvy_if_vx_value_is_larger_than_vy_value() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x05),
+        );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0xfa
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x01
+            ))
+        ],
+        Sub::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_not_set_borrow_for_sub_vxvy_if_vx_value_is_larger_than_vy_value() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0x01),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0x02
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x00
+            ))
+        ],
+        Sub::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_subn_vxvy_without_borrow_operation() {
     let input: Vec<(usize, u8)> = 0x8017u16
         .to_be_bytes()

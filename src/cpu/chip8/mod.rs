@@ -44,52 +44,6 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
-/// InputWrapper takes a cpu, typically a chip8 and provides an interface for implementing input on.
-#[derive(Debug, Clone)]
-pub struct InputWrapper<C> {
-    input: Option<u8>,
-    inner: C,
-}
-
-impl<C> InputWrapper<C> {
-    pub fn new(input: Option<u8>, inner: C) -> Self {
-        Self { input, inner }
-    }
-
-    pub fn set_input(self, input: u8) -> Self {
-        Self {
-            input: Some(input),
-            inner: self.inner,
-        }
-    }
-
-    pub fn clear_input(self) -> Self {
-        Self {
-            input: None,
-            inner: self.inner,
-        }
-    }
-}
-
-impl<M, C> crate::cpu::Execute<InputWrapper<C>> for M
-where
-    InputWrapper<C>: ExecuteMut<M>,
-{
-    fn execute(self, mut cpu: InputWrapper<C>) -> InputWrapper<C> {
-        cpu.execute_mut(&self);
-        cpu
-    }
-}
-
-impl<C> crate::cpu::ExecuteMut<microcode::Microcode> for InputWrapper<C>
-where
-    C: crate::cpu::ExecuteMut<microcode::Microcode>,
-{
-    fn execute_mut(&mut self, mc: &microcode::Microcode) {
-        self.inner.execute_mut(mc)
-    }
-}
-
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 
@@ -265,18 +219,19 @@ where
         ];
 
         // Parse correct operation
-        let ops = match operations::OpcodeVariantParser.parse(&opcodes[..]) {
-            Ok(parcel::MatchStatus::Match {
-                span: _,
-                remainder: _,
-                inner: op,
-            }) => Ok(op),
-            _ => Err(format!(
-                "No match found for {:#02x}",
-                u16::from_be_bytes([opcodes[0].1, opcodes[1].1])
-            )),
-        }
-        .unwrap();
+        let ops: Box<dyn crate::cpu::Generate<Chip8<_>, _>> =
+            match operations::OpcodeVariantParser.parse(&opcodes[..]) {
+                Ok(parcel::MatchStatus::Match {
+                    span: _,
+                    remainder: _,
+                    inner: op,
+                }) => Ok(op),
+                _ => Err(format!(
+                    "No match found for {:#02x}",
+                    u16::from_be_bytes([opcodes[0].1, opcodes[1].1])
+                )),
+            }
+            .unwrap();
 
         let microcode_steps: Vec<microcode::Microcode> = ops
             .generate(&self.state)

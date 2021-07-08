@@ -121,6 +121,48 @@ fn instruction_matches_nibble_mask(
     }
 }
 
+/// InputWrapper takes a cpu, typically a chip8 and provides an interface for implementing input on.
+#[derive(Debug, Clone)]
+pub struct InputWrapper<C> {
+    input: Option<u8>,
+    inner: C,
+}
+
+impl<C> InputWrapper<C> {
+    pub fn new(input: Option<u8>, inner: C) -> Self {
+        Self { input, inner }
+    }
+
+    pub fn set_input(self, input: u8) -> Self {
+        Self {
+            input: Some(input),
+            inner: self.inner,
+        }
+    }
+
+    pub fn clear_input(self) -> Self {
+        Self {
+            input: None,
+            inner: self.inner,
+        }
+    }
+}
+
+impl<'a, C> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<InputWrapper<C>, Vec<Microcode>>>>
+    for OpcodeVariantParser
+where
+    C: 'static,
+{
+    #[allow(clippy::clippy::type_complexity)]
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<InputWrapper<C>, Vec<Microcode>>>>
+    {
+        todo!()
+    }
+}
+
 /// Provides a Parser type for the OpcodeVariant enum. Constructing an
 /// OpcodeVariant from a stream of bytes.
 pub struct OpcodeVariantParser;

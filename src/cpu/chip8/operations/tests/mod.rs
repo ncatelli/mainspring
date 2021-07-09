@@ -902,6 +902,71 @@ fn should_generate_se_byte_register_operation() {
 }
 
 #[test]
+fn should_parse_sne_byte_register_operation_opcode() {
+    let input: Vec<(usize, u8)> = 0x9010u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Sne::new(addressing_mode::VxVy::new(
+                register::GpRegisters::V1,
+                register::GpRegisters::V0
+            ))
+        }),
+        <Sne<addressing_mode::VxVy>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_sne_byte_register_operation() {
+    let cpu_eq = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x00),
+        );
+    assert_eq!(
+        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            2
+        ))],
+        Sne::new(addressing_mode::VxVy::new(
+            register::GpRegisters::V1,
+            register::GpRegisters::V0
+        ))
+        .generate(&cpu_eq)
+    );
+
+    let cpu_ne = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0xff),
+        );
+    assert_eq!(
+        Vec::<Microcode>::new(),
+        Sne::new(addressing_mode::VxVy::new(
+            register::GpRegisters::V1,
+            register::GpRegisters::V0
+        ))
+        .generate(&cpu_ne)
+    );
+}
+
+#[test]
 fn should_parse_se_immediate_operation_opcode() {
     let input: Vec<(usize, u8)> = 0x30ffu16
         .to_be_bytes()

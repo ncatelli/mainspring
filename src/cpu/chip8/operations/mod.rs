@@ -974,6 +974,53 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::Immediate> {
     }
 }
 
+/// Sne skips the next instruction if the operands are not equivalent.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Sne<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Sne<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sne<addressing_mode::VxVy>>
+    for Sne<addressing_mode::VxVy>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Sne<addressing_mode::VxVy>> {
+        expect_instruction_with_mask([Some(0x9), None, None, Some(0x0)])
+            .map(|[_, dest, src, _]| {
+                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+                (src_reg, dest_reg)
+            })
+            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+            .map(Sne::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sne<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let first_reg_val = cpu.read_gp_register(self.addressing_mode.first);
+        let second_reg_val = cpu.read_gp_register(self.addressing_mode.second);
+
+        if first_reg_val != second_reg_val {
+            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))]
+        } else {
+            vec![]
+        }
+    }
+}
+
 /// Rnd generates a random 8-bit value to be applied against a mask.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Rnd<A> {

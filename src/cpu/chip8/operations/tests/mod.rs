@@ -902,6 +902,61 @@ fn should_generate_se_byte_register_operation() {
 }
 
 #[test]
+fn should_parse_se_immediate_operation_opcode() {
+    let input: Vec<(usize, u8)> = 0x30ffu16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Se::new(addressing_mode::Immediate::new(
+                register::GpRegisters::V0,
+                0xff
+            ))
+        }),
+        <Se<addressing_mode::Immediate>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_se_immediate_operation() {
+    let cpu_eq = Chip8::<()>::default().with_rng(|| 0u8).with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::<u8>::with_value(0xff),
+    );
+
+    assert_eq!(
+        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            2
+        ))],
+        Se::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V0,
+            0xff
+        ))
+        .generate(&cpu_eq)
+    );
+
+    let cpu_ne = Chip8::<()>::default().with_rng(|| 0u8).with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::<u8>::with_value(0xff),
+    );
+
+    assert_eq!(
+        Vec::<Microcode>::new(),
+        Se::new(addressing_mode::Immediate::new(
+            register::GpRegisters::V0,
+            0x00
+        ))
+        .generate(&cpu_ne)
+    );
+}
+
+#[test]
 fn should_parse_rnd_immediate_operation_opcode() {
     let input: Vec<(usize, u8)> = 0xc0ffu16
         .to_be_bytes()

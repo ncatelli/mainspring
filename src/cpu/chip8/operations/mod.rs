@@ -905,6 +905,40 @@ impl<A> Se<A> {
     }
 }
 
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::Immediate>>
+    for Se<addressing_mode::Immediate>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::Immediate>> {
+        expect_instruction_with_mask([Some(0x3), None, None, None])
+            .map(|[_, reg_id, msb, lsb]| {
+                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
+                (reg, u8_from_nibbles(msb, lsb))
+            })
+            .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
+            .map(Se::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::Immediate> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_val = cpu.read_gp_register(self.addressing_mode.register);
+        let value = self.addressing_mode.value;
+
+        if reg_val == value {
+            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))]
+        } else {
+            vec![]
+        }
+    }
+}
+
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::VxVy>>
     for Se<addressing_mode::VxVy>
 {
@@ -940,40 +974,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::VxVy> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::Immediate>>
-    for Se<addressing_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([Some(0x3), None, None, None])
-            .map(|[_, reg_id, msb, lsb]| {
-                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-                (reg, u8_from_nibbles(msb, lsb))
-            })
-            .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
-            .map(Se::new)
-            .parse(input)
-    }
-}
-
-impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::Immediate> {
-    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
-        let reg_val = cpu.read_gp_register(self.addressing_mode.register);
-        let value = self.addressing_mode.value;
-
-        if reg_val == value {
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                2,
-            ))]
-        } else {
-            vec![]
-        }
-    }
-}
-
 /// Sne skips the next instruction if the operands are not equivalent.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Sne<A> {
@@ -983,6 +983,40 @@ pub struct Sne<A> {
 impl<A> Sne<A> {
     pub fn new(addressing_mode: A) -> Self {
         Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sne<addressing_mode::Immediate>>
+    for Sne<addressing_mode::Immediate>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Sne<addressing_mode::Immediate>> {
+        expect_instruction_with_mask([Some(0x4), None, None, None])
+            .map(|[_, reg_id, msb, lsb]| {
+                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
+                (reg, u8_from_nibbles(msb, lsb))
+            })
+            .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
+            .map(Sne::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sne<addressing_mode::Immediate> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_val = cpu.read_gp_register(self.addressing_mode.register);
+        let value = self.addressing_mode.value;
+
+        if reg_val != value {
+            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))]
+        } else {
+            vec![]
+        }
     }
 }
 

@@ -400,6 +400,26 @@ fn should_parse_call_opcode() {
 }
 
 #[test]
+fn should_generate_call_absolute_instruction() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_pc_register(register::ProgramCounter::with_value(0x200));
+
+    assert_eq!(
+        vec![
+            // save initial value
+            Microcode::PushStack(PushStack::new(0x200)),
+            // jump to absolute value - 2.
+            Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                0x3fe
+            ))
+        ],
+        Call::new(addressing_mode::Absolute::new(u12::new(0x400))).generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_add_immediate_opcode() {
     let input: Vec<(usize, u8)> = 0x70ffu16
         .to_be_bytes()

@@ -363,7 +363,17 @@ impl<R> crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8<R> {
 }
 
 impl<R> crate::cpu::ExecuteMut<microcode::PushStack> for Chip8<R> {
-    fn execute_mut(&mut self, _: &microcode::PushStack) {}
+    fn execute_mut(&mut self, mc: &microcode::PushStack) {
+        // decrement stack pointer before doing any data writes.
+        let sp = self.sp.read().wrapping_sub(1);
+        self.sp.write(sp);
+
+        // push the value from mc onto the new stack location.
+        // due to the protections applied by the `StackPointer`'s `.read()
+        // method this should be fairly safe to unwrap as it can't overflow 16
+        // places.
+        self.stack.write(self.sp.read() as usize, mc.value).unwrap();
+    }
 }
 
 impl<R> crate::cpu::ExecuteMut<microcode::PopStack> for Chip8<R> {

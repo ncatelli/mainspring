@@ -549,6 +549,23 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call<addressing_mode::Absolute>>
     }
 }
 
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Call<addressing_mode::Absolute> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let current_pc = cpu.pc.read();
+        let addr = self.addressing_mode.addr();
+        // decrement 2 to account for PC incrementing.
+        let inc_adjusted_addr = u16::from(addr).wrapping_sub(2);
+
+        vec![
+            Microcode::PushStack(PushStack::new(current_pc)),
+            Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                inc_adjusted_addr,
+            )),
+        ]
+    }
+}
+
 /// Adds the associated value to the value of the specified register. Setting
 /// the register to the sum.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]

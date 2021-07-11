@@ -121,11 +121,11 @@ impl Dec16bitRegister {
 /// stack pointer.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PushStack {
-    pub value: u8,
+    pub value: u16,
 }
 
 impl PushStack {
-    pub fn new(value: u8) -> Self {
+    pub fn new(value: u16) -> Self {
         Self { value }
     }
 }

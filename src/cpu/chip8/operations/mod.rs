@@ -127,12 +127,14 @@ impl<'a, R> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microco
 where
     R: 'static,
 {
-    #[allow(clippy::clippy::type_complexity)]
+    #[allow(clippy::type_complexity)]
     fn parse(
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microcode>>>> {
         parcel::one_of(vec![
+            <Call<addressing_mode::Absolute>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Jp<NonV0Indexed, addressing_mode::Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Jp<V0Indexed, addressing_mode::Absolute>>::default()
@@ -546,6 +548,23 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call<addressing_mode::Absolute>>
             .map(addressing_mode::Absolute::new)
             .map(Call::new)
             .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Call<addressing_mode::Absolute> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let current_pc = cpu.pc.read();
+        let addr = self.addressing_mode.addr();
+        // decrement 2 to account for PC incrementing.
+        let inc_adjusted_addr = u16::from(addr).wrapping_sub(2);
+
+        vec![
+            Microcode::PushStack(PushStack::new(current_pc)),
+            Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                inc_adjusted_addr,
+            )),
+        ]
     }
 }
 

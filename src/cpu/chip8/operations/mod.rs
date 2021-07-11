@@ -127,7 +127,7 @@ impl<'a, R> Parser<'a, &'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microco
 where
     R: 'static,
 {
-    #[allow(clippy::clippy::type_complexity)]
+    #[allow(clippy::type_complexity)]
     fn parse(
         &self,
         input: &'a [(usize, u8)],

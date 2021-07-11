@@ -154,7 +154,7 @@ impl Default for ProcessorStatus {
 
 impl Register<u8, u8> for ProcessorStatus {
     fn read(&self) -> u8 {
-        self.clone().into()
+        (*self).into()
     }
 
     fn write(self, value: u8) -> Self {

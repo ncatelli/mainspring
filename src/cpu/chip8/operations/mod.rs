@@ -134,6 +134,8 @@ where
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microcode>>>> {
         parcel::one_of(vec![
+            <Ret<addressing_mode::Implied>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Call<addressing_mode::Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Jp<NonV0Indexed, addressing_mode::Absolute>>::default()

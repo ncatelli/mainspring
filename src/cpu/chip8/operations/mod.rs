@@ -1,3 +1,4 @@
+use crate::address_map::SafeAddressable;
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::register::GpRegisters;
 use crate::cpu::chip8::u12::u12;
@@ -215,6 +216,22 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret<addressing_mode::Implied>>
         parcel::parsers::byte::expect_bytes(&[0x00, 0xee])
             .map(|_| Ret::default())
             .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ret<addressing_mode::Implied> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let current_sp = cpu.sp.read();
+        let ret_pc = cpu.stack.read(current_sp as usize);
+        let inc_adjusted_addr = u16::from(ret_pc).wrapping_sub(2);
+
+        vec![
+            Microcode::PopStack(PopStack::new(ret_pc)),
+            Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                inc_adjusted_addr,
+            )),
+        ]
     }
 }
 

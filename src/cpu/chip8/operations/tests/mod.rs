@@ -41,6 +41,28 @@ fn should_parse_ret_opcode() {
 }
 
 #[test]
+fn should_generate_ret_implied_instruction() {
+    let mut cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_pc_register(register::ProgramCounter::with_value(0x200));
+
+    cpu.stack.write(0x0, 0x200);
+
+    assert_eq!(
+        vec![
+            // save initial value
+            Microcode::PopStack(PopStack::new(0x200)),
+            // jump to absolute value - 2.
+            Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                0x1fe
+            ))
+        ],
+        Ret::default().generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_jump_absolute_opcode() {
     let input: Vec<(usize, u8)> = 0x1fffu16
         .to_be_bytes()

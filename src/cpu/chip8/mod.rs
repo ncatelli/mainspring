@@ -364,8 +364,8 @@ impl<R> crate::cpu::ExecuteMut<microcode::Dec16bitRegister> for Chip8<R> {
 
 impl<R> crate::cpu::ExecuteMut<microcode::PushStack> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::PushStack) {
-        // decrement stack pointer before doing any data writes.
-        let sp = self.sp.read().wrapping_sub(1);
+        // increment stack pointer before doing any data writes.
+        let sp = self.sp.read().wrapping_add(1);
         self.sp.write(sp);
 
         // push the value from mc onto the new stack location.
@@ -377,7 +377,11 @@ impl<R> crate::cpu::ExecuteMut<microcode::PushStack> for Chip8<R> {
 }
 
 impl<R> crate::cpu::ExecuteMut<microcode::PopStack> for Chip8<R> {
-    fn execute_mut(&mut self, _: &microcode::PopStack) {}
+    fn execute_mut(&mut self, _: &microcode::PopStack) {
+        // decrement stack pointer.
+        let sp = self.sp.read().wrapping_sub(1);
+        self.sp.write(sp);
+    }
 }
 
 #[cfg(test)]

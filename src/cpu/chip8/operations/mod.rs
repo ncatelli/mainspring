@@ -225,7 +225,7 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ret<addressing_mode::Implied> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let current_sp = cpu.sp.read();
         let ret_pc = cpu.stack.read(current_sp as usize);
-        let inc_adjusted_addr = u16::from(ret_pc).wrapping_sub(2);
+        let inc_adjusted_addr = ret_pc.wrapping_sub(2);
 
         vec![
             Microcode::PopStack(PopStack::new(ret_pc)),

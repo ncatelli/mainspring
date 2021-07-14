@@ -4,6 +4,10 @@ use crate::cpu::chip8::u12::u12;
 use crate::cpu::chip8::Chip8;
 use crate::cpu::register::Register;
 
+fn inst_to_enumerated_be_byte_vec(inst: u16) -> Vec<(usize, u8)> {
+    inst.to_be_bytes().iter().copied().enumerate().collect()
+}
+
 #[test]
 fn should_parse_cls_opcode() {
     let input: Vec<(usize, u8)> = 0x00e0u16
@@ -339,9 +343,9 @@ fn should_parse_load_bcd_from_vx_i_indirect_operation() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V8,))
+            inner: LdBcd::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V8,))
         }),
-        <Ld<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+        <LdBcd<addressing_mode::VxIIndirect>>::default().parse(&input[..])
     );
 }
 
@@ -361,7 +365,52 @@ fn should_generate_load_bcd_from_vx_i_indirect_operation() {
             Microcode::WriteMemory(WriteMemory::new(0x0101, 5)),
             Microcode::WriteMemory(WriteMemory::new(0x0102, 4)),
         ],
-        Ld::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V0,)).generate(&cpu)
+        LdBcd::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V0,)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_store_registers_to_memory_load_operation() {
+    let input: Vec<(usize, u8)> = inst_to_enumerated_be_byte_vec(0xF255u16);
+
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: StoreRegistersToMemory::new(addressing_mode::VxIIndirect::new(
+                register::GpRegisters::V2,
+            ))
+        }),
+        <StoreRegistersToMemory<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_store_registers_to_memory_load_operation() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0x01),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::<u8>::with_value(0x02),
+        )
+        .with_gp_register(
+            register::GpRegisters::V2,
+            register::GeneralPurpose::<u8>::with_value(0x03),
+        )
+        .with_i_register(register::GeneralPurpose::<u16>::with_value(0x0100));
+
+    assert_eq!(
+        vec![
+            Microcode::WriteMemory(WriteMemory::new(0x0100, 0x01)),
+            Microcode::WriteMemory(WriteMemory::new(0x0101, 0x02)),
+            Microcode::WriteMemory(WriteMemory::new(0x0102, 0x03)),
+        ],
+        StoreRegistersToMemory::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V2))
+            .generate(&cpu)
     );
 }
 

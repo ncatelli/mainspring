@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::address_map::SafeAddressable;
 use crate::cpu::chip8::register;
 use crate::cpu::chip8::register::GpRegisters;
@@ -152,7 +154,7 @@ where
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Ld<addressing_mode::DelayTimerSrcTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::VxIIndirect>>::default()
+            <LdBcd<addressing_mode::VxIIndirect>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Add<addressing_mode::Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
@@ -171,6 +173,8 @@ where
             <Se<addressing_mode::VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Se<addressing_mode::Immediate>>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+            <StoreRegistersToMemory<addressing_mode::VxIIndirect>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
         ])
         .parse(input)
@@ -511,24 +515,37 @@ const fn extract_ones_place(x: u8) -> u8 {
     (x % 100) % 10
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxIIndirect>>
-    for Ld<addressing_mode::VxIIndirect>
+/// Loads a Binary-Coded Decimal value into the location specified by the
+/// addressing mode.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct LdBcd<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> LdBcd<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdBcd<addressing_mode::VxIIndirect>>
+    for LdBcd<addressing_mode::VxIIndirect>
 {
     fn parse(
         &self,
         input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::VxIIndirect>> {
+    ) -> parcel::ParseResult<&'a [(usize, u8)], LdBcd<addressing_mode::VxIIndirect>> {
         expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x8)])
             .map(|[_, reg_id, _, _]| {
                 std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
             })
             .map(addressing_mode::VxIIndirect::new)
-            .map(Ld::new)
+            .map(LdBcd::new)
             .parse(input)
     }
 }
 
-impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::VxIIndirect> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdBcd<addressing_mode::VxIIndirect> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
         let hundreds = extract_hundreds_place(src_val);
@@ -540,6 +557,56 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::VxIIndirect> 
             Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 1, tens)),
             Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 2, ones)),
         ]
+    }
+}
+
+/// Represents the Load Indirect instruction to store a subset of registers at
+/// a memory offset defined by the contents of the I register.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct StoreRegistersToMemory<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> StoreRegistersToMemory<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], StoreRegistersToMemory<addressing_mode::VxIIndirect>>
+    for StoreRegistersToMemory<addressing_mode::VxIIndirect>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], StoreRegistersToMemory<addressing_mode::VxIIndirect>>
+    {
+        expect_instruction_with_mask([Some(0xF), None, Some(0x5), Some(0x5)])
+            .map(|[_, reg_id, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+            })
+            .map(addressing_mode::VxIIndirect::new)
+            .map(StoreRegistersToMemory::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>>
+    for StoreRegistersToMemory<addressing_mode::VxIIndirect>
+{
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_inclusive_end_idx = u8::from(self.addressing_mode.src);
+        (0..=reg_inclusive_end_idx)
+            .into_iter()
+            .filter(|idx| *idx <= 0x0f)
+            // safe to unwrap due to filter constraint
+            .map(|idx| GpRegisters::try_from(idx).unwrap())
+            .map(|reg| {
+                let src_val = cpu.read_gp_register(reg);
+                let i_idx = cpu.i.read() as u16 + reg as u16;
+                Microcode::WriteMemory(WriteMemory::new(i_idx, src_val))
+            })
+            .collect()
     }
 }
 

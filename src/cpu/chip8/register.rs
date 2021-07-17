@@ -15,7 +15,6 @@ pub enum WordRegisters {
 /// GpRegisters represents each type of general purpose registers,
 /// representable as a usize for indexing purposes.
 #[derive(Debug, PartialEq, Clone, Copy)]
-#[repr(usize)]
 pub enum GpRegisters {
     V0,
     V1,

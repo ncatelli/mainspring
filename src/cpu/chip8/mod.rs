@@ -44,10 +44,10 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
-/// InputValues represents all valid input keys that may be input from the
+/// KeyInputValue represents all valid input keys that may be input from the
 /// keyboard.
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub enum InputValues {
+pub enum KeyInputValue {
     Key0,
     Key1,
     Key2,
@@ -80,7 +80,7 @@ pub struct Chip8<R> {
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
     gp_registers: [register::GeneralPurpose<u8>; 0xf],
-    input_buffer: Option<InputValues>,
+    input_buffer: Option<KeyInputValue>,
     rng: R,
 }
 
@@ -148,7 +148,7 @@ impl<R> Chip8<R> {
     }
 
     /// Returns an instance of Chip8 with a new input value assigned to the input buffer.
-    pub fn with_input(self, input: InputValues) -> Self {
+    pub fn with_input(self, input: KeyInputValue) -> Self {
         Self {
             stack: self.stack,
             address_space: self.address_space,
@@ -487,9 +487,9 @@ mod tests {
 
     #[test]
     fn should_clear_input_idempotently() {
-        let cpu = Chip8::<()>::default().with_input(InputValues::Key0);
+        let cpu = Chip8::<()>::default().with_input(KeyInputValue::Key0);
 
-        assert_eq!(Some(InputValues::Key0), cpu.input_buffer);
+        assert_eq!(Some(KeyInputValue::Key0), cpu.input_buffer);
         assert_eq!(
             None,
             // clear input multiple times

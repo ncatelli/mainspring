@@ -979,8 +979,15 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Skp> for Skp {
 }
 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Skp {
-    fn generate(&self, _cpu: &Chip8<R>) -> Vec<Microcode> {
-        todo!()
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_val = cpu.read_gp_register(self.register);
+
+        match cpu.input_buffer {
+            Some(iv) if iv as u8 == reg_val => vec![Microcode::Inc16bitRegister(
+                Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
+            )],
+            _ => vec![],
+        }
     }
 }
 

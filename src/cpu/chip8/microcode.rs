@@ -151,11 +151,11 @@ impl PopStack {
 /// Represents a keypress coming in from an external keyboard.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct KeyPress {
-    pub value: chip8::InputValues,
+    pub value: chip8::KeyInputValue,
 }
 
 impl KeyPress {
-    pub fn new(value: chip8::InputValues) -> Self {
+    pub fn new(value: chip8::KeyInputValue) -> Self {
         Self { value }
     }
 }

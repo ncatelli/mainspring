@@ -135,46 +135,48 @@ where
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microcode>>>> {
+        use addressing_mode::*;
+
         parcel::one_of(vec![
-            <Ret<addressing_mode::Implied>>::default()
+            <Ret<Implied>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Call<addressing_mode::Absolute>>::default()
+            <Call<Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Jp<NonV0Indexed, addressing_mode::Absolute>>::default()
+            <Jp<NonV0Indexed, Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Jp<V0Indexed, addressing_mode::Absolute>>::default()
+            <Jp<V0Indexed, Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::Absolute>>::default()
+            <Ld<Absolute>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::VxVy>>::default()
+            <Ld<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::SoundTimerDestTx>>::default()
+            <Ld<SoundTimerDestTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::DelayTimerDestTx>>::default()
+            <Ld<DelayTimerDestTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::DelayTimerSrcTx>>::default()
+            <Ld<DelayTimerSrcTx>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <LdBcd<addressing_mode::VxIIndirect>>::default()
+            <LdBcd<VxIIndirect>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Add<addressing_mode::Immediate>>::default()
+            <Add<Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Add<addressing_mode::IRegisterIndexed>>::default()
+            <Add<IRegisterIndexed>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Add<addressing_mode::VxVy>>::default()
+            <Add<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Subn<addressing_mode::VxVy>>::default()
+            <Subn<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <And<addressing_mode::VxVy>>::default()
+            <And<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Or<addressing_mode::VxVy>>::default()
+            <Or<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Xor<addressing_mode::VxVy>>::default()
+            <Xor<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Se<addressing_mode::VxVy>>::default()
+            <Se<VxVy>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Se<addressing_mode::Immediate>>::default()
+            <Se<Immediate>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <StoreRegistersToMemory<addressing_mode::VxIIndirect>>::default()
+            <StoreRegistersToMemory<VxIIndirect>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Skp>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),

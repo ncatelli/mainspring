@@ -1290,3 +1290,59 @@ fn should_generate_skp_operation() {
         Skp::new(register::GpRegisters::V0).generate(&cpu_none)
     );
 }
+
+#[test]
+fn should_parse_sknp_opcode() {
+    let input: Vec<(usize, u8)> = 0xE0A1u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Sknp::new(register::GpRegisters::V0)
+        }),
+        <Sknp>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_sknp_operation() {
+    // a cpu with an input value set that matches.
+    let cpu_some_eq = Chip8::<()>::default()
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::<u8>::with_value(0x0f),
+        )
+        .with_input(chip8::KeyInputValue::KeyF);
+
+    assert_eq!(
+        Vec::<Microcode>::new(),
+        Sknp::new(register::GpRegisters::V0).generate(&cpu_some_eq)
+    );
+
+    // a cpu with an input value that doesn't match.
+    let cpu_some_ne = cpu_some_eq.clone().with_input(chip8::KeyInputValue::Key0);
+
+    assert_eq!(
+        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            2
+        ))],
+        Sknp::new(register::GpRegisters::V0).generate(&cpu_some_ne)
+    );
+
+    // a cpu without a key pressed.
+    let cpu_none = cpu_some_eq.clone().clear_input();
+
+    assert_eq!(
+        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            2
+        ))],
+        Sknp::new(register::GpRegisters::V0).generate(&cpu_none)
+    );
+}

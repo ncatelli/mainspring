@@ -176,6 +176,8 @@ where
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <StoreRegistersToMemory<addressing_mode::VxIIndirect>>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+            <Skp>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
         ])
         .parse(input)
     }
@@ -951,6 +953,47 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Or<addressing_mode::VxVy> {
             register::ByteRegisters::GpRegisters(self.addressing_mode.second),
             result,
         ))]
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Skp {
+    register: GpRegisters,
+}
+
+impl Skp {
+    pub fn new(register: GpRegisters) -> Self {
+        Self { register }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Skp> for Skp {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Skp> {
+        expect_instruction_with_mask([Some(0xE), None, Some(0x9), Some(0xE)])
+            .map(|[_, dest, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW)
+            })
+            .map(Skp::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Skp {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_val = cpu.read_gp_register(self.register);
+
+        match cpu.input_buffer {
+            Some(iv) if iv as u8 == reg_val => vec![Microcode::Inc16bitRegister(
+                Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
+            )],
+            _ => vec![],
+        }
+    }
+}
+
+impl Default for Skp {
+    fn default() -> Self {
+        Skp::new(GpRegisters::V0)
     }
 }
 

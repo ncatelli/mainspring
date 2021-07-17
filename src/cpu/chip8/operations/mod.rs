@@ -71,13 +71,22 @@ impl ToNibbleBytes for u8 {
     }
 }
 
-/// This function takes an array of four optional u8 values representing
-/// nibbles of an instruction. If the `Option` is set to `None`, any value will
-/// match for that nibble. If the `Option` is `Some`, the enclosed value will
-/// need to match the corresponding nibble of associated instruction.
-/// i.e. `[Some(0xf), None, None, None]` would match `[0xf, 0x1, 0x2, 0x3]`.
+/// Masks off nibbles for pattern matching in the parser.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NibbleMask<T> {
+    Fixed(T),
+    Variable,
+}
+
+/// This function takes an array of four masked u8 values representing
+/// nibbles of an instruction. If the `NibbleMask` is set to `Variable`, any
+/// 4-bit value will match for that nibble. If the `NibbleMask` is `Fixed`, the
+/// enclosed value will need to match the corresponding nibble of associated
+/// instruction. i.e.
+/// `[NibbleMask::Fixed(0xf), NibbleMask::Variable, NibbleMask::Variable, NibbleMask::Variable]`
+/// would match `[0xf, 0x1, 0x2, 0x3]`.
 fn expect_instruction_with_mask<'a>(
-    expected: [Option<u8>; 4],
+    expected: [NibbleMask<u8>; 4],
 ) -> impl Parser<'a, &'a [(usize, u8)], [u8; 4]> {
     move |input: &'a [(usize, u8)]| {
         parcel::take_n(parcel::parsers::byte::any_byte(), 2)
@@ -88,20 +97,20 @@ fn expect_instruction_with_mask<'a>(
     }
 }
 
-fn nibble_matches_mask(input: u8, expected: Option<u8>) -> bool {
+fn nibble_matches_mask(input: u8, expected: NibbleMask<u8>) -> bool {
     match expected {
         // return true if any value matches.
-        None => true,
+        NibbleMask::Variable => true,
         // return true if the exected value matches input.
-        Some(e) if e == input => true,
+        NibbleMask::Fixed(e) if e == input => true,
         // return false in all other cases
-        Some(_) => false,
+        NibbleMask::Fixed(_) => false,
     }
 }
 
 fn instruction_matches_nibble_mask(
     input: [u8; 4],
-    expected: [Option<u8>; 4],
+    expected: [NibbleMask<u8>; 4],
 ) -> Result<[u8; 4], String> {
     let nibble_matches = input
         .iter()
@@ -169,6 +178,7 @@ where
             Xor<VxVy>,
             Se<VxVy>,
             Se<Immediate>,
+            ReadRegistersFromMemory<VxIIndirect>,
             StoreRegistersToMemory<VxIIndirect>,
             Skp,
             Sknp,
@@ -275,11 +285,16 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<NonV0Indexed, addressing_mode:
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<NonV0Indexed, addressing_mode::Absolute>> {
-        expect_instruction_with_mask([Some(0x1), None, None, None])
-            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-            .map(addressing_mode::Absolute::new)
-            .map(Jp::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x1),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+        .map(addressing_mode::Absolute::new)
+        .map(Jp::new)
+        .parse(input)
     }
 }
 
@@ -301,11 +316,16 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Ab
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<V0Indexed, addressing_mode::Absolute>> {
-        expect_instruction_with_mask([Some(0xB), None, None, None])
-            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-            .map(addressing_mode::Absolute::new)
-            .map(Jp::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xB),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+        .map(addressing_mode::Absolute::new)
+        .map(Jp::new)
+        .parse(input)
     }
 }
 
@@ -341,11 +361,16 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Absolute>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Absolute>> {
-        expect_instruction_with_mask([Some(0xA), None, None, None])
-            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-            .map(addressing_mode::Absolute::new)
-            .map(Ld::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xA),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+        .map(addressing_mode::Absolute::new)
+        .map(Ld::new)
+        .parse(input)
     }
 }
 
@@ -365,14 +390,19 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([Some(0x6), None, None, None])
-            .map(|[_, dest, msb, lsb]| {
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (dest_reg, u8_from_nibbles(msb, lsb))
-            })
-            .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
-            .map(Ld::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x6),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, dest, msb, lsb]| {
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (dest_reg, u8_from_nibbles(msb, lsb))
+        })
+        .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
+        .map(Ld::new)
+        .parse(input)
     }
 }
 
@@ -392,15 +422,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x0)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Ld::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x0),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Ld::new)
+        .parse(input)
     }
 }
 
@@ -422,13 +457,18 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerDes
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::SoundTimerDestTx>> {
-        expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x8)])
-            .map(|[_, reg_id, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-            })
-            .map(addressing_mode::SoundTimerDestTx::new)
-            .map(Ld::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x1),
+            NibbleMask::Fixed(0x8),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::SoundTimerDestTx::new)
+        .map(Ld::new)
+        .parse(input)
     }
 }
 
@@ -450,13 +490,18 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerDes
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerDestTx>> {
-        expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x5)])
-            .map(|[_, reg_id, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-            })
-            .map(addressing_mode::DelayTimerDestTx::new)
-            .map(Ld::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x1),
+            NibbleMask::Fixed(0x5),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::DelayTimerDestTx::new)
+        .map(Ld::new)
+        .parse(input)
     }
 }
 
@@ -478,13 +523,18 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrc
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrcTx>> {
-        expect_instruction_with_mask([Some(0xF), None, Some(0x0), Some(0x7)])
-            .map(|[_, reg_id, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-            })
-            .map(addressing_mode::DelayTimerSrcTx::new)
-            .map(Ld::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x0),
+            NibbleMask::Fixed(0x7),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::DelayTimerSrcTx::new)
+        .map(Ld::new)
+        .parse(input)
     }
 }
 
@@ -531,13 +581,18 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdBcd<addressing_mode::VxIIndirec
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], LdBcd<addressing_mode::VxIIndirect>> {
-        expect_instruction_with_mask([Some(0xF), None, Some(0x1), Some(0x8)])
-            .map(|[_, reg_id, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-            })
-            .map(addressing_mode::VxIIndirect::new)
-            .map(LdBcd::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x1),
+            NibbleMask::Fixed(0x8),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::VxIIndirect::new)
+        .map(LdBcd::new)
+        .parse(input)
     }
 }
 
@@ -553,6 +608,67 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdBcd<addressing_mode::VxIIndirec
             Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 1, tens)),
             Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 2, ones)),
         ]
+    }
+}
+
+/// Represents the Load Indirect instruction to store a subset of registers at
+/// a memory offset defined by the contents of the I register.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct ReadRegistersFromMemory<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> ReadRegistersFromMemory<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a>
+    parcel::Parser<'a, &'a [(usize, u8)], ReadRegistersFromMemory<addressing_mode::VxIIndirect>>
+    for ReadRegistersFromMemory<addressing_mode::VxIIndirect>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], ReadRegistersFromMemory<addressing_mode::VxIIndirect>>
+    {
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x6),
+            NibbleMask::Fixed(0x5),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::VxIIndirect::new)
+        .map(ReadRegistersFromMemory::new)
+        .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>>
+    for ReadRegistersFromMemory<addressing_mode::VxIIndirect>
+{
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_inclusive_end_idx = u8::from(self.addressing_mode.src);
+        (0..=reg_inclusive_end_idx)
+            .into_iter()
+            .filter(|idx| *idx <= 0x0f)
+            // safe to unwrap due to filter constraint
+            .map(|idx| GpRegisters::try_from(idx).unwrap())
+            .map(|reg| {
+                use crate::address_map::Addressable;
+                let i_idx = cpu.i.read() as u16 + reg as u16;
+                let i_indirect_val = cpu.address_space.read(i_idx);
+
+                Microcode::Write8bitRegister(Write8bitRegister::new(
+                    register::ByteRegisters::GpRegisters(reg),
+                    i_indirect_val,
+                ))
+            })
+            .collect()
     }
 }
 
@@ -577,13 +693,18 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], StoreRegistersToMemory<addressing
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], StoreRegistersToMemory<addressing_mode::VxIIndirect>>
     {
-        expect_instruction_with_mask([Some(0xF), None, Some(0x5), Some(0x5)])
-            .map(|[_, reg_id, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-            })
-            .map(addressing_mode::VxIIndirect::new)
-            .map(StoreRegistersToMemory::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x5),
+            NibbleMask::Fixed(0x5),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::VxIIndirect::new)
+        .map(StoreRegistersToMemory::new)
+        .parse(input)
     }
 }
 
@@ -625,11 +746,16 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call<addressing_mode::Absolute>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Call<addressing_mode::Absolute>> {
-        expect_instruction_with_mask([Some(0x2), None, None, None])
-            .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-            .map(addressing_mode::Absolute::new)
-            .map(Call::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x2),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
+        .map(addressing_mode::Absolute::new)
+        .map(Call::new)
+        .parse(input)
     }
 }
 
@@ -670,14 +796,19 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([Some(0x7), None, None, None])
-            .map(|[_, dest, msb, lsb]| {
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (dest_reg, u8_from_nibbles(msb, lsb))
-            })
-            .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
-            .map(Add::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x7),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, dest, msb, lsb]| {
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (dest_reg, u8_from_nibbles(msb, lsb))
+        })
+        .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
+        .map(Add::new)
+        .parse(input)
     }
 }
 
@@ -697,13 +828,18 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::IRegisterInd
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::IRegisterIndexed>> {
-        expect_instruction_with_mask([Some(0xf), None, Some(0x1), Some(0xe)])
-            .map(|[_, reg_id, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-            })
-            .map(addressing_mode::IRegisterIndexed::new)
-            .map(Add::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xf),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x1),
+            NibbleMask::Fixed(0xe),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(addressing_mode::IRegisterIndexed::new)
+        .map(Add::new)
+        .parse(input)
     }
 }
 
@@ -724,15 +860,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x4)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Add::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x4),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Add::new)
+        .parse(input)
     }
 }
 
@@ -777,15 +918,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sub<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Sub<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x5)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Sub::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x5),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Sub::new)
+        .parse(input)
     }
 }
 
@@ -830,15 +976,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Subn<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Subn<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x7)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Subn::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x7),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Subn::new)
+        .parse(input)
     }
 }
 
@@ -881,15 +1032,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], And<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x2)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(And::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x2),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(And::new)
+        .parse(input)
     }
 }
 
@@ -925,15 +1081,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Or<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x1)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Or::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x1),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Or::new)
+        .parse(input)
     }
 }
 
@@ -965,12 +1126,15 @@ impl Skp {
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Skp> for Skp {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Skp> {
-        expect_instruction_with_mask([Some(0xE), None, Some(0x9), Some(0xE)])
-            .map(|[_, dest, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW)
-            })
-            .map(Skp::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xE),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x9),
+            NibbleMask::Fixed(0xE),
+        ])
+        .map(|[_, dest, _, _]| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
+        .map(Skp::new)
+        .parse(input)
     }
 }
 
@@ -1009,12 +1173,15 @@ impl Sknp {
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sknp> for Sknp {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Sknp> {
-        expect_instruction_with_mask([Some(0xE), None, Some(0xA), Some(0x1)])
-            .map(|[_, dest, _, _]| {
-                std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW)
-            })
-            .map(Sknp::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xE),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0xA),
+            NibbleMask::Fixed(0x1),
+        ])
+        .map(|[_, dest, _, _]| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
+        .map(Sknp::new)
+        .parse(input)
     }
 }
 
@@ -1057,15 +1224,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Xor<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x8), None, None, Some(0x3)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Xor::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x3),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Xor::new)
+        .parse(input)
     }
 }
 
@@ -1101,14 +1273,19 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([Some(0x3), None, None, None])
-            .map(|[_, reg_id, msb, lsb]| {
-                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-                (reg, u8_from_nibbles(msb, lsb))
-            })
-            .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
-            .map(Se::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x3),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, reg_id, msb, lsb]| {
+            let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
+            (reg, u8_from_nibbles(msb, lsb))
+        })
+        .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
+        .map(Se::new)
+        .parse(input)
     }
 }
 
@@ -1135,15 +1312,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x5), None, None, Some(0x0)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Se::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x5),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x0),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Se::new)
+        .parse(input)
     }
 }
 
@@ -1182,14 +1364,19 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sne<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Sne<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([Some(0x4), None, None, None])
-            .map(|[_, reg_id, msb, lsb]| {
-                let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-                (reg, u8_from_nibbles(msb, lsb))
-            })
-            .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
-            .map(Sne::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x4),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, reg_id, msb, lsb]| {
+            let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
+            (reg, u8_from_nibbles(msb, lsb))
+        })
+        .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
+        .map(Sne::new)
+        .parse(input)
     }
 }
 
@@ -1216,15 +1403,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sne<addressing_mode::VxVy>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Sne<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([Some(0x9), None, None, Some(0x0)])
-            .map(|[_, dest, src, _]| {
-                let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (src_reg, dest_reg)
-            })
-            .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-            .map(Sne::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x9),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x0),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Sne::new)
+        .parse(input)
     }
 }
 
@@ -1263,14 +1455,19 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Rnd<addressing_mode::Immediate>>
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Rnd<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([Some(0xC), None, None, None])
-            .map(|[_, dest, msb, lsb]| {
-                let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-                (dest_reg, u8_from_nibbles(msb, lsb))
-            })
-            .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
-            .map(Rnd::new)
-            .parse(input)
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xC),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+        ])
+        .map(|[_, dest, msb, lsb]| {
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (dest_reg, u8_from_nibbles(msb, lsb))
+        })
+        .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
+        .map(Rnd::new)
+        .parse(input)
     }
 }
 

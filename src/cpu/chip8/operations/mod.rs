@@ -121,6 +121,18 @@ fn instruction_matches_nibble_mask(
     }
 }
 
+macro_rules! construct_microcode_generators_from_instruction_parser {
+    ($($inst:ty,)*) => {
+        vec![
+            $(
+            <$inst>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+
+            )*
+        ]
+    };
+}
+
 /// Provides a Parser type for the OpcodeVariant enum. Constructing an
 /// OpcodeVariant from a stream of bytes.
 pub struct OpcodeVariantParser;
@@ -135,52 +147,32 @@ where
         &self,
         input: &'a [(usize, u8)],
     ) -> parcel::ParseResult<&'a [(usize, u8)], Box<dyn Generate<Chip8<R>, Vec<Microcode>>>> {
-        parcel::one_of(vec![
-            <Ret<addressing_mode::Implied>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Call<addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Jp<NonV0Indexed, addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Jp<V0Indexed, addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::Absolute>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::SoundTimerDestTx>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::DelayTimerDestTx>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Ld<addressing_mode::DelayTimerSrcTx>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <LdBcd<addressing_mode::VxIIndirect>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Add<addressing_mode::Immediate>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Add<addressing_mode::IRegisterIndexed>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Add<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Subn<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <And<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Or<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Xor<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Se<addressing_mode::VxVy>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Se<addressing_mode::Immediate>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <StoreRegistersToMemory<addressing_mode::VxIIndirect>>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Skp>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-            <Sknp>::default()
-                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
-        ])
+        use addressing_mode::*;
+
+        parcel::one_of(construct_microcode_generators_from_instruction_parser!(
+            Ret<Implied>,
+            Call<Absolute>,
+            Jp<NonV0Indexed, Absolute>,
+            Jp<V0Indexed, Absolute>,
+            Ld<Absolute>,
+            Ld<VxVy>,
+            Ld<SoundTimerDestTx>,
+            Ld<DelayTimerDestTx>,
+            Ld<DelayTimerSrcTx>,
+            LdBcd<VxIIndirect>,
+            Add<Immediate>,
+            Add<IRegisterIndexed>,
+            Add<VxVy>,
+            Subn<VxVy>,
+            And<VxVy>,
+            Or<VxVy>,
+            Xor<VxVy>,
+            Se<VxVy>,
+            Se<Immediate>,
+            StoreRegistersToMemory<VxIIndirect>,
+            Skp,
+            Sknp,
+        ))
         .parse(input)
     }
 }

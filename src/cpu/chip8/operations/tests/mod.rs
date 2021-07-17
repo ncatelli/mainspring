@@ -368,7 +368,56 @@ fn should_generate_load_bcd_from_vx_i_indirect_operation() {
 }
 
 #[test]
-fn should_parse_store_registers_to_memory_load_operation() {
+fn should_parse_read_registers_from_memory_operation() {
+    let input: Vec<(usize, u8)> = inst_to_enumerated_be_byte_vec(0xF265u16);
+
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: ReadRegistersFromMemory::new(addressing_mode::VxIIndirect::new(
+                register::GpRegisters::V2,
+            ))
+        }),
+        <ReadRegistersFromMemory<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_read_registers_from_memory_operation() {
+    use crate::address_map::Addressable;
+
+    let base_i_addr = 0x200;
+    let mut cpu = Chip8::<()>::default()
+        .with_i_register(register::GeneralPurpose::<u16>::with_value(base_i_addr));
+
+    for v in 1..4 {
+        let addr_offset = base_i_addr + (v as u16 - 1);
+        cpu.address_space.write(addr_offset, v).unwrap();
+    }
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0x01
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V1),
+                0x02
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V2),
+                0x03
+            )),
+        ],
+        ReadRegistersFromMemory::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V2))
+            .generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_store_registers_to_memory_operation() {
     let input: Vec<(usize, u8)> = inst_to_enumerated_be_byte_vec(0xF255u16);
 
     assert_eq!(
@@ -384,7 +433,7 @@ fn should_parse_store_registers_to_memory_load_operation() {
 }
 
 #[test]
-fn should_generate_store_registers_to_memory_load_operation() {
+fn should_generate_store_registers_to_memory_operation() {
     let cpu = Chip8::<()>::default()
         .with_rng(|| 0u8)
         .with_gp_register(

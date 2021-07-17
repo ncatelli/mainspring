@@ -1,4 +1,7 @@
-use crate::cpu::chip8::register::{ByteRegisters, WordRegisters};
+use crate::cpu::chip8::{
+    self,
+    register::{ByteRegisters, WordRegisters},
+};
 
 /// An Enumerable type to store each microcode operation possible on the
 /// CHIP-8 simulator.
@@ -13,6 +16,8 @@ pub enum Microcode {
     Dec16bitRegister(Dec16bitRegister),
     PushStack(PushStack),
     PopStack(PopStack),
+    KeyPress(KeyPress),
+    KeyRelease,
 }
 
 /// Represents a write of the value to the memory location specified by the
@@ -140,5 +145,27 @@ pub struct PopStack {
 impl PopStack {
     pub fn new(value: u16) -> Self {
         Self { value }
+    }
+}
+
+/// Represents a keypress coming in from an external keyboard.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct KeyPress {
+    pub value: chip8::InputValues,
+}
+
+impl KeyPress {
+    pub fn new(value: chip8::InputValues) -> Self {
+        Self { value }
+    }
+}
+
+/// Represents the inverse of KeyPress, a key being released.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct KeyRelease;
+
+impl KeyRelease {
+    pub fn new() -> Self {
+        Self
     }
 }

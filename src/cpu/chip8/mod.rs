@@ -44,6 +44,28 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
+/// InputValues represents all valid input keys that may be input from the
+/// keyboard.
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum InputValues {
+    Key0,
+    Key1,
+    Key2,
+    Key3,
+    Key4,
+    Key5,
+    Key6,
+    Key7,
+    Key8,
+    Key9,
+    KeyA,
+    KeyB,
+    KeyC,
+    KeyD,
+    KeyE,
+    KeyF,
+}
+
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 
@@ -58,6 +80,7 @@ pub struct Chip8<R> {
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
     gp_registers: [register::GeneralPurpose<u8>; 0xf],
+    input_buffer: Option<InputValues>,
     rng: R,
 }
 
@@ -119,7 +142,40 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
+            input_buffer: self.input_buffer,
             rng,
+        }
+    }
+
+    /// Returns an instance of Chip8 with a new input value assigned to the input buffer.
+    pub fn with_input(self, input: InputValues) -> Self {
+        Self {
+            stack: self.stack,
+            address_space: self.address_space,
+            dt: self.dt,
+            st: self.st,
+            pc: self.pc,
+            sp: self.sp,
+            i: self.i,
+            gp_registers: self.gp_registers,
+            input_buffer: Some(input),
+            rng: self.rng,
+        }
+    }
+
+    /// Returns an instance of Chip8 with a cleared input buffer.
+    pub fn clear_input(self) -> Self {
+        Self {
+            stack: self.stack,
+            address_space: self.address_space,
+            dt: self.dt,
+            st: self.st,
+            pc: self.pc,
+            sp: self.sp,
+            i: self.i,
+            gp_registers: self.gp_registers,
+            input_buffer: None,
+            rng: self.rng,
         }
     }
 }
@@ -157,6 +213,7 @@ where
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
             gp_registers: [register::GeneralPurpose::default(); 0xf],
+            input_buffer: None,
             rng: <R>::default(),
         }
     }
@@ -275,6 +332,8 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             microcode::Microcode::Dec16bitRegister(mc) => self.execute_mut(mc),
             microcode::Microcode::PushStack(mc) => self.execute_mut(mc),
             microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
+            microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
+            microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
         }
     }
 }
@@ -385,6 +444,18 @@ impl<R> crate::cpu::ExecuteMut<microcode::PopStack> for Chip8<R> {
     }
 }
 
+impl<R> crate::cpu::ExecuteMut<microcode::KeyPress> for Chip8<R> {
+    fn execute_mut(&mut self, mc: &microcode::KeyPress) {
+        self.input_buffer = Some(mc.value);
+    }
+}
+
+impl<R> crate::cpu::ExecuteMut<microcode::KeyRelease> for Chip8<R> {
+    fn execute_mut(&mut self, _: &microcode::KeyRelease) {
+        self.input_buffer = None;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -412,5 +483,17 @@ mod tests {
 
         let state = cpu.run(1).unwrap();
         assert_eq!(0xff, state.read_gp_register(register::GpRegisters::V0))
+    }
+
+    #[test]
+    fn should_clear_input_idempotently() {
+        let cpu = Chip8::<()>::default().with_input(InputValues::Key0);
+
+        assert_eq!(Some(InputValues::Key0), cpu.input_buffer);
+        assert_eq!(
+            None,
+            // clear input multiple times
+            cpu.clear_input().clear_input().input_buffer
+        )
     }
 }

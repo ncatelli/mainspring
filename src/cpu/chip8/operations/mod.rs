@@ -178,6 +178,8 @@ where
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
             <Skp>::default()
                 .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
+            <Sknp>::default()
+                .map(|opc| Box::new(opc) as Box<dyn Generate<Chip8<R>, Vec<Microcode>>>),
         ])
         .parse(input)
     }
@@ -1035,6 +1037,12 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sknp {
                 2,
             ))],
         }
+    }
+}
+
+impl Default for Sknp {
+    fn default() -> Self {
+        Sknp::new(GpRegisters::V0)
     }
 }
 

@@ -956,6 +956,8 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Or<addressing_mode::VxVy> {
     }
 }
 
+/// Represents the `SKP Vx` instruction. This instruction skips the next
+/// instruction if the value in register `Vx` matches the pressed, if any, key.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Skp {
     register: GpRegisters,
@@ -994,6 +996,45 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Skp {
 impl Default for Skp {
     fn default() -> Self {
         Skp::new(GpRegisters::V0)
+    }
+}
+
+/// Represents the `SKNP Vx` instruction. This instruction skips the next
+/// instruction if value in register `Vx` does not match the key, if any,
+/// pressed.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Sknp {
+    register: GpRegisters,
+}
+
+impl Sknp {
+    pub fn new(register: GpRegisters) -> Self {
+        Self { register }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sknp> for Sknp {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Sknp> {
+        expect_instruction_with_mask([Some(0xE), None, Some(0xA), Some(0x1)])
+            .map(|[_, dest, _, _]| {
+                std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW)
+            })
+            .map(Sknp::new)
+            .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sknp {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let reg_val = cpu.read_gp_register(self.register);
+
+        match cpu.input_buffer {
+            Some(iv) if iv as u8 == reg_val => vec![],
+            _ => vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))],
+        }
     }
 }
 

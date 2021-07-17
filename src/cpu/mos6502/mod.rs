@@ -102,7 +102,7 @@ impl Mos6502 {
         Ok(self)
     }
 
-    /// emulates the reset process of the CPU.
+    /// Simulates the reset process of the CPU.
     pub fn reset(self) -> StepState<Self> {
         let mut cpu = Mos6502::with_addressmap(self.address_map);
         let lsb: u8 = cpu.address_map.read(RESET_VECTOR_LL);
@@ -113,7 +113,7 @@ impl Mos6502 {
         StepState::new(6, cpu)
     }
 
-    /// emulates the reset process of the CPU, exporting the options as a Operations type
+    /// Simulates the reset process of the CPU, exporting the options as a Operations type
     pub fn reset_as_mops(&self) -> operations::Operations {
         let lsb: u8 = self.address_map.read(RESET_VECTOR_LL);
         let msb: u8 = self.address_map.read(RESET_VECTOR_HH);

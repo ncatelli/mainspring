@@ -1,5 +1,5 @@
 # mainspring
-A CPU device and emulation framework focused on extensibility and flexibility of hardware layouts.
+A CPU and device simulation framework focused on extensibility and flexibility of hardware layouts.
 
 <!-- TOC -->
 
@@ -21,7 +21,7 @@ The framework comes with both traits and types to assist users with implementati
 
 ### Reference Implementations
 #### MOS 6502
-The [MOS 6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) is the first cpu emulated in this example and is used heavily as the basis for most of the traits and examples. Basic usages and hardware layouts can be found in the [examples](./examples/) directory.
+The [MOS 6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) is the first cpu simulated in this example and is used heavily as the basis for most of the traits and examples. Basic usages and hardware layouts can be found in the [examples](./examples/) directory.
 
 #### CHIP-8
 [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8).

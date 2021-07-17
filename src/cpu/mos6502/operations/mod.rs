@@ -191,7 +191,7 @@ impl Rol for Operand<u8> {
 
     fn rol(self, other: Self, carry: bool) -> Self::Output {
         let (lhs, rhs) = (self.unwrap(), other.unwrap());
-        let carry_in = carry as u8; // bool translates to 1 or 0 emulating 0th bit.
+        let carry_in = carry as u8; // bool translates to 1 or 0 representing 0th bit.
         let carry_out = bit_is_set(lhs, 7);
         let shifted = Operand::new(lhs << rhs | carry_in);
 

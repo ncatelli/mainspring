@@ -161,11 +161,11 @@ impl KeyPress {
 }
 
 /// Represents the inverse of KeyPress, a key being released.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct KeyRelease;
 
 impl KeyRelease {
     pub fn new() -> Self {
-        Self
+        Self::default()
     }
 }

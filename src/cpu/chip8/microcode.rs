@@ -1,7 +1,7 @@
 use crate::cpu::chip8::register::{ByteRegisters, WordRegisters};
 
 /// An Enumerable type to store each microcode operation possible on the
-/// CHIP-8 emulator.
+/// CHIP-8 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
     WriteMemory(WriteMemory),

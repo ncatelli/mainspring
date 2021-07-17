@@ -5,7 +5,7 @@
 use crate::cpu::mos6502::register::{ByteRegisters, ProgramStatusFlags, WordRegisters};
 
 /// An Enumerable type to store each microcode operation possible on the
-/// 6502 emulator.
+/// 6502 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
     WriteMemory(WriteMemory),

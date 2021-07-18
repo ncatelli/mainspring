@@ -176,6 +176,7 @@ where
             And<VxVy>,
             Or<VxVy>,
             Shl<VxVy>,
+            Shr<VxVy>,
             Xor<VxVy>,
             Se<VxVy>,
             Se<Immediate>,
@@ -1255,7 +1256,7 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Xor<addressing_mode::VxVy> {
     }
 }
 
-/// Shl represents a binary ^ operation.
+/// Shl represents a binary << operation.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Shl<A> {
     pub addressing_mode: A,
@@ -1294,11 +1295,69 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Shl<addressing_mode::VxVy>>
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Shl<addressing_mode::VxVy> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
+        // Set flags to 1 if MSB is 1
         let flags = dest_val >> 7;
         let result = dest_val << 1;
 
         vec![
             // write overflow if the MSB is 1
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                flags,
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(self.addressing_mode.second),
+                result,
+            )),
+        ]
+    }
+}
+
+/// Shr represents a binary >> operation.
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Shr<A> {
+    pub addressing_mode: A,
+}
+
+impl<A> Shr<A> {
+    pub fn new(addressing_mode: A) -> Self {
+        Self { addressing_mode }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Shr<addressing_mode::VxVy>>
+    for Shr<addressing_mode::VxVy>
+{
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> parcel::ParseResult<&'a [(usize, u8)], Shr<addressing_mode::VxVy>> {
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0x8),
+            NibbleMask::Variable,
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x6),
+        ])
+        .map(|[_, dest, src, _]| {
+            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
+            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
+            (src_reg, dest_reg)
+        })
+        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
+        .map(Shr::new)
+        .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Shr<addressing_mode::VxVy> {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let dest_val = cpu.read_gp_register(self.addressing_mode.second);
+        // Set flags to 1 if LSB is 1
+        let flags = dest_val & 1;
+        let result = dest_val >> 1;
+
+        vec![
+            // write flags if the LSB is 1
             Microcode::Write8bitRegister(Write8bitRegister::new(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 flags,

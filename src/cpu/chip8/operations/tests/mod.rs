@@ -948,7 +948,7 @@ fn should_parse_shl_vxvy_with_flag_operation() {
 
 #[test]
 fn should_generate_shl_vxvy_with_flag_operation_that_overflows_byte_capacity() {
-    let cpu = Chip8::<()>::default().with_rng(|| 0u8).with_gp_register(
+    let cpu = Chip8::<()>::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0x81u8),
     );
@@ -970,7 +970,7 @@ fn should_generate_shl_vxvy_with_flag_operation_that_overflows_byte_capacity() {
 
 #[test]
 fn should_generate_shl_vxvy_with_flag_operation_that_does_not_overflow_byte_capacity() {
-    let cpu = Chip8::<()>::default().with_rng(|| 0u8).with_gp_register(
+    let cpu = Chip8::<()>::default().with_gp_register(
         register::GpRegisters::V0,
         register::GeneralPurpose::<u8>::with_value(0x01),
     );
@@ -987,6 +987,68 @@ fn should_generate_shl_vxvy_with_flag_operation_that_does_not_overflow_byte_capa
             ))
         ],
         Shl::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_parse_shr_vxvy_with_flag_operation() {
+    let input: Vec<(usize, u8)> = 0x8016u16
+        .to_be_bytes()
+        .iter()
+        .copied()
+        .enumerate()
+        .collect();
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: Shr::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
+        }),
+        <Shr<addressing_mode::VxVy>>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_shr_vxvy_with_flag_operation_that_overflows_byte_capacity() {
+    let cpu = Chip8::<()>::default().with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::<u8>::with_value(0x03u8),
+    );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x01
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0x01
+            ))
+        ],
+        Shr::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_shr_vxvy_with_flag_operation_that_does_not_overflow_byte_capacity() {
+    let cpu = Chip8::<()>::default().with_gp_register(
+        register::GpRegisters::V0,
+        register::GeneralPurpose::<u8>::with_value(0x8),
+    );
+
+    assert_eq!(
+        vec![
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::Vf),
+                0x0
+            )),
+            Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(GpRegisters::V0),
+                0x4
+            ))
+        ],
+        Shr::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
 }
 

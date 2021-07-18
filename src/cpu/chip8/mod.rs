@@ -66,6 +66,8 @@ pub enum KeyInputValue {
     KeyF,
 }
 
+type Display = [[bool; 64]; 32];
+
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 
@@ -80,6 +82,7 @@ pub struct Chip8<R> {
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
     gp_registers: [register::GeneralPurpose<u8>; 0xf],
+    display: Display,
     input_buffer: Option<KeyInputValue>,
     rng: R,
 }
@@ -142,6 +145,7 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
+            display: self.display,
             input_buffer: self.input_buffer,
             rng,
         }
@@ -158,6 +162,7 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
+            display: self.display,
             input_buffer: Some(input),
             rng: self.rng,
         }
@@ -174,6 +179,7 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
+            display: self.display,
             input_buffer: None,
             rng: self.rng,
         }
@@ -213,6 +219,7 @@ where
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
             gp_registers: [register::GeneralPurpose::default(); 0xf],
+            display: [[false; 64]; 32],
             input_buffer: None,
             rng: <R>::default(),
         }

@@ -57,7 +57,7 @@ fn should_parse_ret_opcode() {
 }
 
 #[test]
-fn should_generate_ret_implied_instruction() {
+fn should_generate_ret_instruction() {
     let mut cpu = Chip8::<()>::default()
         .with_rng(|| 0u8)
         .with_pc_register(register::ProgramCounter::with_value(0x200));

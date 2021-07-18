@@ -190,9 +190,9 @@ impl SetDisplayPixel {
 /// within the bounds of the enclosed start and end cartesian coordinates.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct SetDisplayRange {
-    start: CartesianCoordinate,
-    end: CartesianCoordinate,
-    value: bool,
+    pub start: CartesianCoordinate,
+    pub end: CartesianCoordinate,
+    pub value: bool,
 }
 
 impl SetDisplayRange {

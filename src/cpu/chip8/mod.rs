@@ -105,6 +105,16 @@ impl Display {
 
     /// sets the value of the pixel specified by the cartesian coordinates `x`,
     /// `y` to the boolean value specified by `pixel_on`. If the coordinates
+    /// are within range, a `(Self, Option::Some(bool))` with the previous
+    /// value of the pixel is returned. Otherwise `(Self, Option::None)` is
+    /// returned.
+    pub fn write_pixel(mut self, x: usize, y: usize, pixel_on: bool) -> (Self, Option<bool>) {
+        let modified = self.write_pixel_mut(x, y, pixel_on);
+        (self, modified)
+    }
+
+    /// sets the value of the pixel specified by the cartesian coordinates `x`,
+    /// `y` to the boolean value specified by `pixel_on`. If the coordinates
     /// are within range, an `Option::Some(bool)` with the previous value of
     /// the pixel is returned. Otherwise `Option::None` is returned.
     pub fn write_pixel_mut(&mut self, x: usize, y: usize, pixel_on: bool) -> Option<bool> {
@@ -400,7 +410,7 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
             microcode::Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),
-            microcode::Microcode::SetDisplayRange(_) => todo!(),
+            microcode::Microcode::SetDisplayRange(mc) => self.execute_mut(mc),
         }
     }
 }
@@ -530,6 +540,27 @@ impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayPixel> for Chip8<R> {
     }
 }
 
+impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayRange> for Chip8<R> {
+    fn execute_mut(&mut self, mc: &microcode::SetDisplayRange) {
+        let microcode::SetDisplayRange {
+            start: (start_x, start_y),
+            end: (end_x, end_y),
+            value: pixel_value,
+        } = *mc;
+
+        let start_offset = (start_y * Display::x_max()) + start_x;
+        // add 1 to cover non-inclusive range.
+        let modified = ((end_y - start_y) * Display::x_max()) + (end_x - start_x) + 1;
+        self.display
+            .inner
+            .iter_mut()
+            .flatten()
+            .skip(start_offset)
+            .take(modified)
+            .for_each(|pixel| *pixel = pixel_value);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -569,5 +600,28 @@ mod tests {
             // clear input multiple times
             cpu.with_input(|| None).with_input(|| None).input_buffer
         )
+    }
+
+    #[test]
+    fn should_set_a_given_pixel_to_a_given_value() {
+        let cpu = Chip8::<()>::default().with_display(|d| d.write_pixel(1, 1, true).0);
+
+        assert_eq!(Some(false), cpu.display.pixel(2, 1));
+        assert_eq!(Some(true), cpu.display.pixel(1, 1));
+        assert_eq!(Some(false), cpu.display.pixel(1, 2));
+    }
+
+    #[test]
+    fn should_set_a_given_pixel_range_to_a_given_value() {
+        let mut cpu = Chip8::<()>::default();
+
+        ExecuteMut::<microcode::SetDisplayRange>::execute_mut(
+            &mut cpu,
+            &microcode::SetDisplayRange::new((0, 0), (63, 31), true),
+        );
+
+        for (pos, &v) in cpu.display.inner.iter().flatten().enumerate() {
+            assert_eq!(true, v, "no match for position: {}, {}", pos, v);
+        }
     }
 }

@@ -1437,7 +1437,7 @@ fn should_generate_skp_operation() {
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0x0f),
         )
-        .with_input(chip8::KeyInputValue::KeyF);
+        .with_input(|| Some(chip8::KeyInputValue::KeyF));
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
@@ -1448,7 +1448,9 @@ fn should_generate_skp_operation() {
     );
 
     // a cpu with an input value that doesn't match.
-    let cpu_some_ne = cpu_some_eq.clone().with_input(chip8::KeyInputValue::Key0);
+    let cpu_some_ne = cpu_some_eq
+        .clone()
+        .with_input(|| Some(chip8::KeyInputValue::Key0));
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1456,7 +1458,7 @@ fn should_generate_skp_operation() {
     );
 
     // a cpu without a key pressed.
-    let cpu_none = cpu_some_eq.clone().clear_input();
+    let cpu_none = cpu_some_eq.clone().with_input(|| None);
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1490,7 +1492,7 @@ fn should_generate_sknp_operation() {
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0x0f),
         )
-        .with_input(chip8::KeyInputValue::KeyF);
+        .with_input(|| Some(chip8::KeyInputValue::KeyF));
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1498,7 +1500,9 @@ fn should_generate_sknp_operation() {
     );
 
     // a cpu with an input value that doesn't match.
-    let cpu_some_ne = cpu_some_eq.clone().with_input(chip8::KeyInputValue::Key0);
+    let cpu_some_ne = cpu_some_eq
+        .clone()
+        .with_input(|| Some(chip8::KeyInputValue::Key0));
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
@@ -1509,7 +1513,7 @@ fn should_generate_sknp_operation() {
     );
 
     // a cpu without a key pressed.
-    let cpu_none = cpu_some_eq.clone().clear_input();
+    let cpu_none = cpu_some_eq.clone().with_input(|| None);
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(

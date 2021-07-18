@@ -66,7 +66,19 @@ pub enum KeyInputValue {
     KeyF,
 }
 
-type Display = [[bool; 64]; 32];
+/// Display mimics the display matrix for the CHIP-8 isa.
+#[derive(Debug, Clone, Copy)]
+pub struct Display {
+    inner: [[bool; 64]; 32],
+}
+
+impl Default for Display {
+    fn default() -> Self {
+        Self {
+            inner: [[false; 64]; 32],
+        }
+    }
+}
 
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
@@ -151,8 +163,12 @@ impl<R> Chip8<R> {
         }
     }
 
-    /// Returns an instance of Chip8 with a new input value assigned to the input buffer.
-    pub fn with_input(self, input: KeyInputValue) -> Self {
+    /// Takes and invokes a function that returns an optional KeyInputValue.
+    /// Returning the newly modified state.
+    pub fn with_input<F>(self, f: F) -> Self
+    where
+        F: Fn() -> Option<KeyInputValue>,
+    {
         Self {
             stack: self.stack,
             address_space: self.address_space,
@@ -163,13 +179,17 @@ impl<R> Chip8<R> {
             i: self.i,
             gp_registers: self.gp_registers,
             display: self.display,
-            input_buffer: Some(input),
+            input_buffer: (f)(),
             rng: self.rng,
         }
     }
 
-    /// Returns an instance of Chip8 with a cleared input buffer.
-    pub fn clear_input(self) -> Self {
+    /// Takes and invokes a function that modies the types display, returning
+    ///the newly modified state.
+    pub fn with_display<F>(self, f: F) -> Self
+    where
+        F: Fn(Display) -> Display,
+    {
         Self {
             stack: self.stack,
             address_space: self.address_space,
@@ -179,7 +199,7 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
-            display: self.display,
+            display: (f)(self.display),
             input_buffer: None,
             rng: self.rng,
         }
@@ -219,7 +239,7 @@ where
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
             gp_registers: [register::GeneralPurpose::default(); 0xf],
-            display: [[false; 64]; 32],
+            display: Display::default(),
             input_buffer: None,
             rng: <R>::default(),
         }
@@ -494,13 +514,13 @@ mod tests {
 
     #[test]
     fn should_clear_input_idempotently() {
-        let cpu = Chip8::<()>::default().with_input(KeyInputValue::Key0);
+        let cpu = Chip8::<()>::default().with_input(|| Some(KeyInputValue::Key0));
 
         assert_eq!(Some(KeyInputValue::Key0), cpu.input_buffer);
         assert_eq!(
             None,
             // clear input multiple times
-            cpu.clear_input().clear_input().input_buffer
+            cpu.with_input(|| None).with_input(|| None).input_buffer
         )
     }
 }

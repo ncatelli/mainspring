@@ -1,9 +1,9 @@
 use std::convert::TryFrom;
 
 use crate::address_map::SafeAddressable;
-use crate::cpu::chip8::register;
-use crate::cpu::chip8::register::GpRegisters;
+use crate::cpu::chip8::register::{self, GpRegisters};
 use crate::cpu::chip8::u12::u12;
+use crate::cpu::chip8::Display;
 use crate::cpu::chip8::{microcode::*, Chip8, GenerateRandom};
 use crate::cpu::Generate;
 use crate::prelude::v1::Register;
@@ -204,7 +204,11 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Cls {
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
-        vec![]
+        vec![Microcode::SetDisplayRange(SetDisplayRange::new(
+            (0, 0),
+            (Display::x_max(), Display::y_max()),
+            false,
+        ))]
     }
 }
 

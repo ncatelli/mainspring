@@ -25,6 +25,20 @@ fn should_parse_cls_opcode() {
 }
 
 #[test]
+fn should_generate_cls_instruction() {
+    let cpu = Chip8::<()>::default();
+
+    assert_eq!(
+        vec![Microcode::SetDisplayRange(SetDisplayRange::new(
+            (0, 0),
+            (64, 32),
+            false
+        )),],
+        Cls::default().generate(&cpu)
+    );
+}
+
+#[test]
 fn should_parse_ret_opcode() {
     let input: Vec<(usize, u8)> = 0x00eeu16
         .to_be_bytes()

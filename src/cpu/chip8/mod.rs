@@ -80,6 +80,44 @@ impl Default for Display {
     }
 }
 
+impl Display {
+    /// Returns the maximum number of columns per row.
+    pub fn x_max() -> usize {
+        64
+    }
+
+    /// Returns the maximum number of rows.
+    pub fn y_max() -> usize {
+        32
+    }
+
+    /// gets the value of the pixel specified by the cartesian coordinates `x`,
+    /// `y`. If the coordinates are within range, an `Option::Some(bool)` with
+    /// the value of the pixel is returned. Otherwise `Option::None` is
+    /// returned.
+    pub fn pixel(&self, x: usize, y: usize) -> Option<bool> {
+        if x < Self::x_max() && y < Self::y_max() {
+            Some(self.inner[y][x])
+        } else {
+            None
+        }
+    }
+
+    /// sets the value of the pixel specified by the cartesian coordinates `x`,
+    /// `y` to the boolean value specified by `pixel_on`. If the coordinates
+    /// are within range, an `Option::Some(bool)` with the previous value of
+    /// the pixel is returned. Otherwise `Option::None` is returned.
+    pub fn write_pixel_mut(&mut self, x: usize, y: usize, pixel_on: bool) -> Option<bool> {
+        if let Some(previous_value) = self.pixel(x, y) {
+            // if we can get the previous value, it's safe to write a new one.
+            self.inner[y][x] = pixel_on;
+            Some(previous_value)
+        } else {
+            None
+        }
+    }
+}
+
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 
@@ -361,7 +399,7 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
-            microcode::Microcode::SetDisplayPixel(_) => todo!(),
+            microcode::Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),
             microcode::Microcode::SetDisplayRange(_) => todo!(),
         }
     }
@@ -482,6 +520,13 @@ impl<R> crate::cpu::ExecuteMut<microcode::KeyPress> for Chip8<R> {
 impl<R> crate::cpu::ExecuteMut<microcode::KeyRelease> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::KeyRelease) {
         self.input_buffer = None;
+    }
+}
+
+impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayPixel> for Chip8<R> {
+    fn execute_mut(&mut self, mc: &microcode::SetDisplayPixel) {
+        let microcode::SetDisplayPixel((x, y), pixel_value) = *mc;
+        self.display.write_pixel_mut(x, y, pixel_value);
     }
 }
 

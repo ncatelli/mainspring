@@ -178,7 +178,7 @@ type CartesianCoordinate = (usize, usize);
 /// SetDisplayPixel takes a cartesian coordinate representing a pixel and the
 /// value to set that pixel to.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct SetDisplayPixel(CartesianCoordinate, bool);
+pub struct SetDisplayPixel(pub CartesianCoordinate, pub bool);
 
 impl SetDisplayPixel {
     pub fn new(coord: CartesianCoordinate, value: bool) -> Self {

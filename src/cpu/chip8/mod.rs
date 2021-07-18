@@ -66,6 +66,68 @@ pub enum KeyInputValue {
     KeyF,
 }
 
+/// Display mimics the display matrix for the CHIP-8 isa.
+#[derive(Debug, Clone, Copy)]
+pub struct Display {
+    inner: [[bool; 64]; 32],
+}
+
+impl Default for Display {
+    fn default() -> Self {
+        Self {
+            inner: [[false; 64]; 32],
+        }
+    }
+}
+
+impl Display {
+    /// Returns the maximum number of columns per row.
+    pub fn x_max() -> usize {
+        64
+    }
+
+    /// Returns the maximum number of rows.
+    pub fn y_max() -> usize {
+        32
+    }
+
+    /// gets the value of the pixel specified by the cartesian coordinates `x`,
+    /// `y`. If the coordinates are within range, an `Option::Some(bool)` with
+    /// the value of the pixel is returned. Otherwise `Option::None` is
+    /// returned.
+    pub fn pixel(&self, x: usize, y: usize) -> Option<bool> {
+        if x < Self::x_max() && y < Self::y_max() {
+            Some(self.inner[y][x])
+        } else {
+            None
+        }
+    }
+
+    /// sets the value of the pixel specified by the cartesian coordinates `x`,
+    /// `y` to the boolean value specified by `pixel_on`. If the coordinates
+    /// are within range, a `(Self, Option::Some(bool))` with the previous
+    /// value of the pixel is returned. Otherwise `(Self, Option::None)` is
+    /// returned.
+    pub fn write_pixel(mut self, x: usize, y: usize, pixel_on: bool) -> (Self, Option<bool>) {
+        let modified = self.write_pixel_mut(x, y, pixel_on);
+        (self, modified)
+    }
+
+    /// sets the value of the pixel specified by the cartesian coordinates `x`,
+    /// `y` to the boolean value specified by `pixel_on`. If the coordinates
+    /// are within range, an `Option::Some(bool)` with the previous value of
+    /// the pixel is returned. Otherwise `Option::None` is returned.
+    pub fn write_pixel_mut(&mut self, x: usize, y: usize, pixel_on: bool) -> Option<bool> {
+        if let Some(previous_value) = self.pixel(x, y) {
+            // if we can get the previous value, it's safe to write a new one.
+            self.inner[y][x] = pixel_on;
+            Some(previous_value)
+        } else {
+            None
+        }
+    }
+}
+
 /// Represents the address the program counter is set to on chip reset.
 const RESET_PC_VECTOR: u16 = 0x200;
 
@@ -80,6 +142,7 @@ pub struct Chip8<R> {
     sp: register::StackPointer,
     i: register::GeneralPurpose<u16>,
     gp_registers: [register::GeneralPurpose<u8>; 0xf],
+    display: Display,
     input_buffer: Option<KeyInputValue>,
     rng: R,
 }
@@ -142,13 +205,18 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
+            display: self.display,
             input_buffer: self.input_buffer,
             rng,
         }
     }
 
-    /// Returns an instance of Chip8 with a new input value assigned to the input buffer.
-    pub fn with_input(self, input: KeyInputValue) -> Self {
+    /// Takes and invokes a function that returns an optional KeyInputValue.
+    /// Returning the newly modified state.
+    pub fn with_input<F>(self, f: F) -> Self
+    where
+        F: Fn() -> Option<KeyInputValue>,
+    {
         Self {
             stack: self.stack,
             address_space: self.address_space,
@@ -158,13 +226,18 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
-            input_buffer: Some(input),
+            display: self.display,
+            input_buffer: (f)(),
             rng: self.rng,
         }
     }
 
-    /// Returns an instance of Chip8 with a cleared input buffer.
-    pub fn clear_input(self) -> Self {
+    /// Takes and invokes a function that modies the types display, returning
+    ///the newly modified state.
+    pub fn with_display<F>(self, f: F) -> Self
+    where
+        F: Fn(Display) -> Display,
+    {
         Self {
             stack: self.stack,
             address_space: self.address_space,
@@ -174,6 +247,7 @@ impl<R> Chip8<R> {
             sp: self.sp,
             i: self.i,
             gp_registers: self.gp_registers,
+            display: (f)(self.display),
             input_buffer: None,
             rng: self.rng,
         }
@@ -213,6 +287,7 @@ where
             sp: register::StackPointer::default(),
             i: register::GeneralPurpose::default(),
             gp_registers: [register::GeneralPurpose::default(); 0xf],
+            display: Display::default(),
             input_buffer: None,
             rng: <R>::default(),
         }
@@ -334,6 +409,8 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
+            microcode::Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),
+            microcode::Microcode::SetDisplayRange(mc) => self.execute_mut(mc),
         }
     }
 }
@@ -456,6 +533,34 @@ impl<R> crate::cpu::ExecuteMut<microcode::KeyRelease> for Chip8<R> {
     }
 }
 
+impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayPixel> for Chip8<R> {
+    fn execute_mut(&mut self, mc: &microcode::SetDisplayPixel) {
+        let microcode::SetDisplayPixel((x, y), pixel_value) = *mc;
+        self.display.write_pixel_mut(x, y, pixel_value);
+    }
+}
+
+impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayRange> for Chip8<R> {
+    fn execute_mut(&mut self, mc: &microcode::SetDisplayRange) {
+        let microcode::SetDisplayRange {
+            start: (start_x, start_y),
+            end: (end_x, end_y),
+            value: pixel_value,
+        } = *mc;
+
+        let start_offset = (start_y * Display::x_max()) + start_x;
+        // add 1 to cover non-inclusive range.
+        let modified = ((end_y - start_y) * Display::x_max()) + (end_x - start_x) + 1;
+        self.display
+            .inner
+            .iter_mut()
+            .flatten()
+            .skip(start_offset)
+            .take(modified)
+            .for_each(|pixel| *pixel = pixel_value);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -487,13 +592,36 @@ mod tests {
 
     #[test]
     fn should_clear_input_idempotently() {
-        let cpu = Chip8::<()>::default().with_input(KeyInputValue::Key0);
+        let cpu = Chip8::<()>::default().with_input(|| Some(KeyInputValue::Key0));
 
         assert_eq!(Some(KeyInputValue::Key0), cpu.input_buffer);
         assert_eq!(
             None,
             // clear input multiple times
-            cpu.clear_input().clear_input().input_buffer
+            cpu.with_input(|| None).with_input(|| None).input_buffer
         )
+    }
+
+    #[test]
+    fn should_set_a_given_pixel_to_a_given_value() {
+        let cpu = Chip8::<()>::default().with_display(|d| d.write_pixel(1, 1, true).0);
+
+        assert_eq!(Some(false), cpu.display.pixel(2, 1));
+        assert_eq!(Some(true), cpu.display.pixel(1, 1));
+        assert_eq!(Some(false), cpu.display.pixel(1, 2));
+    }
+
+    #[test]
+    fn should_set_a_given_pixel_range_to_a_given_value() {
+        let mut cpu = Chip8::<()>::default();
+
+        ExecuteMut::<microcode::SetDisplayRange>::execute_mut(
+            &mut cpu,
+            &microcode::SetDisplayRange::new((0, 0), (63, 31), true),
+        );
+
+        for (pos, &v) in cpu.display.inner.iter().flatten().enumerate() {
+            assert_eq!(true, v, "no match for position: {}, {}", pos, v);
+        }
     }
 }

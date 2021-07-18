@@ -159,7 +159,7 @@ where
         use addressing_mode::*;
 
         parcel::one_of(construct_microcode_generators_from_instruction_parser!(
-            Ret<Implied>,
+            Ret,
             Call<Absolute>,
             Jp<NonV0Indexed, Absolute>,
             Jp<V0Indexed, Absolute>,
@@ -191,49 +191,29 @@ where
 
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Cls<A> {
-    addressing_mode: std::marker::PhantomData<A>,
-}
+pub struct Cls;
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls<addressing_mode::Implied>>
-    for Cls<addressing_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Cls<addressing_mode::Implied>> {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
             .map(|_| Cls::default())
             .parse(input)
     }
 }
 
-impl From<Cls<addressing_mode::Implied>> for u16 {
-    fn from(_: Cls<addressing_mode::Implied>) -> Self {
-        0x00e0
-    }
-}
-
 /// Return from a subroutine.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct Ret<A> {
-    addressing_mode: std::marker::PhantomData<A>,
-}
+pub struct Ret;
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret<addressing_mode::Implied>>
-    for Ret<addressing_mode::Implied>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ret<addressing_mode::Implied>> {
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret> for Ret {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Ret> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xee])
             .map(|_| Ret::default())
             .parse(input)
     }
 }
 
-impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ret<addressing_mode::Implied> {
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ret {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let current_sp = cpu.sp.read();
         let ret_pc = cpu.stack.read(current_sp as usize);
@@ -246,12 +226,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ret<addressing_mode::Implied> {
                 inc_adjusted_addr,
             )),
         ]
-    }
-}
-
-impl From<Ret<addressing_mode::Implied>> for u16 {
-    fn from(_: Ret<addressing_mode::Implied>) -> Self {
-        0x00ee
     }
 }
 

@@ -2,16 +2,6 @@ use crate::cpu::chip8::{register, u12::u12};
 
 pub trait AddressingMode {}
 
-/// Implied represents a type that explicitly implies it's addressing mode
-/// through a 2-byte mnemonic code.
-/// # Note
-/// Implied addressing mode does not implement Parser as the parsing should be
-/// defined on the implementing opcode.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct Implied;
-
-impl AddressingMode for Implied {}
-
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Absolute(u12);
 

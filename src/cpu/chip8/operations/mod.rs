@@ -159,6 +159,7 @@ where
         use addressing_mode::*;
 
         parcel::one_of(construct_microcode_generators_from_instruction_parser!(
+            Cls,
             Ret,
             Call<Absolute>,
             Jp<NonV0Indexed, Absolute>,
@@ -198,6 +199,12 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
             .map(|_| Cls::default())
             .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for Cls {
+    fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
+        vec![]
     }
 }
 

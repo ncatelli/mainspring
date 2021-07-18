@@ -361,6 +361,8 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
+            microcode::Microcode::SetDisplayPixel(_) => todo!(),
+            microcode::Microcode::SetDisplayRange(_) => todo!(),
         }
     }
 }

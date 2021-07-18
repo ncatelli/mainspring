@@ -19,15 +19,3 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-  cargo_bloat:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - name: Add cargo-bloat
-        run: cargo install cargo-bloat
-      - name: Run cargo bloat
-        run: cargo bloat --release -n 10

@@ -402,7 +402,7 @@ fn should_generate_load_keypress_into_register_operation() {
             register::GpRegisters::V8,
             register::GeneralPurpose::<u8>::with_value(0xab),
         )
-        .with_input(|| Some(chip8::KeyInputValue::Key4));
+        .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::Key4)));
 
     assert_eq!(
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
@@ -417,7 +417,7 @@ fn should_generate_load_keypress_into_register_operation() {
             register::GpRegisters::V8,
             register::GeneralPurpose::<u8>::with_value(0xab),
         )
-        .with_input(|| None);
+        .with_interrupt(|| None);
 
     assert_eq!(
         vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
@@ -1498,7 +1498,7 @@ fn should_generate_skp_operation() {
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0x0f),
         )
-        .with_input(|| Some(chip8::KeyInputValue::KeyF));
+        .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::KeyF)));
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
@@ -1511,7 +1511,7 @@ fn should_generate_skp_operation() {
     // a cpu with an input value that doesn't match.
     let cpu_some_ne = cpu_some_eq
         .clone()
-        .with_input(|| Some(chip8::KeyInputValue::Key0));
+        .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::Key0)));
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1519,7 +1519,7 @@ fn should_generate_skp_operation() {
     );
 
     // a cpu without a key pressed.
-    let cpu_none = cpu_some_eq.clone().with_input(|| None);
+    let cpu_none = cpu_some_eq.clone().with_interrupt(|| None);
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1553,7 +1553,7 @@ fn should_generate_sknp_operation() {
             register::GpRegisters::V0,
             register::GeneralPurpose::<u8>::with_value(0x0f),
         )
-        .with_input(|| Some(chip8::KeyInputValue::KeyF));
+        .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::KeyF)));
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1563,7 +1563,7 @@ fn should_generate_sknp_operation() {
     // a cpu with an input value that doesn't match.
     let cpu_some_ne = cpu_some_eq
         .clone()
-        .with_input(|| Some(chip8::KeyInputValue::Key0));
+        .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::Key0)));
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
@@ -1574,7 +1574,7 @@ fn should_generate_sknp_operation() {
     );
 
     // a cpu without a key pressed.
-    let cpu_none = cpu_some_eq.clone().with_input(|| None);
+    let cpu_none = cpu_some_eq.clone().with_interrupt(|| None);
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(

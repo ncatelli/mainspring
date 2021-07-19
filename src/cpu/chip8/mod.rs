@@ -44,6 +44,12 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
+/// Represents an interrupt, example being a keypress.
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Interrupt {
+    KeyPress(KeyInputValue),
+}
+
 /// KeyInputValue represents all valid input keys that may be input from the
 /// keyboard.
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -143,7 +149,7 @@ pub struct Chip8<R> {
     i: register::GeneralPurpose<u16>,
     gp_registers: [register::GeneralPurpose<u8>; 0xf],
     display: Display,
-    input_buffer: Option<KeyInputValue>,
+    interrupt: Option<Interrupt>,
     rng: R,
 }
 
@@ -206,16 +212,16 @@ impl<R> Chip8<R> {
             i: self.i,
             gp_registers: self.gp_registers,
             display: self.display,
-            input_buffer: self.input_buffer,
+            interrupt: self.interrupt,
             rng,
         }
     }
 
-    /// Takes and invokes a function that returns an optional KeyInputValue.
+    /// Takes and invokes a function that returns an optional Interrupt.
     /// Returning the newly modified state.
-    pub fn with_input<F>(self, f: F) -> Self
+    pub fn with_interrupt<F>(self, f: F) -> Self
     where
-        F: Fn() -> Option<KeyInputValue>,
+        F: Fn() -> Option<Interrupt>,
     {
         Self {
             stack: self.stack,
@@ -227,7 +233,7 @@ impl<R> Chip8<R> {
             i: self.i,
             gp_registers: self.gp_registers,
             display: self.display,
-            input_buffer: (f)(),
+            interrupt: (f)(),
             rng: self.rng,
         }
     }
@@ -248,7 +254,7 @@ impl<R> Chip8<R> {
             i: self.i,
             gp_registers: self.gp_registers,
             display: (f)(self.display),
-            input_buffer: None,
+            interrupt: None,
             rng: self.rng,
         }
     }
@@ -288,7 +294,7 @@ where
             i: register::GeneralPurpose::default(),
             gp_registers: [register::GeneralPurpose::default(); 0xf],
             display: Display::default(),
-            input_buffer: None,
+            interrupt: None,
             rng: <R>::default(),
         }
     }
@@ -523,13 +529,13 @@ impl<R> crate::cpu::ExecuteMut<microcode::PopStack> for Chip8<R> {
 
 impl<R> crate::cpu::ExecuteMut<microcode::KeyPress> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::KeyPress) {
-        self.input_buffer = Some(mc.value);
+        self.interrupt = Some(Interrupt::KeyPress(mc.value));
     }
 }
 
 impl<R> crate::cpu::ExecuteMut<microcode::KeyRelease> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::KeyRelease) {
-        self.input_buffer = None;
+        self.interrupt = None;
     }
 }
 
@@ -592,13 +598,19 @@ mod tests {
 
     #[test]
     fn should_clear_input_idempotently() {
-        let cpu = Chip8::<()>::default().with_input(|| Some(KeyInputValue::Key0));
+        let cpu = Chip8::<()>::default()
+            .with_interrupt(|| Some(Interrupt::KeyPress(KeyInputValue::Key0)));
 
-        assert_eq!(Some(KeyInputValue::Key0), cpu.input_buffer);
+        assert_eq!(
+            Some(Interrupt::KeyPress(KeyInputValue::Key0)),
+            cpu.interrupt
+        );
         assert_eq!(
             None,
             // clear input multiple times
-            cpu.with_input(|| None).with_input(|| None).input_buffer
+            cpu.with_interrupt(|| None)
+                .with_interrupt(|| None)
+                .interrupt
         )
     }
 

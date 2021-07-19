@@ -1,13 +1,15 @@
-use std::convert::TryFrom;
-
 use crate::address_map::SafeAddressable;
-use crate::cpu::chip8::register::{self, GpRegisters};
-use crate::cpu::chip8::u12::u12;
-use crate::cpu::chip8::Display;
-use crate::cpu::chip8::{microcode::*, Chip8, GenerateRandom};
+use crate::cpu::chip8::{
+    self,
+    microcode::*,
+    register::{self, GpRegisters},
+    u12::u12,
+    Chip8, Display, GenerateRandom,
+};
 use crate::cpu::Generate;
 use crate::prelude::v1::Register;
 use parcel::prelude::v1::*;
+use std::convert::TryFrom;
 
 pub mod addressing_mode;
 
@@ -636,21 +638,20 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdK> for LdK {
 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdK {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
-        cpu.input_buffer
+        match cpu.interrupt {
             // if there is input set, write the input to a register.
-            .map(|key_input| {
+            Some(chip8::Interrupt::KeyPress(key_input)) => {
                 vec![Microcode::Write8bitRegister(Write8bitRegister::new(
                     register::ByteRegisters::GpRegisters(self.dest),
                     key_input as u8,
                 ))]
-            })
+            }
             // if there is no input, default to looping on this instruction.
-            .unwrap_or_else(|| {
-                vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
-                    register::WordRegisters::ProgramCounter,
-                    2,
-                ))]
-            })
+            None => vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))],
+        }
     }
 }
 
@@ -1185,10 +1186,13 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Skp {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.register);
 
-        match cpu.input_buffer {
-            Some(iv) if iv as u8 == reg_val => vec![Microcode::Inc16bitRegister(
-                Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
-            )],
+        match cpu.interrupt {
+            Some(chip8::Interrupt::KeyPress(iv)) if iv as u8 == reg_val => {
+                vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                    register::WordRegisters::ProgramCounter,
+                    2,
+                ))]
+            }
             _ => vec![],
         }
     }
@@ -1232,8 +1236,8 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sknp {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.register);
 
-        match cpu.input_buffer {
-            Some(iv) if iv as u8 == reg_val => vec![],
+        match cpu.interrupt {
+            Some(chip8::Interrupt::KeyPress(iv)) if iv as u8 == reg_val => vec![],
             _ => vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
                 register::WordRegisters::ProgramCounter,
                 2,

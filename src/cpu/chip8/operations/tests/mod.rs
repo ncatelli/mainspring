@@ -382,6 +382,53 @@ fn should_generate_load_bcd_from_vx_i_indirect_operation() {
 }
 
 #[test]
+fn should_parse_load_keypress_into_register_operation() {
+    let input: Vec<(usize, u8)> = inst_to_enumerated_be_byte_vec(0xF80Au16);
+
+    assert_eq!(
+        Ok(MatchStatus::Match {
+            span: 0..2,
+            remainder: &input[2..],
+            inner: LdK::new(register::GpRegisters::V8)
+        }),
+        <LdK>::default().parse(&input[..])
+    );
+}
+
+#[test]
+fn should_generate_load_keypress_into_register_operation() {
+    let cpu_with_input_interrupt = Chip8::<()>::default()
+        .with_gp_register(
+            register::GpRegisters::V8,
+            register::GeneralPurpose::<u8>::with_value(0xab),
+        )
+        .with_input(|| Some(chip8::KeyInputValue::Key4));
+
+    assert_eq!(
+        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            register::ByteRegisters::GpRegisters(GpRegisters::V8),
+            0x04
+        ))],
+        LdK::new(register::GpRegisters::V8).generate(&cpu_with_input_interrupt)
+    );
+
+    let cpu_without_input_interrupt = Chip8::<()>::default()
+        .with_gp_register(
+            register::GpRegisters::V8,
+            register::GeneralPurpose::<u8>::with_value(0xab),
+        )
+        .with_input(|| None);
+
+    assert_eq!(
+        vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+            register::WordRegisters::ProgramCounter,
+            2,
+        ))],
+        LdK::new(register::GpRegisters::V8).generate(&cpu_without_input_interrupt)
+    );
+}
+
+#[test]
 fn should_parse_read_registers_from_memory_operation() {
     let input: Vec<(usize, u8)> = inst_to_enumerated_be_byte_vec(0xF265u16);
 

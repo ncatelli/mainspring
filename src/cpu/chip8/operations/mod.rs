@@ -611,6 +611,12 @@ impl LdK {
     }
 }
 
+impl Default for LdK {
+    fn default() -> Self {
+        Self::new(register::GpRegisters::V0)
+    }
+}
+
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdK> for LdK {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], LdK> {
         expect_instruction_with_mask([
@@ -629,16 +635,21 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdK> for LdK {
 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdK {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
-        match cpu.input_buffer {
-            None => vec![Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                cpu.pc.read().overflowing_sub(2).0,
-            ))],
-            Some(key_input) => vec![Microcode::Write8bitRegister(Write8bitRegister::new(
-                register::ByteRegisters::GpRegisters(self.dest),
-                key_input as u8,
-            ))],
-        }
+        cpu.input_buffer
+            // if there is input set, write the input to a register.
+            .map(|key_input| {
+                vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                    register::ByteRegisters::GpRegisters(self.dest),
+                    key_input as u8,
+                ))]
+            })
+            // if there is no input, default to looping on this instruction.
+            .unwrap_or_else(|| {
+                vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+                    register::WordRegisters::ProgramCounter,
+                    2,
+                ))]
+            })
     }
 }
 

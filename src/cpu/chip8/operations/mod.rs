@@ -598,6 +598,50 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdBcd<addressing_mode::VxIIndirec
     }
 }
 
+/// Wait for a keypress store the corresponding value in the value specified by
+/// Vx.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LdK {
+    pub dest: register::GpRegisters,
+}
+
+impl LdK {
+    pub fn new(dest: register::GpRegisters) -> Self {
+        Self { dest }
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdK> for LdK {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], LdK> {
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x0),
+            NibbleMask::Fixed(0xA),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(LdK::new)
+        .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdK {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        match cpu.input_buffer {
+            None => vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                cpu.pc.read().overflowing_sub(2).0,
+            ))],
+            Some(key_input) => vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                register::ByteRegisters::GpRegisters(self.dest),
+                key_input as u8,
+            ))],
+        }
+    }
+}
+
 /// Represents the Load Indirect instruction to store a subset of registers at
 /// a memory offset defined by the contents of the I register.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]

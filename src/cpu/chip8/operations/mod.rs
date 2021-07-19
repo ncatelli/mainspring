@@ -170,6 +170,7 @@ where
             Ld<DelayTimerDestTx>,
             Ld<DelayTimerSrcTx>,
             LdBcd<VxIIndirect>,
+            LdK,
             Add<Immediate>,
             Add<IRegisterIndexed>,
             Add<VxVy>,

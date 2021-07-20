@@ -10,8 +10,9 @@ pub trait Offset {
     }
 }
 
-pub trait Generate<T, U> {
-    fn generate(&self, cpu: &T) -> U;
+pub trait Generate<T> {
+    type Item;
+    fn generate(&self, cpu: &T) -> Self::Item;
 }
 
 /// Defines a trait for implementing transformation on a CPU, returning the

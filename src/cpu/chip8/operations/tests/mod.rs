@@ -6,23 +6,36 @@ fn inst_to_enumerated_be_byte_vec(inst: u16) -> Vec<(usize, u8)> {
     inst.to_be_bytes().iter().copied().enumerate().collect()
 }
 
-#[test]
-fn should_parse_cls_opcode() {
-    let input: Vec<(usize, u8)> = 0x00e0u16
-        .to_be_bytes()
-        .iter()
-        .copied()
-        .enumerate()
-        .collect();
-    assert_eq!(
-        Ok(MatchStatus::Match {
-            span: 0..2,
-            remainder: &input[2..],
-            inner: Cls::default()
-        }),
-        Cls::default().parse(&input[..])
-    );
+macro_rules! generate_parse_test {
+    ($($testname:tt, $input_bytes:literal to $variant:expr,)*) => {
+        $(
+        #[test]
+        fn $testname() {
+            let input: Vec<(usize, u8)> = $input_bytes
+                .to_be_bytes()
+                .iter()
+                .copied()
+                .enumerate()
+                .collect();
+            assert_eq!(
+                Ok(MatchStatus::Match {
+                    span: 0..2,
+                    remainder: &input[2..],
+                    inner: $variant,
+                }),
+                OpcodeVariantParser.parse(&input[..])
+            );
+        }
+        )*
+    };
 }
+
+#[rustfmt::skip]
+generate_parse_test!(
+    should_parse_cls_opcode, 0x00e0u16 to Opcode::Cls,
+    should_parse_ret_opcode, 0x00eeu16 to Opcode::Ret,
+    should_parse_jump_absolute_opcode, 0x1fffu16 to Opcode::JpNonV0Indexed(u12::new(0xfff)),
+);
 
 #[test]
 fn should_generate_cls_instruction() {
@@ -35,24 +48,6 @@ fn should_generate_cls_instruction() {
             false
         )),],
         Cls::default().generate(&cpu)
-    );
-}
-
-#[test]
-fn should_parse_ret_opcode() {
-    let input: Vec<(usize, u8)> = 0x00eeu16
-        .to_be_bytes()
-        .iter()
-        .copied()
-        .enumerate()
-        .collect();
-    assert_eq!(
-        Ok(MatchStatus::Match {
-            span: 0..2,
-            remainder: &input[2..],
-            inner: Ret::default()
-        }),
-        Ret::default().parse(&input[..])
     );
 }
 
@@ -74,25 +69,7 @@ fn should_generate_ret_instruction() {
                 0x1fe
             ))
         ],
-        Ret::default().generate(&cpu)
-    );
-}
-
-#[test]
-fn should_parse_jump_absolute_opcode() {
-    let input: Vec<(usize, u8)> = 0x1fffu16
-        .to_be_bytes()
-        .iter()
-        .copied()
-        .enumerate()
-        .collect();
-    assert_eq!(
-        Ok(MatchStatus::Match {
-            span: 0..2,
-            remainder: &input[2..],
-            inner: Jp::<NonV0Indexed>::new(u12::new(0xfff))
-        }),
-        Jp::default().parse(&input[..])
+        Ret.generate(&cpu)
     );
 }
 
@@ -120,11 +97,9 @@ fn should_parse_load_absolute_into_i_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::<addressing_mode::Absolute>::new(addressing_mode::Absolute::new(u12::new(
-                0xfff
-            )))
+            inner: Opcode::LdAbsolute(u12::new(0xfff))
         }),
-        Ld::default().parse(&input[..])
+        OpcodeVariantParser.parse(&input[..])
     );
 }
 
@@ -136,8 +111,7 @@ fn should_generate_load_absolute_into_i_incrementer() {
             register::WordRegisters::I,
             0xfff
         ))],
-        Ld::<addressing_mode::Absolute>::new(addressing_mode::Absolute::new(u12::new(0xfff)))
-            .generate(&cpu)
+        Ld::new(addressing_mode::Absolute::new(u12::new(0xfff))).generate(&cpu)
     );
 }
 
@@ -153,12 +127,9 @@ fn should_parse_load_immediate_into_i_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::<addressing_mode::Immediate>::new(addressing_mode::Immediate::new(
-                register::GpRegisters::V8,
-                0xff
-            ))
+            inner: Opcode::LdImmediate(register::GpRegisters::V8, 0xff)
         }),
-        Ld::default().parse(&input[..])
+        OpcodeVariantParser.parse(&input[..])
     );
 }
 
@@ -170,7 +141,7 @@ fn should_generate_load_immediate_into_i_incrementer() {
             register::ByteRegisters::GpRegisters(register::GpRegisters::V8),
             0xff
         ))],
-        Ld::<addressing_mode::Immediate>::new(addressing_mode::Immediate::new(
+        Ld::new(addressing_mode::Immediate::new(
             register::GpRegisters::V8,
             0xff
         ))
@@ -190,12 +161,9 @@ fn should_parse_load_byte_register_operation_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::VxVy::new(
-                register::GpRegisters::V1,
-                register::GpRegisters::V0
-            ))
+            inner: Opcode::LdVxVy(register::GpRegisters::V0, register::GpRegisters::V1)
         }),
-        <Ld<addressing_mode::VxVy>>::default().parse(&input[..])
+        OpcodeVariantParser.parse(&input[..])
     );
 }
 
@@ -236,11 +204,9 @@ fn should_parse_load_byte_into_sound_timer_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::SoundTimerDestTx::new(
-                register::GpRegisters::V8,
-            ))
+            inner: Opcode::LdSoundTimerDestTx(register::GpRegisters::V8,)
         }),
-        <Ld<addressing_mode::SoundTimerDestTx>>::default().parse(&input[..])
+        OpcodeVariantParser.parse(&input[..])
     );
 }
 
@@ -274,11 +240,9 @@ fn should_parse_load_byte_into_delay_timer_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::DelayTimerDestTx::new(
-                register::GpRegisters::V8,
-            ))
+            inner: Opcode::LdDelayTimerDestTx(register::GpRegisters::V8,)
         }),
-        <Ld<addressing_mode::DelayTimerDestTx>>::default().parse(&input[..])
+        OpcodeVariantParser.parse(&input[..])
     );
 }
 
@@ -312,11 +276,9 @@ fn should_parse_load_byte_into_register_from_delay_timer_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Ld::new(addressing_mode::DelayTimerSrcTx::new(
-                register::GpRegisters::V8,
-            ))
+            inner: Opcode::LdDelayTimerSrcTx(register::GpRegisters::V8,)
         }),
-        <Ld<addressing_mode::DelayTimerSrcTx>>::default().parse(&input[..])
+        OpcodeVariantParser.parse(&input[..])
     );
 }
 

@@ -277,7 +277,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
         // if we get a match, set the appropiate match status headers.
         match ms {
             Some(op) => Ok(MatchStatus::Match {
-                span: input[0].0..input[1].0,
+                /// increment end span to cover non-inclusivity.
+                span: input[0].0..(input[1].0 + 1),
                 inner: op,
                 remainder: &input[2..],
             }),

@@ -1,13 +1,15 @@
-use std::convert::TryFrom;
-
 use crate::address_map::SafeAddressable;
-use crate::cpu::chip8::register::{self, GpRegisters};
-use crate::cpu::chip8::u12::u12;
-use crate::cpu::chip8::Display;
-use crate::cpu::chip8::{microcode::*, Chip8, GenerateRandom};
+use crate::cpu::chip8::{
+    self,
+    microcode::*,
+    register::{self, GpRegisters},
+    u12::u12,
+    Chip8, Display, GenerateRandom,
+};
 use crate::cpu::Generate;
 use crate::prelude::v1::Register;
 use parcel::prelude::v1::*;
+use std::convert::TryFrom;
 
 pub mod addressing_mode;
 
@@ -170,6 +172,7 @@ where
             Ld<DelayTimerDestTx>,
             Ld<DelayTimerSrcTx>,
             LdBcd<VxIIndirect>,
+            LdK,
             Add<Immediate>,
             Add<IRegisterIndexed>,
             Add<VxVy>,
@@ -595,6 +598,60 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdBcd<addressing_mode::VxIIndirec
             Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 1, tens)),
             Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 2, ones)),
         ]
+    }
+}
+
+/// Wait for a keypress store the corresponding value in the value specified by
+/// Vx.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LdK {
+    pub dest: register::GpRegisters,
+}
+
+impl LdK {
+    pub fn new(dest: register::GpRegisters) -> Self {
+        Self { dest }
+    }
+}
+
+impl Default for LdK {
+    fn default() -> Self {
+        Self::new(register::GpRegisters::V0)
+    }
+}
+
+impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdK> for LdK {
+    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], LdK> {
+        expect_instruction_with_mask([
+            NibbleMask::Fixed(0xF),
+            NibbleMask::Variable,
+            NibbleMask::Fixed(0x0),
+            NibbleMask::Fixed(0xA),
+        ])
+        .map(|[_, reg_id, _, _]| {
+            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
+        })
+        .map(LdK::new)
+        .parse(input)
+    }
+}
+
+impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdK {
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        match cpu.interrupt {
+            // if there is input set, write the input to a register.
+            Some(chip8::Interrupt::KeyPress(key_input)) => {
+                vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                    register::ByteRegisters::GpRegisters(self.dest),
+                    key_input as u8,
+                ))]
+            }
+            // if there is no input, default to looping on this instruction.
+            None => vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+                register::WordRegisters::ProgramCounter,
+                2,
+            ))],
+        }
     }
 }
 
@@ -1129,10 +1186,13 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Skp {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.register);
 
-        match cpu.input_buffer {
-            Some(iv) if iv as u8 == reg_val => vec![Microcode::Inc16bitRegister(
-                Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
-            )],
+        match cpu.interrupt {
+            Some(chip8::Interrupt::KeyPress(iv)) if iv as u8 == reg_val => {
+                vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                    register::WordRegisters::ProgramCounter,
+                    2,
+                ))]
+            }
             _ => vec![],
         }
     }
@@ -1176,8 +1236,8 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sknp {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.register);
 
-        match cpu.input_buffer {
-            Some(iv) if iv as u8 == reg_val => vec![],
+        match cpu.interrupt {
+            Some(chip8::Interrupt::KeyPress(iv)) if iv as u8 == reg_val => vec![],
             _ => vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
                 register::WordRegisters::ProgramCounter,
                 2,

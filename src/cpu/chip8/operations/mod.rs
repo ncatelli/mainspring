@@ -137,32 +137,32 @@ pub enum Opcode {
     Call(u12),
     JpNonV0Indexed(u12),
     JpV0Indexed(u12),
-    LdAbsolute(Ld<addressing_mode::Absolute>),
-    LdImmediate(Ld<addressing_mode::Immediate>),
-    LdVxVy(Ld<addressing_mode::VxVy>),
-    LdSoundTimerDestTx(Ld<addressing_mode::SoundTimerDestTx>),
-    LdDelayTimerDestTx(Ld<addressing_mode::DelayTimerDestTx>),
-    LdDelayTimerSrcTx(Ld<addressing_mode::DelayTimerSrcTx>),
-    LdBcd(LdBcd),
-    LdK(LdK),
-    AddImmediate(Add<addressing_mode::Immediate>),
-    AddIRegisterIndexed(Add<addressing_mode::IRegisterIndexed>),
-    AddVxVy(Add<addressing_mode::VxVy>),
-    Sub(Sub),
-    Subn(Subn),
-    And(And),
-    Or(Or),
-    Shl(Shl),
-    Shr(Shr),
-    Xor(Xor),
-    SeVxVy(Se<addressing_mode::VxVy>),
+    LdAbsolute(u12),
+    LdImmediate(GpRegisters, u8),
+    LdVxVy(GpRegisters, GpRegisters),
+    LdSoundTimerDestTx(GpRegisters),
+    LdDelayTimerDestTx(GpRegisters),
+    LdDelayTimerSrcTx(GpRegisters),
+    LdBcd(GpRegisters),
+    LdK(GpRegisters),
+    AddImmediate(GpRegisters, u8),
+    AddIRegisterIndexed(GpRegisters),
+    AddVxVy(GpRegisters, GpRegisters),
+    Sub(GpRegisters, GpRegisters),
+    Subn(GpRegisters, GpRegisters),
+    And(GpRegisters, GpRegisters),
+    Or(GpRegisters, GpRegisters),
+    Shl(GpRegisters, GpRegisters),
+    Shr(GpRegisters, GpRegisters),
+    Xor(GpRegisters, GpRegisters),
+    SeVxVy(GpRegisters, GpRegisters),
     SeImmediate(GpRegisters, u8),
-    SneVxVy(Sne<addressing_mode::VxVy>),
-    SneImmediate(Sne<addressing_mode::Immediate>),
-    ReadRegistersFromMemory(ReadRegistersFromMemory),
-    StoreRegistersToMemory(StoreRegistersToMemory),
-    Skp(Skp),
-    Sknp(Sknp),
+    SneVxVy(GpRegisters, GpRegisters),
+    SneImmediate(GpRegisters, u8),
+    ReadRegistersFromMemory(GpRegisters),
+    StoreRegistersToMemory(GpRegisters),
+    Skp(GpRegisters),
+    Sknp(GpRegisters),
     Rnd(GpRegisters, u8),
 }
 
@@ -178,32 +178,42 @@ where
             Opcode::Call(abs) => Call::new(*abs).generate(cpu),
             Opcode::JpNonV0Indexed(abs) => Jp::<NonV0Indexed>::new(*abs).generate(cpu),
             Opcode::JpV0Indexed(abs) => Jp::<V0Indexed>::new(*abs).generate(cpu),
-            Opcode::LdAbsolute(o) => o.generate(cpu),
-            Opcode::LdImmediate(o) => o.generate(cpu),
-            Opcode::LdVxVy(o) => o.generate(cpu),
-            Opcode::LdSoundTimerDestTx(o) => o.generate(cpu),
-            Opcode::LdDelayTimerDestTx(o) => o.generate(cpu),
-            Opcode::LdDelayTimerSrcTx(o) => o.generate(cpu),
-            Opcode::LdBcd(o) => o.generate(cpu),
-            Opcode::LdK(o) => o.generate(cpu),
-            Opcode::AddImmediate(o) => o.generate(cpu),
-            Opcode::AddIRegisterIndexed(o) => o.generate(cpu),
-            Opcode::AddVxVy(o) => o.generate(cpu),
-            Opcode::Subn(o) => o.generate(cpu),
-            Opcode::Sub(o) => o.generate(cpu),
-            Opcode::And(o) => o.generate(cpu),
-            Opcode::Or(o) => o.generate(cpu),
-            Opcode::Shl(o) => o.generate(cpu),
-            Opcode::Shr(o) => o.generate(cpu),
-            Opcode::Xor(o) => o.generate(cpu),
-            Opcode::SeVxVy(o) => o.generate(cpu),
+            Opcode::LdAbsolute(abs) => Ld::new(Absolute::new(*abs)).generate(cpu),
+            Opcode::LdImmediate(dest, value) => {
+                Ld::new(Immediate::new(*dest, *value)).generate(cpu)
+            }
+            Opcode::LdVxVy(dest, src) => Ld::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::LdSoundTimerDestTx(dest) => Ld::new(SoundTimerDestTx::new(*dest)).generate(cpu),
+            Opcode::LdDelayTimerDestTx(dest) => Ld::new(DelayTimerDestTx::new(*dest)).generate(cpu),
+            Opcode::LdDelayTimerSrcTx(src) => Ld::new(DelayTimerSrcTx::new(*src)).generate(cpu),
+            Opcode::LdBcd(reg) => LdBcd::new(VxIIndirect::new(*reg)).generate(cpu),
+            Opcode::LdK(dest) => LdK::new(*dest).generate(cpu),
+            Opcode::AddImmediate(dest, value) => {
+                Add::new(Immediate::new(*dest, *value)).generate(cpu)
+            }
+            Opcode::AddIRegisterIndexed(reg) => Add::new(IRegisterIndexed::new(*reg)).generate(cpu),
+            Opcode::AddVxVy(dest, src) => Add::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::Sub(dest, src) => Sub::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::Subn(dest, src) => Subn::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::And(dest, src) => And::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::Or(dest, src) => Or::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::Shl(dest, src) => Shl::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::Shr(dest, src) => Shr::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::Xor(dest, src) => Xor::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::SeVxVy(dest, src) => Se::new(VxVy::new(*src, *dest)).generate(cpu),
             Opcode::SeImmediate(reg, value) => Se::new(Immediate::new(*reg, *value)).generate(cpu),
-            Opcode::SneVxVy(o) => o.generate(cpu),
-            Opcode::SneImmediate(o) => o.generate(cpu),
-            Opcode::ReadRegistersFromMemory(o) => o.generate(cpu),
-            Opcode::StoreRegistersToMemory(o) => o.generate(cpu),
-            Opcode::Skp(o) => o.generate(cpu),
-            Opcode::Sknp(o) => o.generate(cpu),
+            Opcode::SneVxVy(dest, src) => Sne::new(VxVy::new(*src, *dest)).generate(cpu),
+            Opcode::SneImmediate(reg, value) => {
+                Sne::new(Immediate::new(*reg, *value)).generate(cpu)
+            }
+            Opcode::ReadRegistersFromMemory(reg) => {
+                ReadRegistersFromMemory::new(VxIIndirect::new(*reg)).generate(cpu)
+            }
+            Opcode::StoreRegistersToMemory(reg) => {
+                StoreRegistersToMemory::new(VxIIndirect::new(*reg)).generate(cpu)
+            }
+            Opcode::Skp(reg) => Skp::new(*reg).generate(cpu),
+            Opcode::Sknp(reg) => Sknp::new(*reg).generate(cpu),
             Opcode::Rnd(reg, value) => Rnd::new(Immediate::new(*reg, *value)).generate(cpu),
         }
     }
@@ -232,77 +242,33 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0x1, _, _, _] => Some(Opcode::JpNonV0Indexed(absolute)),
                 [0x2, _, _, _] => Some(Opcode::Call(absolute)),
                 [0x3, _, _, _] => Some(Opcode::SeImmediate(dest_reg, immediate)),
-                [0x4, _, _, _] => Some(Opcode::SneImmediate(Sne::new(
-                    addressing_mode::Immediate::new(dest_reg, immediate),
-                ))),
-                [0x5, _, _, 0x0] => Some(Opcode::SeVxVy(Se::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x6, _, _, _] => Some(Opcode::LdImmediate(Ld::new(
-                    addressing_mode::Immediate::new(dest_reg, immediate),
-                ))),
-                [0x7, _, _, _] => Some(Opcode::AddImmediate(Add::new(
-                    addressing_mode::Immediate::new(dest_reg, immediate),
-                ))),
-                [0x8, _, _, 0x0] => Some(Opcode::LdVxVy(Ld::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x1] => Some(Opcode::Or(Or::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x2] => Some(Opcode::And(And::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x3] => Some(Opcode::Xor(Xor::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x4] => Some(Opcode::AddVxVy(Add::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x5] => Some(Opcode::Sub(Sub::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x6] => Some(Opcode::Shr(Shr::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0x7] => Some(Opcode::Subn(Subn::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x8, _, _, 0xe] => Some(Opcode::Shl(Shl::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0x9, _, _, 0x0] => Some(Opcode::SneVxVy(Sne::new(addressing_mode::VxVy::new(
-                    src_reg, dest_reg,
-                )))),
-                [0xa, _, _, _] => Some(Opcode::LdAbsolute(Ld::new(
-                    addressing_mode::Absolute::new(absolute),
-                ))),
+                [0x4, _, _, _] => Some(Opcode::SneImmediate(dest_reg, immediate)),
+                [0x5, _, _, 0x0] => Some(Opcode::SeVxVy(dest_reg, src_reg)),
+                [0x6, _, _, _] => Some(Opcode::LdImmediate(dest_reg, immediate)),
+                [0x7, _, _, _] => Some(Opcode::AddImmediate(dest_reg, immediate)),
+                [0x8, _, _, 0x0] => Some(Opcode::LdVxVy(dest_reg, src_reg)),
+                [0x8, _, _, 0x1] => Some(Opcode::Or(dest_reg, src_reg)),
+                [0x8, _, _, 0x2] => Some(Opcode::And(dest_reg, src_reg)),
+                [0x8, _, _, 0x3] => Some(Opcode::Xor(dest_reg, src_reg)),
+                [0x8, _, _, 0x4] => Some(Opcode::AddVxVy(dest_reg, src_reg)),
+                [0x8, _, _, 0x5] => Some(Opcode::Sub(dest_reg, src_reg)),
+                [0x8, _, _, 0x6] => Some(Opcode::Shr(dest_reg, src_reg)),
+                [0x8, _, _, 0x7] => Some(Opcode::Subn(dest_reg, src_reg)),
+                [0x8, _, _, 0xe] => Some(Opcode::Shl(dest_reg, src_reg)),
+                [0x9, _, _, 0x0] => Some(Opcode::SneVxVy(dest_reg, src_reg)),
+                [0xa, _, _, _] => Some(Opcode::LdAbsolute(absolute)),
                 [0xb, _, _, _] => Some(Opcode::JpV0Indexed(absolute)),
                 [0xc, _, _, _] => Some(Opcode::Rnd(dest_reg, immediate)),
-                [0xe, _, 0x9, 0xe] => Some(Opcode::Skp(Skp::new(dest_reg))),
-                [0xe, _, 0xa, 0x1] => Some(Opcode::Sknp(Sknp::new(dest_reg))),
-                [0xf, _, 0x0, 0x7] => Some(Opcode::LdDelayTimerSrcTx(Ld::new(
-                    addressing_mode::DelayTimerSrcTx::new(dest_reg),
-                ))),
-                [0xf, _, 0x0, 0xa] => Some(Opcode::LdK(LdK::new(dest_reg))),
-                [0xf, _, 0x1, 0x5] => Some(Opcode::LdDelayTimerDestTx(Ld::new(
-                    addressing_mode::DelayTimerDestTx::new(dest_reg),
-                ))),
-                [0xf, _, 0x1, 0x8] => Some(Opcode::LdSoundTimerDestTx(Ld::new(
-                    addressing_mode::SoundTimerDestTx::new(dest_reg),
-                ))),
-                [0xf, _, 0x1, 0xe] => Some(Opcode::AddIRegisterIndexed(Add::new(
-                    addressing_mode::IRegisterIndexed::new(dest_reg),
-                ))),
-                [0xf, _, 0x3, 0x3] => Some(Opcode::LdBcd(LdBcd::new(
-                    addressing_mode::VxIIndirect::new(dest_reg),
-                ))),
-                [0xf, _, 0x5, 0x5] => Some(Opcode::StoreRegistersToMemory(
-                    StoreRegistersToMemory::new(addressing_mode::VxIIndirect::new(dest_reg)),
-                )),
-                [0xf, _, 0x6, 0x5] => Some(Opcode::ReadRegistersFromMemory(
-                    ReadRegistersFromMemory::new(addressing_mode::VxIIndirect::new(dest_reg)),
-                )),
+                [0xe, _, 0x9, 0xe] => Some(Opcode::Skp(dest_reg)),
+                [0xe, _, 0xa, 0x1] => Some(Opcode::Sknp(dest_reg)),
+                [0xf, _, 0x0, 0x7] => Some(Opcode::LdDelayTimerSrcTx(dest_reg)),
+                [0xf, _, 0x0, 0xa] => Some(Opcode::LdK(dest_reg)),
+                [0xf, _, 0x1, 0x5] => Some(Opcode::LdDelayTimerDestTx(dest_reg)),
+                [0xf, _, 0x1, 0x8] => Some(Opcode::LdSoundTimerDestTx(dest_reg)),
+                [0xf, _, 0x1, 0xe] => Some(Opcode::AddIRegisterIndexed(dest_reg)),
+                [0xf, _, 0x3, 0x3] => Some(Opcode::LdBcd(dest_reg)),
+                [0xf, _, 0x5, 0x5] => Some(Opcode::StoreRegistersToMemory(dest_reg)),
+                [0xf, _, 0x6, 0x5] => Some(Opcode::ReadRegistersFromMemory(dest_reg)),
                 _ => None,
             }
         });

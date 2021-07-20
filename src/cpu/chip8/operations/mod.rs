@@ -73,62 +73,6 @@ impl ToNibbleBytes for u8 {
     }
 }
 
-/// Masks off nibbles for pattern matching in the parser.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum NibbleMask<T> {
-    Fixed(T),
-    Variable,
-}
-
-/// This function takes an array of four masked u8 values representing
-/// nibbles of an instruction. If the `NibbleMask` is set to `Variable`, any
-/// 4-bit value will match for that nibble. If the `NibbleMask` is `Fixed`, the
-/// enclosed value will need to match the corresponding nibble of associated
-/// instruction. i.e.
-/// `[NibbleMask::Fixed(0xf), NibbleMask::Variable, NibbleMask::Variable, NibbleMask::Variable]`
-/// would match `[0xf, 0x1, 0x2, 0x3]`.
-fn expect_instruction_with_mask<'a>(
-    expected: [NibbleMask<u8>; 4],
-) -> impl Parser<'a, &'a [(usize, u8)], [u8; 4]> {
-    parcel::take_n(parcel::parsers::byte::any_byte(), 2)
-        .map(|bytes| [bytes[0].to_be_nibbles(), bytes[1].to_be_nibbles()])
-        .map(|[[first, second], [third, fourth]]| [first, second, third, fourth])
-        .predicate(move |nibbles| instruction_matches_nibble_mask(*nibbles, expected).is_ok())
-}
-
-fn nibble_matches_mask(input: u8, expected: NibbleMask<u8>) -> bool {
-    match expected {
-        // return true if any value matches.
-        NibbleMask::Variable => true,
-        // return true if the exected value matches input.
-        NibbleMask::Fixed(e) if e == input => true,
-        // return false in all other cases
-        NibbleMask::Fixed(_) => false,
-    }
-}
-
-fn instruction_matches_nibble_mask(
-    input: [u8; 4],
-    expected: [NibbleMask<u8>; 4],
-) -> Result<[u8; 4], String> {
-    let nibble_matches = input
-        .iter()
-        .zip(expected.iter())
-        .map(|(&i, &e)| nibble_matches_mask(i, e))
-        .take_while(|v| *v)
-        .count();
-
-    // validate that all nibbles passed their mask
-    if nibble_matches == 4 {
-        Ok(input)
-    } else {
-        Err(format!(
-            "failed to match nibble at position: {}. got: {}, wanted: {:?}",
-            nibble_matches, input[nibble_matches], expected[nibble_matches]
-        ))
-    }
-}
-
 /// OpcodeVariant represents all valid instructions with a mapping to their
 /// corresponding concrete type.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -313,14 +257,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Cls {
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Ret;
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ret> for Ret {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Ret> {
-        parcel::parsers::byte::expect_bytes(&[0x00, 0xee])
-            .map(|_| Ret::default())
-            .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ret {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let current_sp = cpu.sp.read();
@@ -362,23 +298,6 @@ impl<T> Jp<T> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<NonV0Indexed>> for Jp<NonV0Indexed> {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<NonV0Indexed>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x1),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(Jp::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<NonV0Indexed> {
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
@@ -389,23 +308,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<NonV0Indexed> {
 }
 
 // Jp Absolute + V0
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed>> for Jp<V0Indexed> {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Jp<V0Indexed>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xB),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(Jp::new)
-        .parse(input)
-    }
-}
 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<V0Indexed> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
@@ -432,26 +334,6 @@ impl<A> Ld<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Absolute>>
-    for Ld<addressing_mode::Absolute>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Absolute>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xA),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(addressing_mode::Absolute::new)
-        .map(Ld::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
@@ -461,59 +343,12 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::Absolute> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::Immediate>>
-    for Ld<addressing_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x6),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, dest, msb, lsb]| {
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (dest_reg, u8_from_nibbles(msb, lsb))
-        })
-        .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
-        .map(Ld::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::Immediate> {
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write8bitRegister(Write8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
         ))]
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::VxVy>>
-    for Ld<addressing_mode::VxVy>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x0),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Ld::new)
-        .parse(input)
     }
 }
 
@@ -528,28 +363,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::VxVy> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::SoundTimerDestTx>>
-    for Ld<addressing_mode::SoundTimerDestTx>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::SoundTimerDestTx>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x1),
-            NibbleMask::Fixed(0x8),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::SoundTimerDestTx::new)
-        .map(Ld::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::SoundTimerDestTx> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
@@ -561,28 +374,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::SoundTimerDes
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerDestTx>>
-    for Ld<addressing_mode::DelayTimerDestTx>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerDestTx>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x1),
-            NibbleMask::Fixed(0x5),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::DelayTimerDestTx::new)
-        .map(Ld::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::DelayTimerDestTx> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
@@ -591,28 +382,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Ld<addressing_mode::DelayTimerDes
             register::ByteRegisters::TimerRegisters(register::TimerRegisters::Delay),
             src_val,
         ))]
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrcTx>>
-    for Ld<addressing_mode::DelayTimerSrcTx>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Ld<addressing_mode::DelayTimerSrcTx>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x0),
-            NibbleMask::Fixed(0x7),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::DelayTimerSrcTx::new)
-        .map(Ld::new)
-        .parse(input)
     }
 }
 
@@ -652,23 +421,6 @@ impl LdBcd {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdBcd> for LdBcd {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], LdBcd> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x3),
-            NibbleMask::Fixed(0x3),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::VxIIndirect::new)
-        .map(LdBcd::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdBcd {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.src);
@@ -703,22 +455,6 @@ impl Default for LdK {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], LdK> for LdK {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], LdK> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x0),
-            NibbleMask::Fixed(0xA),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(LdK::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for LdK {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         match cpu.interrupt {
@@ -748,28 +484,6 @@ pub struct ReadRegistersFromMemory {
 impl ReadRegistersFromMemory {
     pub fn new(addressing_mode: addressing_mode::VxIIndirect) -> Self {
         Self { addressing_mode }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], ReadRegistersFromMemory>
-    for ReadRegistersFromMemory
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], ReadRegistersFromMemory> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x6),
-            NibbleMask::Fixed(0x5),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::VxIIndirect::new)
-        .map(ReadRegistersFromMemory::new)
-        .parse(input)
     }
 }
 
@@ -808,26 +522,6 @@ impl StoreRegistersToMemory {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], StoreRegistersToMemory> for StoreRegistersToMemory {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], StoreRegistersToMemory> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xF),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x5),
-            NibbleMask::Fixed(0x5),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::VxIIndirect::new)
-        .map(StoreRegistersToMemory::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for StoreRegistersToMemory {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_inclusive_end_idx = u8::from(self.addressing_mode.src);
@@ -854,20 +548,6 @@ pub struct Call {
 impl Call {
     pub fn new(address: u12) -> Self {
         Self { address }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Call> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x2),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(Call::new)
-        .parse(input)
     }
 }
 
@@ -901,57 +581,12 @@ impl<A> Add<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::Immediate>>
-    for Add<addressing_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x7),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, dest, msb, lsb]| {
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (dest_reg, u8_from_nibbles(msb, lsb))
-        })
-        .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
-        .map(Add::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::Immediate> {
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
         ))]
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::IRegisterIndexed>>
-    for Add<addressing_mode::IRegisterIndexed>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::IRegisterIndexed>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xf),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x1),
-            NibbleMask::Fixed(0xe),
-        ])
-        .map(|[_, reg_id, _, _]| {
-            std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW)
-        })
-        .map(addressing_mode::IRegisterIndexed::new)
-        .map(Add::new)
-        .parse(input)
     }
 }
 
@@ -962,30 +597,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Add<addressing_mode::IRegisterInd
             register::WordRegisters::I,
             gp_val as u16,
         ))]
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Add<addressing_mode::VxVy>>
-    for Add<addressing_mode::VxVy>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Add<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x4),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Add::new)
-        .parse(input)
     }
 }
 
@@ -1023,25 +634,6 @@ impl Sub {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sub> for Sub {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Sub> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x5),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Sub::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sub {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
@@ -1073,25 +665,6 @@ pub struct Subn {
 impl Subn {
     pub fn new(addressing_mode: addressing_mode::VxVy) -> Self {
         Self { addressing_mode }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Subn> for Subn {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Subn> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x7),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Subn::new)
-        .parse(input)
     }
 }
 
@@ -1127,25 +700,6 @@ impl And {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], And> for And {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], And> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x2),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(And::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for And {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
@@ -1168,25 +722,6 @@ pub struct Or {
 impl Or {
     pub fn new(addressing_mode: addressing_mode::VxVy) -> Self {
         Self { addressing_mode }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Or> for Or {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Or> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x1),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Or::new)
-        .parse(input)
     }
 }
 
@@ -1213,20 +748,6 @@ pub struct Skp {
 impl Skp {
     pub fn new(register: GpRegisters) -> Self {
         Self { register }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Skp> for Skp {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Skp> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xE),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x9),
-            NibbleMask::Fixed(0xE),
-        ])
-        .map(|[_, dest, _, _]| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
-        .map(Skp::new)
-        .parse(input)
     }
 }
 
@@ -1266,20 +787,6 @@ impl Sknp {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sknp> for Sknp {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Sknp> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xE),
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0xA),
-            NibbleMask::Fixed(0x1),
-        ])
-        .map(|[_, dest, _, _]| std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW))
-        .map(Sknp::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sknp {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.register);
@@ -1312,25 +819,6 @@ impl Xor {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Xor> for Xor {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Xor> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x3),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Xor::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Xor {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
@@ -1353,25 +841,6 @@ pub struct Shl {
 impl Shl {
     pub fn new(addressing_mode: addressing_mode::VxVy) -> Self {
         Self { addressing_mode }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Shl> for Shl {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Shl> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0xE),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Shl::new)
-        .parse(input)
     }
 }
 
@@ -1408,25 +877,6 @@ impl Shr {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Shr> for Shr {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Shr> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x8),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x6),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Shr::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Shr {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
@@ -1460,29 +910,6 @@ impl<A> Se<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::Immediate>>
-    for Se<addressing_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x3),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, reg_id, msb, lsb]| {
-            let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-            (reg, u8_from_nibbles(msb, lsb))
-        })
-        .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
-        .map(Se::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::Immediate> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.addressing_mode.register);
@@ -1496,30 +923,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Se<addressing_mode::Immediate> {
         } else {
             vec![]
         }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Se<addressing_mode::VxVy>>
-    for Se<addressing_mode::VxVy>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Se<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x5),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x0),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Se::new)
-        .parse(input)
     }
 }
 
@@ -1551,29 +954,6 @@ impl<A> Sne<A> {
     }
 }
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sne<addressing_mode::Immediate>>
-    for Sne<addressing_mode::Immediate>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Sne<addressing_mode::Immediate>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x4),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, reg_id, msb, lsb]| {
-            let reg = std::convert::TryFrom::<u8>::try_from(reg_id).expect(NIBBLE_OVERFLOW);
-            (reg, u8_from_nibbles(msb, lsb))
-        })
-        .map(|(reg, value)| addressing_mode::Immediate::new(reg, value))
-        .map(Sne::new)
-        .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sne<addressing_mode::Immediate> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let reg_val = cpu.read_gp_register(self.addressing_mode.register);
@@ -1587,30 +967,6 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Sne<addressing_mode::Immediate> {
         } else {
             vec![]
         }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Sne<addressing_mode::VxVy>>
-    for Sne<addressing_mode::VxVy>
-{
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> parcel::ParseResult<&'a [(usize, u8)], Sne<addressing_mode::VxVy>> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0x9),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Fixed(0x0),
-        ])
-        .map(|[_, dest, src, _]| {
-            let src_reg = std::convert::TryFrom::<u8>::try_from(src).expect(NIBBLE_OVERFLOW);
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (src_reg, dest_reg)
-        })
-        .map(|(src, dest)| addressing_mode::VxVy::new(src, dest))
-        .map(Sne::new)
-        .parse(input)
     }
 }
 
@@ -1639,24 +995,6 @@ pub struct Rnd {
 impl Rnd {
     pub fn new(addressing_mode: addressing_mode::Immediate) -> Self {
         Rnd { addressing_mode }
-    }
-}
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Rnd> for Rnd {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Rnd> {
-        expect_instruction_with_mask([
-            NibbleMask::Fixed(0xC),
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-            NibbleMask::Variable,
-        ])
-        .map(|[_, dest, msb, lsb]| {
-            let dest_reg = std::convert::TryFrom::<u8>::try_from(dest).expect(NIBBLE_OVERFLOW);
-            (dest_reg, u8_from_nibbles(msb, lsb))
-        })
-        .map(|(dest, value)| addressing_mode::Immediate::new(dest, value))
-        .map(Rnd::new)
-        .parse(input)
     }
 }
 

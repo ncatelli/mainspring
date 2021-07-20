@@ -131,6 +131,7 @@ fn instruction_matches_nibble_mask(
 
 /// OpcodeVariant represents all valid instructions with a mapping to their
 /// corresponding concrete type.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Opcode {
     Cls,
     Ret,

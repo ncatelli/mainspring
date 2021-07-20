@@ -90,7 +90,7 @@ fn should_parse_jump_absolute_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::<NonV0Indexed>::new(addressing_mode::Absolute::new(u12::new(0xfff)))
+            inner: Jp::<NonV0Indexed>::new(u12::new(0xfff))
         }),
         Jp::default().parse(&input[..])
     );
@@ -104,7 +104,7 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x1fe
         ))],
-        Jp::<NonV0Indexed>::new(addressing_mode::Absolute::new(u12::new(0x200))).generate(&cpu)
+        Jp::<NonV0Indexed>::new(u12::new(0x200)).generate(&cpu)
     );
 }
 
@@ -529,7 +529,7 @@ fn should_parse_jump_absolute_indexed_by_v0_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::<V0Indexed>::new(addressing_mode::Absolute::new(u12::new(0xfff)))
+            inner: Jp::<V0Indexed>::new(u12::new(0xfff))
         }),
         Jp::default().parse(&input[..])
     );
@@ -546,7 +546,7 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x203
         ))],
-        Jp::<V0Indexed>::new(addressing_mode::Absolute::new(u12::new(0x200))).generate(&cpu)
+        Jp::<V0Indexed>::new(u12::new(0x200)).generate(&cpu)
     );
 }
 

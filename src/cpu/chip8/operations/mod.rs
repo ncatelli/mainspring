@@ -135,8 +135,8 @@ pub enum Opcode {
     Cls,
     Ret,
     Call(u12),
-    JpNonV0Indexed(Jp<NonV0Indexed>),
-    JpV0Indexed(Jp<V0Indexed>),
+    JpNonV0Indexed(u12),
+    JpV0Indexed(u12),
     LdAbsolute(Ld<addressing_mode::Absolute>),
     LdImmediate(Ld<addressing_mode::Immediate>),
     LdVxVy(Ld<addressing_mode::VxVy>),
@@ -163,7 +163,7 @@ pub enum Opcode {
     StoreRegistersToMemory(StoreRegistersToMemory),
     Skp(Skp),
     Sknp(Sknp),
-    Rnd(Rnd),
+    Rnd(GpRegisters, u8),
 }
 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Opcode
@@ -176,8 +176,8 @@ where
             Opcode::Cls => Cls.generate(cpu),
             Opcode::Ret => Ret.generate(cpu),
             Opcode::Call(abs) => Call::new(*abs).generate(cpu),
-            Opcode::JpNonV0Indexed(o) => o.generate(cpu),
-            Opcode::JpV0Indexed(o) => o.generate(cpu),
+            Opcode::JpNonV0Indexed(abs) => Jp::<NonV0Indexed>::new(*abs).generate(cpu),
+            Opcode::JpV0Indexed(abs) => Jp::<V0Indexed>::new(*abs).generate(cpu),
             Opcode::LdAbsolute(o) => o.generate(cpu),
             Opcode::LdImmediate(o) => o.generate(cpu),
             Opcode::LdVxVy(o) => o.generate(cpu),
@@ -204,7 +204,7 @@ where
             Opcode::StoreRegistersToMemory(o) => o.generate(cpu),
             Opcode::Skp(o) => o.generate(cpu),
             Opcode::Sknp(o) => o.generate(cpu),
-            Opcode::Rnd(o) => o.generate(cpu),
+            Opcode::Rnd(reg, value) => Rnd::new(Immediate::new(*reg, *value)).generate(cpu),
         }
     }
 }
@@ -229,9 +229,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
             match [first, second, third, fourth] {
                 [0x0, 0x0, 0xe, 0x0] => Some(Opcode::Cls),
                 [0x0, 0x0, 0xe, 0xe] => Some(Opcode::Ret),
-                [0x1, _, _, _] => Some(Opcode::JpNonV0Indexed(Jp::<NonV0Indexed>::new(
-                    addressing_mode::Absolute::new(absolute),
-                ))),
+                [0x1, _, _, _] => Some(Opcode::JpNonV0Indexed(absolute)),
                 [0x2, _, _, _] => Some(Opcode::Call(absolute)),
                 [0x3, _, _, _] => Some(Opcode::SeImmediate(dest_reg, immediate)),
                 [0x4, _, _, _] => Some(Opcode::SneImmediate(Sne::new(
@@ -279,12 +277,8 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0xa, _, _, _] => Some(Opcode::LdAbsolute(Ld::new(
                     addressing_mode::Absolute::new(absolute),
                 ))),
-                [0xb, _, _, _] => Some(Opcode::JpV0Indexed(Jp::<V0Indexed>::new(
-                    addressing_mode::Absolute::new(absolute),
-                ))),
-                [0xc, _, _, _] => Some(Opcode::Rnd(Rnd::new(addressing_mode::Immediate::new(
-                    dest_reg, immediate,
-                )))),
+                [0xb, _, _, _] => Some(Opcode::JpV0Indexed(absolute)),
+                [0xc, _, _, _] => Some(Opcode::Rnd(dest_reg, immediate)),
                 [0xe, _, 0x9, 0xe] => Some(Opcode::Skp(Skp::new(dest_reg))),
                 [0xe, _, 0xa, 0x1] => Some(Opcode::Sknp(Sknp::new(dest_reg))),
                 [0xf, _, 0x0, 0x7] => Some(Opcode::LdDelayTimerSrcTx(Ld::new(
@@ -388,14 +382,14 @@ pub struct NonV0Indexed;
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Jp<T> {
     r#type: std::marker::PhantomData<T>,
-    pub addressing_mode: addressing_mode::Absolute,
+    pub address: u12,
 }
 
 impl<T> Jp<T> {
-    pub fn new(addressing_mode: addressing_mode::Absolute) -> Self {
+    pub fn new(address: u12) -> Self {
         Self {
             r#type: std::marker::PhantomData,
-            addressing_mode,
+            address,
         }
     }
 }
@@ -412,7 +406,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<NonV0Indexed>> for Jp<NonV0Ind
             NibbleMask::Variable,
         ])
         .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(addressing_mode::Absolute::new)
         .map(Jp::new)
         .parse(input)
     }
@@ -422,7 +415,7 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<NonV0Indexed> {
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(
             register::WordRegisters::ProgramCounter,
-            u16::from(self.addressing_mode.addr()).wrapping_sub(2),
+            u16::from(self.address).wrapping_sub(2),
         ))]
     }
 }
@@ -441,7 +434,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed>> for Jp<V0Indexed> 
             NibbleMask::Variable,
         ])
         .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(addressing_mode::Absolute::new)
         .map(Jp::new)
         .parse(input)
     }
@@ -450,7 +442,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Jp<V0Indexed>> for Jp<V0Indexed> 
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Jp<V0Indexed> {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let v0_val = cpu.read_gp_register(register::GpRegisters::V0);
-        let abs_addr = self.addressing_mode.addr();
+        let abs_addr = self.address;
         let jmp_addr = abs_addr.wrapping_add(u12::new(v0_val as u16));
 
         vec![Microcode::Write16bitRegister(Write16bitRegister::new(

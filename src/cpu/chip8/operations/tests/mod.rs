@@ -562,7 +562,7 @@ fn should_parse_call_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Call::new(addressing_mode::Absolute::new(u12::new(0xfff)))
+            inner: Call::new(u12::new(0xfff))
         }),
         Call::default().parse(&input[..])
     );
@@ -584,7 +584,7 @@ fn should_generate_call_absolute_instruction() {
                 0x3fe
             ))
         ],
-        Call::new(addressing_mode::Absolute::new(u12::new(0x400))).generate(&cpu)
+        Call::new(u12::new(0x400)).generate(&cpu)
     );
 }
 

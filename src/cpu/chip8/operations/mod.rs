@@ -132,9 +132,9 @@ fn instruction_matches_nibble_mask(
 /// OpcodeVariant represents all valid instructions with a mapping to their
 /// corresponding concrete type.
 pub enum Opcode {
-    Cls(Cls),
-    Ret(Ret),
-    Call(Call),
+    Cls,
+    Ret,
+    Call(u12),
     JpNonV0Indexed(Jp<NonV0Indexed>),
     JpV0Indexed(Jp<V0Indexed>),
     LdAbsolute(Ld<addressing_mode::Absolute>),
@@ -172,9 +172,9 @@ where
 {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         match self {
-            Opcode::Cls(o) => o.generate(cpu),
-            Opcode::Ret(o) => o.generate(cpu),
-            Opcode::Call(o) => o.generate(cpu),
+            Opcode::Cls => Cls.generate(cpu),
+            Opcode::Ret => Ret.generate(cpu),
+            Opcode::Call(abs) => Call::new(*abs).generate(cpu),
             Opcode::JpNonV0Indexed(o) => o.generate(cpu),
             Opcode::JpV0Indexed(o) => o.generate(cpu),
             Opcode::LdAbsolute(o) => o.generate(cpu),
@@ -226,14 +226,12 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
             let immediate = u8_from_nibbles(third, fourth);
 
             match [first, second, third, fourth] {
-                [0x0, 0x0, 0xe, 0x0] => Some(Opcode::Cls(Cls)),
-                [0x0, 0x0, 0xe, 0xe] => Some(Opcode::Ret(Ret)),
+                [0x0, 0x0, 0xe, 0x0] => Some(Opcode::Cls),
+                [0x0, 0x0, 0xe, 0xe] => Some(Opcode::Ret),
                 [0x1, _, _, _] => Some(Opcode::JpNonV0Indexed(Jp::<NonV0Indexed>::new(
                     addressing_mode::Absolute::new(absolute),
                 ))),
-                [0x2, _, _, _] => Some(Opcode::Call(Call::new(addressing_mode::Absolute::new(
-                    absolute,
-                )))),
+                [0x2, _, _, _] => Some(Opcode::Call(absolute)),
                 [0x3, _, _, _] => Some(Opcode::SeImmediate(Se::new(
                     addressing_mode::Immediate::new(dest_reg, immediate),
                 ))),
@@ -892,12 +890,12 @@ impl<R> Generate<Chip8<R>, Vec<Microcode>> for StoreRegistersToMemory {
 /// Call subroutine at nnn.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Call {
-    pub addressing_mode: addressing_mode::Absolute,
+    pub address: u12,
 }
 
 impl Call {
-    pub fn new(addressing_mode: addressing_mode::Absolute) -> Self {
-        Self { addressing_mode }
+    pub fn new(address: u12) -> Self {
+        Self { address }
     }
 }
 
@@ -910,7 +908,6 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
             NibbleMask::Variable,
         ])
         .map(|[_, first, second, third]| u12::from_be_nibbles([first, second, third]))
-        .map(addressing_mode::Absolute::new)
         .map(Call::new)
         .parse(input)
     }
@@ -919,7 +916,7 @@ impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Call> for Call {
 impl<R> Generate<Chip8<R>, Vec<Microcode>> for Call {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let current_pc = cpu.pc.read();
-        let addr = self.addressing_mode.addr();
+        let addr = self.address;
         // decrement 2 to account for PC incrementing.
         let inc_adjusted_addr = u16::from(addr).wrapping_sub(2);
 

@@ -156,7 +156,7 @@ pub enum Opcode {
     Shr(Shr),
     Xor(Xor),
     SeVxVy(Se<addressing_mode::VxVy>),
-    SeImmediate(Se<addressing_mode::Immediate>),
+    SeImmediate(GpRegisters, u8),
     SneVxVy(Sne<addressing_mode::VxVy>),
     SneImmediate(Sne<addressing_mode::Immediate>),
     ReadRegistersFromMemory(ReadRegistersFromMemory),
@@ -171,6 +171,7 @@ where
     R: GenerateRandom<u8>,
 {
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        use addressing_mode::*;
         match self {
             Opcode::Cls => Cls.generate(cpu),
             Opcode::Ret => Ret.generate(cpu),
@@ -196,7 +197,7 @@ where
             Opcode::Shr(o) => o.generate(cpu),
             Opcode::Xor(o) => o.generate(cpu),
             Opcode::SeVxVy(o) => o.generate(cpu),
-            Opcode::SeImmediate(o) => o.generate(cpu),
+            Opcode::SeImmediate(reg, value) => Se::new(Immediate::new(*reg, *value)).generate(cpu),
             Opcode::SneVxVy(o) => o.generate(cpu),
             Opcode::SneImmediate(o) => o.generate(cpu),
             Opcode::ReadRegistersFromMemory(o) => o.generate(cpu),
@@ -232,9 +233,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                     addressing_mode::Absolute::new(absolute),
                 ))),
                 [0x2, _, _, _] => Some(Opcode::Call(absolute)),
-                [0x3, _, _, _] => Some(Opcode::SeImmediate(Se::new(
-                    addressing_mode::Immediate::new(dest_reg, immediate),
-                ))),
+                [0x3, _, _, _] => Some(Opcode::SeImmediate(dest_reg, immediate)),
                 [0x4, _, _, _] => Some(Opcode::SneImmediate(Sne::new(
                     addressing_mode::Immediate::new(dest_reg, immediate),
                 ))),
@@ -298,7 +297,6 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0xf, _, 0x1, 0x8] => Some(Opcode::LdSoundTimerDestTx(Ld::new(
                     addressing_mode::SoundTimerDestTx::new(dest_reg),
                 ))),
-
                 [0xf, _, 0x1, 0xe] => Some(Opcode::AddIRegisterIndexed(Add::new(
                     addressing_mode::IRegisterIndexed::new(dest_reg),
                 ))),

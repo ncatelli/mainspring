@@ -228,7 +228,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 inner: op,
                 remainder: &input[2..],
             }),
-            None => Ok(MatchStatus::NoMatch(&input[..])),
+            None => Ok(MatchStatus::NoMatch(input)),
         }
     }
 }

@@ -90,9 +90,7 @@ fn should_parse_jump_absolute_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::<NonV0Indexed, addressing_mode::Absolute>::new(
-                addressing_mode::Absolute::new(u12::new(0xfff))
-            )
+            inner: Jp::<NonV0Indexed>::new(addressing_mode::Absolute::new(u12::new(0xfff)))
         }),
         Jp::default().parse(&input[..])
     );
@@ -106,10 +104,7 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x1fe
         ))],
-        Jp::<NonV0Indexed, addressing_mode::Absolute>::new(addressing_mode::Absolute::new(
-            u12::new(0x200)
-        ))
-        .generate(&cpu)
+        Jp::<NonV0Indexed>::new(addressing_mode::Absolute::new(u12::new(0x200))).generate(&cpu)
     );
 }
 
@@ -345,7 +340,7 @@ fn should_generate_load_byte_into_register_from_delay_timer_operation() {
 
 #[test]
 fn should_parse_load_bcd_from_vx_i_indirect_operation() {
-    let input: Vec<(usize, u8)> = 0xF818u16
+    let input: Vec<(usize, u8)> = 0xF833u16
         .to_be_bytes()
         .iter()
         .copied()
@@ -357,7 +352,7 @@ fn should_parse_load_bcd_from_vx_i_indirect_operation() {
             remainder: &input[2..],
             inner: LdBcd::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V8,))
         }),
-        <LdBcd<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+        <LdBcd>::default().parse(&input[..])
     );
 }
 
@@ -440,7 +435,7 @@ fn should_parse_read_registers_from_memory_operation() {
                 register::GpRegisters::V2,
             ))
         }),
-        <ReadRegistersFromMemory<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+        <ReadRegistersFromMemory>::default().parse(&input[..])
     );
 }
 
@@ -489,7 +484,7 @@ fn should_parse_store_registers_to_memory_operation() {
                 register::GpRegisters::V2,
             ))
         }),
-        <StoreRegistersToMemory<addressing_mode::VxIIndirect>>::default().parse(&input[..])
+        <StoreRegistersToMemory>::default().parse(&input[..])
     );
 }
 
@@ -534,9 +529,7 @@ fn should_parse_jump_absolute_indexed_by_v0_opcode() {
         Ok(MatchStatus::Match {
             span: 0..2,
             remainder: &input[2..],
-            inner: Jp::<V0Indexed, addressing_mode::Absolute>::new(addressing_mode::Absolute::new(
-                u12::new(0xfff)
-            ))
+            inner: Jp::<V0Indexed>::new(addressing_mode::Absolute::new(u12::new(0xfff)))
         }),
         Jp::default().parse(&input[..])
     );
@@ -553,10 +546,7 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
             register::WordRegisters::ProgramCounter,
             0x203
         ))],
-        Jp::<V0Indexed, addressing_mode::Absolute>::new(addressing_mode::Absolute::new(u12::new(
-            0x200
-        )))
-        .generate(&cpu)
+        Jp::<V0Indexed>::new(addressing_mode::Absolute::new(u12::new(0x200))).generate(&cpu)
     );
 }
 
@@ -761,7 +751,7 @@ fn should_parse_sub_vxvy_without_borrow_operation() {
             remainder: &input[2..],
             inner: Sub::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
         }),
-        <Sub<addressing_mode::VxVy>>::default().parse(&input[..])
+        <Sub>::default().parse(&input[..])
     );
 }
 
@@ -835,7 +825,7 @@ fn should_parse_subn_vxvy_without_borrow_operation() {
             remainder: &input[2..],
             inner: Subn::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
         }),
-        <Subn<addressing_mode::VxVy>>::default().parse(&input[..])
+        <Subn>::default().parse(&input[..])
     );
 }
 
@@ -914,7 +904,7 @@ fn should_parse_and_byte_register_operation_opcode() {
                 register::GpRegisters::V0
             ))
         }),
-        <And<addressing_mode::VxVy>>::default().parse(&input[..])
+        <And>::default().parse(&input[..])
     );
 }
 
@@ -960,7 +950,7 @@ fn should_parse_or_byte_register_operation_opcode() {
                 register::GpRegisters::V0
             ))
         }),
-        <Or<addressing_mode::VxVy>>::default().parse(&input[..])
+        <Or>::default().parse(&input[..])
     );
 }
 
@@ -1003,7 +993,7 @@ fn should_parse_shl_vxvy_with_flag_operation() {
             remainder: &input[2..],
             inner: Shl::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
         }),
-        <Shl<addressing_mode::VxVy>>::default().parse(&input[..])
+        <Shl>::default().parse(&input[..])
     );
 }
 
@@ -1065,7 +1055,7 @@ fn should_parse_shr_vxvy_with_flag_operation() {
             remainder: &input[2..],
             inner: Shr::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0))
         }),
-        <Shr<addressing_mode::VxVy>>::default().parse(&input[..])
+        <Shr>::default().parse(&input[..])
     );
 }
 
@@ -1130,7 +1120,7 @@ fn should_parse_xor_byte_register_operation_opcode() {
                 register::GpRegisters::V0
             ))
         }),
-        <Xor<addressing_mode::VxVy>>::default().parse(&input[..])
+        <Xor>::default().parse(&input[..])
     );
 }
 
@@ -1416,7 +1406,7 @@ fn should_parse_rnd_immediate_operation_opcode() {
                 0xff
             ))
         }),
-        <Rnd<addressing_mode::Immediate>>::default().parse(&input[..])
+        <Rnd>::default().parse(&input[..])
     );
 }
 

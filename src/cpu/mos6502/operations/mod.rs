@@ -241,14 +241,14 @@ impl std::ops::Shr for Operand<u8> {
 /// Provides a wrapper around the operation of unpacking an addressing mode and
 /// adding an indirect offset to it. This appropriately handles for overflow
 /// and returns the address as a u16.
-fn add_index_to_address(addr: u16, index: u8) -> u16 {
+const fn add_index_to_address(addr: u16, index: u8) -> u16 {
     addr.overflowing_add(index as u16).0
 }
 
 /// Provides a wrapper around the operation of unpacking a zeropage addressing
 /// mode and adding an indirect offset to it. This appropriately handles for
 /// overflow and returns the address as a u16.
-fn add_index_to_zeropage_address(zeropage_addr: u8, index: u8) -> u16 {
+const fn add_index_to_zeropage_address(zeropage_addr: u8, index: u8) -> u16 {
     zeropage_addr.overflowing_add(index).0 as u16
 }
 
@@ -287,7 +287,7 @@ fn dereference_address_to_operand(cpu: &Mos6502, addr: u16, index: u8) -> Operan
 /// Provides a wrapper around generating a 16-bit address from the stack
 /// pointer. This exists as a function solely to not lose intent in the type
 /// conversion to u16.
-fn stack_pointer_from_byte_value(value: u8) -> u16 {
+const fn stack_pointer_from_byte_value(value: u8) -> u16 {
     u16::from_le_bytes([value, 0x01])
 }
 

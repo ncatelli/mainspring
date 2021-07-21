@@ -1,3 +1,13 @@
+const fn is_within_display_boundary(origin: (usize, usize), x_req: usize, y_req: usize) -> bool {
+    let x = origin.0;
+    let y = origin.1;
+    let x_min_offset = Display::X_MAX - x_req;
+    let y_min_offset = Display::Y_MAX - y_req;
+
+    // check that x and y each have enough padding from their sprite origin.
+    x < x_min_offset && y < y_min_offset
+}
+
 /// Display mimics the display matrix for the CHIP-8 isa.
 #[derive(Debug, Clone, Copy)]
 pub struct Display {
@@ -13,14 +23,20 @@ impl Default for Display {
 }
 
 impl Display {
+    /// The maximum number of columns per row.
+    const X_MAX: usize = 64;
+
+    /// The maximum number of rows.
+    const Y_MAX: usize = 32;
+
     /// Returns the maximum number of columns per row.
     pub fn x_max() -> usize {
-        64
+        Self::X_MAX
     }
 
     /// Returns the maximum number of rows.
     pub fn y_max() -> usize {
-        32
+        Self::Y_MAX
     }
 
     /// gets the value of the pixel specified by the cartesian coordinates `x`,
@@ -28,7 +44,7 @@ impl Display {
     /// the value of the pixel is returned. Otherwise `Option::None` is
     /// returned.
     pub fn pixel(&self, x: usize, y: usize) -> Option<bool> {
-        if x < Self::x_max() && y < Self::y_max() {
+        if is_within_display_boundary((x, y), 0, 0) {
             Some(self.inner[y][x])
         } else {
             None
@@ -54,6 +70,35 @@ impl Display {
             // if we can get the previous value, it's safe to write a new one.
             self.inner[y][x] = pixel_on;
             Some(previous_value)
+        } else {
+            None
+        }
+    }
+
+    /// Takes an origin x and y value along with a sprite and attempts to
+    /// write the value to the display, returning an
+    /// `(Self, Option::Some(true))` if successfully written.
+    pub fn write_sprite(mut self, x: usize, y: usize, sprite: Font) -> (Self, Option<bool>) {
+        let modified = self.write_sprite_mut(x, y, sprite);
+        (self, modified)
+    }
+
+    /// Takes an origin x and y value along with a sprite and attempts to
+    /// write the value to the display, returning an `Option::Some(true)` if
+    /// successfully written.
+    pub fn write_sprite_mut(&mut self, x: usize, y: usize, sprite: Font) -> Option<bool> {
+        let font_bytes: [u8; 5] = sprite.into();
+        if is_within_display_boundary((x, y), 8, 5) {
+            for y_offset in 0..5 {
+                for x_offset in 0..8u8 {
+                    let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
+                    let bit_value = bit != 0;
+                    let adjusted_y = y + y_offset;
+
+                    self.write_pixel_mut(x_offset as usize, adjusted_y, bit_value);
+                }
+            }
+            Some(true)
         } else {
             None
         }

@@ -498,13 +498,14 @@ impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayRange> for Chip8<R> {
         let start_offset = (start_y * Display::x_max()) + start_x;
         // add 1 to cover non-inclusive range.
         let modified = ((end_y - start_y) * Display::x_max()) + (end_x - start_x) + 1;
-        self.display
-            .unwrap()
-            .iter_mut()
-            .flatten()
-            .skip(start_offset)
-            .take(modified)
-            .for_each(|pixel| *pixel = pixel_value);
+        self.display.with_inner_mut(|inner| {
+            inner
+                .iter_mut()
+                .flatten()
+                .skip(start_offset)
+                .take(modified)
+                .for_each(|pixel| *pixel = pixel_value)
+        })
     }
 }
 

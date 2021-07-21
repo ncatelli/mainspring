@@ -1,11 +1,9 @@
-const fn is_within_display_boundary(origin: (usize, usize), x_req: usize, y_req: usize) -> bool {
+fn is_within_display_boundary(origin: (usize, usize)) -> bool {
     let x = origin.0;
     let y = origin.1;
-    let x_min_offset = Display::X_MAX - x_req;
-    let y_min_offset = Display::Y_MAX - y_req;
 
     // check that x and y each have enough padding from their sprite origin.
-    x < x_min_offset && y < y_min_offset
+    (x < Display::X_MAX) && (y < Display::Y_MAX)
 }
 
 /// Display mimics the display matrix for the CHIP-8 isa.
@@ -44,11 +42,20 @@ impl Display {
     /// the value of the pixel is returned. Otherwise `Option::None` is
     /// returned.
     pub fn pixel(&self, x: usize, y: usize) -> Option<bool> {
-        if is_within_display_boundary((x, y), 0, 0) {
+        if is_within_display_boundary((x, y)) {
             Some(self.inner[y][x])
         } else {
             None
         }
+    }
+
+    /// Provides a function handler for making mutable changes to the inner display
+    /// representation.
+    pub fn with_inner_mut<F, B>(&mut self, f: F) -> B
+    where
+        F: Fn(&mut [[bool; 64]; 32]) -> B,
+    {
+        (f)(&mut self.inner)
     }
 
     /// sets the value of the pixel specified by the cartesian coordinates `x`,
@@ -66,13 +73,11 @@ impl Display {
     /// are within range, an `Option::Some(bool)` with the previous value of
     /// the pixel is returned. Otherwise `Option::None` is returned.
     pub fn write_pixel_mut(&mut self, x: usize, y: usize, pixel_on: bool) -> Option<bool> {
-        if let Some(previous_value) = self.pixel(x, y) {
+        self.pixel(x, y).map(|previous_value| {
             // if we can get the previous value, it's safe to write a new one.
             self.inner[y][x] = pixel_on;
-            Some(previous_value)
-        } else {
-            None
-        }
+            previous_value
+        })
     }
 
     /// Takes an origin x and y value along with a sprite and attempts to
@@ -88,16 +93,22 @@ impl Display {
     /// successfully written.
     pub fn write_sprite_mut(&mut self, x: usize, y: usize, sprite: Font) -> Option<bool> {
         let font_bytes: [u8; 5] = sprite.into();
-        is_within_display_boundary((x, y), 8, 5).then(|| {
-            (0..8u8).zip(0..5usize).for_each(|(x_offset, y_offset)| {
-                let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
-                let bit_is_set = bit != 0;
-                let adjusted_y = y + y_offset;
-                let adjusted_x = x + x_offset as usize;
 
-                self.write_pixel_mut(adjusted_x, adjusted_y, bit_is_set);
-            });
-            true
+        // sprite starts in display boundary
+        is_within_display_boundary((x, y)).then(|| {
+            (0..8u8)
+                .zip(0..5usize)
+                .fold(false, |collision, (x_offset, y_offset)| {
+                    let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
+                    let bit_is_set = bit != 0;
+                    let adjusted_y = y + y_offset;
+                    let adjusted_x = x + x_offset as usize;
+
+                    // if the pixel can't be written default to last collision
+                    // value so state isn't lost.
+                    self.write_pixel_mut(adjusted_x, adjusted_y, bit_is_set)
+                        .unwrap_or(collision)
+                })
         })
     }
 

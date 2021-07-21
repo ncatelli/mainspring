@@ -88,20 +88,17 @@ impl Display {
     /// successfully written.
     pub fn write_sprite_mut(&mut self, x: usize, y: usize, sprite: Font) -> Option<bool> {
         let font_bytes: [u8; 5] = sprite.into();
-        if is_within_display_boundary((x, y), 8, 5) {
-            for y_offset in 0..5 {
-                for x_offset in 0..8u8 {
-                    let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
-                    let bit_value = bit != 0;
-                    let adjusted_y = y + y_offset;
+        is_within_display_boundary((x, y), 8, 5).then(|| {
+            (0..8u8).zip(0..5usize).for_each(|(x_offset, y_offset)| {
+                let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
+                let bit_is_set = bit != 0;
+                let adjusted_y = y + y_offset;
+                let adjusted_x = x + x_offset as usize;
 
-                    self.write_pixel_mut(x_offset as usize, adjusted_y, bit_value);
-                }
-            }
-            Some(true)
-        } else {
-            None
-        }
+                self.write_pixel_mut(adjusted_x, adjusted_y, bit_is_set);
+            });
+            true
+        })
     }
 
     /// Returns the enclosed multi-dimensional array representing the display

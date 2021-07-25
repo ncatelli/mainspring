@@ -89,6 +89,7 @@ pub enum Opcode {
     LdDelayTimerDestTx(GpRegisters),
     LdDelayTimerSrcTx(GpRegisters),
     LdBcd(GpRegisters),
+    LdSpriteLocation(GpRegisters),
     LdK(GpRegisters),
     AddImmediate(GpRegisters, u8),
     AddIRegisterIndexed(GpRegisters),
@@ -135,6 +136,7 @@ where
             Opcode::LdDelayTimerSrcTx(src) => Ld::new(DelayTimerSrcTx::new(*src)).generate(cpu),
             Opcode::LdBcd(reg) => LdBcd::new(VxIIndirect::new(*reg)).generate(cpu),
             Opcode::LdK(dest) => LdK::new(*dest).generate(cpu),
+            Opcode::LdSpriteLocation(src) => LdSpriteLocation::new(*src).generate(cpu),
             Opcode::AddImmediate(dest, value) => {
                 Add::new(Immediate::new(*dest, *value)).generate(cpu)
             }
@@ -213,6 +215,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0xf, _, 0x1, 0x5] => Some(Opcode::LdDelayTimerDestTx(dest_reg)),
                 [0xf, _, 0x1, 0x8] => Some(Opcode::LdSoundTimerDestTx(dest_reg)),
                 [0xf, _, 0x1, 0xe] => Some(Opcode::AddIRegisterIndexed(dest_reg)),
+                [0xf, _, 0x2, 0x9] => Some(Opcode::LdSpriteLocation(dest_reg)),
                 [0xf, _, 0x3, 0x3] => Some(Opcode::LdBcd(dest_reg)),
                 [0xf, _, 0x5, 0x5] => Some(Opcode::StoreRegistersToMemory(dest_reg)),
                 [0xf, _, 0x6, 0x5] => Some(Opcode::ReadRegistersFromMemory(dest_reg)),
@@ -415,6 +418,41 @@ impl<R> Generate<Chip8<R>> for Ld<addressing_mode::DelayTimerSrcTx> {
             register::ByteRegisters::GpRegisters(self.addressing_mode.dest),
             src_val,
         ))]
+    }
+}
+
+/// The I register is set to the location for the hexadecimal sprite
+/// corresponding to the value of Vx.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LdSpriteLocation {
+    source_register: GpRegisters,
+}
+
+impl LdSpriteLocation {
+    pub fn new(src: GpRegisters) -> Self {
+        Self {
+            source_register: src,
+        }
+    }
+}
+
+impl<R> Generate<Chip8<R>> for LdSpriteLocation {
+    type Item = Vec<Microcode>;
+
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        let src_val = cpu.read_gp_register(self.source_register);
+        let sprite_offset = u16::from(src_val * 5);
+
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::I,
+            sprite_offset,
+        ))]
+    }
+}
+
+impl Default for LdSpriteLocation {
+    fn default() -> Self {
+        LdSpriteLocation::new(register::GpRegisters::V0)
     }
 }
 

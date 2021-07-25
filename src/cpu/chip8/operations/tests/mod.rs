@@ -38,6 +38,7 @@ generate_parse_test!(
     should_parse_load_byte_into_sound_timer_opcode, 0xf818u16 to Opcode::LdSoundTimerDestTx(GpRegisters::V8),
     should_parse_load_byte_into_delay_timer_opcode, 0xf815u16 to Opcode::LdDelayTimerDestTx(GpRegisters::V8),
     should_parse_load_byte_into_register_from_delay_timer_opcode, 0xf807u16 to Opcode::LdDelayTimerSrcTx(GpRegisters::V8),
+    should_parse_sprite_location_from_vx_operation, 0xf829u16 to Opcode::LdSpriteLocation(GpRegisters::V8),
     should_parse_load_bcd_from_vx_i_indirect_operation, 0xf833u16 to Opcode::LdBcd(GpRegisters::V8),
     should_parse_load_keypress_into_register_operation, 0xf80au16 to Opcode::LdK(GpRegisters::V8),
     should_parse_read_registers_from_memory_operation, 0xf265u16 to Opcode::ReadRegistersFromMemory(GpRegisters::V2),
@@ -234,6 +235,27 @@ fn should_generate_load_bcd_from_vx_i_indirect_operation() {
             Microcode::WriteMemory(WriteMemory::new(0x0102, 4)),
         ],
         LdBcd::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V0,)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_load_sprite_location_into_i_from_vx_operation() {
+    let cpu = Chip8::<()>::default()
+        .with_rng(|| 0u8)
+        .with_gp_register(
+            register::GpRegisters::V8,
+            register::GeneralPurpose::<u8>::with_value(0xa),
+        )
+        .with_i_register(register::GeneralPurpose::<u16>::with_value(0x0100));
+
+    let expected_sprite_offset = 0xAu16 * 5;
+
+    assert_eq!(
+        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+            register::WordRegisters::I,
+            expected_sprite_offset
+        ))],
+        LdSpriteLocation::new(register::GpRegisters::V8).generate(&cpu)
     );
 }
 

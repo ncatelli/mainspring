@@ -1,4 +1,4 @@
-fn is_within_display_boundary(origin: (usize, usize)) -> bool {
+const fn is_within_display_boundary(origin: (usize, usize)) -> bool {
     let x = origin.0;
     let y = origin.1;
 

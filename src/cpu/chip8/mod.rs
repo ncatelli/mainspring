@@ -356,6 +356,7 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
             microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
+            microcode::Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),
             microcode::Microcode::SetDisplayRange(mc) => self.execute_mut(mc),
         }
     }
@@ -476,6 +477,13 @@ impl<R> crate::cpu::ExecuteMut<microcode::KeyPress> for Chip8<R> {
 impl<R> crate::cpu::ExecuteMut<microcode::KeyRelease> for Chip8<R> {
     fn execute_mut(&mut self, _: &microcode::KeyRelease) {
         self.interrupt = None;
+    }
+}
+
+impl<R> crate::cpu::ExecuteMut<microcode::SetDisplayPixel> for Chip8<R> {
+    fn execute_mut(&mut self, mc: &microcode::SetDisplayPixel) {
+        let microcode::SetDisplayPixel((x, y), pixel_value) = *mc;
+        self.display.write_pixel_mut(x, y, pixel_value);
     }
 }
 

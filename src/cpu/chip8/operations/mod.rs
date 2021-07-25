@@ -79,6 +79,7 @@ impl ToNibbleBytes for u8 {
 pub enum Opcode {
     Cls,
     Ret,
+    Drw(GpRegisters, GpRegisters, u8),
     Call(u12),
     JpNonV0Indexed(u12),
     JpV0Indexed(u12),
@@ -123,6 +124,9 @@ where
         match self {
             Opcode::Cls => Cls.generate(cpu),
             Opcode::Ret => Ret.generate(cpu),
+            Opcode::Drw(x_reg, y_reg, sprite_size) => {
+                Drw::new(*x_reg, *y_reg, *sprite_size).generate(cpu)
+            }
             Opcode::Call(abs) => Call::new(*abs).generate(cpu),
             Opcode::JpNonV0Indexed(abs) => Jp::<NonV0Indexed>::new(*abs).generate(cpu),
             Opcode::JpV0Indexed(abs) => Jp::<V0Indexed>::new(*abs).generate(cpu),
@@ -208,6 +212,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0xa, _, _, _] => Some(Opcode::LdAbsolute(absolute)),
                 [0xb, _, _, _] => Some(Opcode::JpV0Indexed(absolute)),
                 [0xc, _, _, _] => Some(Opcode::Rnd(dest_reg, immediate)),
+                [0xd, _, _, _] => Some(Opcode::Drw(dest_reg, src_reg, fourth)),
                 [0xe, _, 0x9, 0xe] => Some(Opcode::Skp(dest_reg)),
                 [0xe, _, 0xa, 0x1] => Some(Opcode::Sknp(dest_reg)),
                 [0xf, _, 0x0, 0x7] => Some(Opcode::LdDelayTimerSrcTx(dest_reg)),
@@ -279,6 +284,31 @@ impl<R> Generate<Chip8<R>> for Ret {
                 inc_adjusted_addr,
             )),
         ]
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Drw {
+    x_register: GpRegisters,
+    y_register: GpRegisters,
+    sprite_byte_size: u8,
+}
+
+impl Drw {
+    pub fn new(x_register: GpRegisters, y_register: GpRegisters, sprite_byte_size: u8) -> Self {
+        Self {
+            x_register,
+            y_register,
+            sprite_byte_size,
+        }
+    }
+}
+
+impl<R> Generate<Chip8<R>> for Drw {
+    type Item = Vec<Microcode>;
+
+    fn generate(&self, _cpu: &Chip8<R>) -> Vec<Microcode> {
+        vec![]
     }
 }
 

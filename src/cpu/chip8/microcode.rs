@@ -18,7 +18,6 @@ pub enum Microcode {
     PopStack(PopStack),
     KeyPress(KeyPress),
     KeyRelease,
-    SetDisplayPixel(SetDisplayPixel),
     SetDisplayRange(SetDisplayRange),
 }
 
@@ -174,17 +173,6 @@ impl KeyRelease {
 
 /// Represents an (x, y) cartesian coordinate.
 type CartesianCoordinate = (usize, usize);
-
-/// SetDisplayPixel takes a cartesian coordinate representing a pixel and the
-/// value to set that pixel to.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct SetDisplayPixel(pub CartesianCoordinate, pub bool);
-
-impl SetDisplayPixel {
-    pub fn new(coord: CartesianCoordinate, value: bool) -> Self {
-        Self(coord, value)
-    }
-}
 
 /// SetDisplayRange takes a value representing what to set all pixels that fall
 /// within the bounds of the enclosed start and end cartesian coordinates.

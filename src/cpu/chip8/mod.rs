@@ -347,7 +347,9 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             Microcode::WriteMemory(addr, value) => {
                 self.execute_mut(&WriteMemory::new(*addr, *value))
             }
-            Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Write8bitRegister(reg, value) => {
+                self.execute_mut(&Write8bitRegister::new(*reg, *value))
+            }
             Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
             Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),
             Microcode::Write16bitRegister(mc) => self.execute_mut(mc),

@@ -343,7 +343,7 @@ impl<R> Generate<Chip8<R>> for Drw {
 
                     let collision = match cpu.display.pixel(adjusted_x, adjusted_y) {
                         // if the pixel is already set and is reset to true, mark a collision,
-                        Some(true) if bit_is_set == true => true,
+                        Some(true) if bit_is_set => true,
                         // else persist the state of collision.
                         _ => collision,
                     };

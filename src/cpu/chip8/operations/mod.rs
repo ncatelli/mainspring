@@ -279,10 +279,10 @@ impl<R> Generate<Chip8<R>> for Ret {
 
         vec![
             Microcode::PopStack(PopStack::new(ret_pc)),
-            Microcode::Write16bitRegister(Write16bitRegister::new(
+            Microcode::Write16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 inc_adjusted_addr,
-            )),
+            ),
         ]
     }
 }
@@ -400,10 +400,10 @@ impl<R> Generate<Chip8<R>> for Jp<NonV0Indexed> {
     type Item = Vec<Microcode>;
 
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::ProgramCounter,
             u16::from(self.address).wrapping_sub(2),
-        ))]
+        )]
     }
 }
 
@@ -417,10 +417,10 @@ impl<R> Generate<Chip8<R>> for Jp<V0Indexed> {
         let abs_addr = self.address;
         let jmp_addr = abs_addr.wrapping_add(u12::new(v0_val as u16));
 
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::ProgramCounter,
             u16::from(jmp_addr).wrapping_sub(2),
-        ))]
+        )]
     }
 }
 
@@ -440,10 +440,10 @@ impl<R> Generate<Chip8<R>> for Ld<addressing_mode::Absolute> {
     type Item = Vec<Microcode>;
 
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::I,
             u16::from(self.addressing_mode.addr()),
-        ))]
+        )]
     }
 }
 
@@ -532,10 +532,10 @@ impl<R> Generate<Chip8<R>> for LdSpriteLocation {
         let src_val = cpu.read_gp_register(self.source_register);
         let sprite_offset = u16::from(src_val * 5);
 
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::I,
             sprite_offset,
-        ))]
+        )]
     }
 }
 
@@ -619,10 +619,10 @@ impl<R> Generate<Chip8<R>> for LdK {
                 )]
             }
             // if there is no input, default to looping on this instruction.
-            None => vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+            None => vec![Microcode::Dec16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 2,
-            ))],
+            )],
         }
     }
 }
@@ -719,10 +719,10 @@ impl<R> Generate<Chip8<R>> for Call {
 
         vec![
             Microcode::PushStack(PushStack::new(current_pc)),
-            Microcode::Write16bitRegister(Write16bitRegister::new(
+            Microcode::Write16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 inc_adjusted_addr,
-            )),
+            ),
         ]
     }
 }
@@ -744,10 +744,10 @@ impl<R> Generate<Chip8<R>> for Add<addressing_mode::Immediate> {
     type Item = Vec<Microcode>;
 
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
-        vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
+        vec![Microcode::Inc8bitRegister(
             register::ByteRegisters::GpRegisters(self.addressing_mode.register),
             self.addressing_mode.value,
-        ))]
+        )]
     }
 }
 
@@ -756,10 +756,10 @@ impl<R> Generate<Chip8<R>> for Add<addressing_mode::IRegisterIndexed> {
 
     fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
         let gp_val = cpu.read_gp_register(self.addressing_mode.register);
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::I,
             gp_val as u16,
-        ))]
+        )]
     }
 }
 
@@ -932,10 +932,10 @@ impl<R> Generate<Chip8<R>> for Skp {
 
         match cpu.interrupt {
             Some(chip8::Interrupt::KeyPress(iv)) if iv as u8 == reg_val => {
-                vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+                vec![Microcode::Inc16bitRegister(
                     register::WordRegisters::ProgramCounter,
                     2,
-                ))]
+                )]
             }
             _ => vec![],
         }
@@ -970,10 +970,10 @@ impl<R> Generate<Chip8<R>> for Sknp {
 
         match cpu.interrupt {
             Some(chip8::Interrupt::KeyPress(iv)) if iv as u8 == reg_val => vec![],
-            _ => vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            _ => vec![Microcode::Inc16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 2,
-            ))],
+            )],
         }
     }
 }
@@ -1101,10 +1101,10 @@ impl<R> Generate<Chip8<R>> for Se<addressing_mode::Immediate> {
         let value = self.addressing_mode.value;
 
         if reg_val == value {
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            vec![Microcode::Inc16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 2,
-            ))]
+            )]
         } else {
             vec![]
         }
@@ -1119,10 +1119,10 @@ impl<R> Generate<Chip8<R>> for Se<addressing_mode::VxVy> {
         let second_reg_val = cpu.read_gp_register(self.addressing_mode.second);
 
         if first_reg_val == second_reg_val {
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            vec![Microcode::Inc16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 2,
-            ))]
+            )]
         } else {
             vec![]
         }
@@ -1149,10 +1149,10 @@ impl<R> Generate<Chip8<R>> for Sne<addressing_mode::Immediate> {
         let value = self.addressing_mode.value;
 
         if reg_val != value {
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            vec![Microcode::Inc16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 2,
-            ))]
+            )]
         } else {
             vec![]
         }
@@ -1167,10 +1167,10 @@ impl<R> Generate<Chip8<R>> for Sne<addressing_mode::VxVy> {
         let second_reg_val = cpu.read_gp_register(self.addressing_mode.second);
 
         if first_reg_val != second_reg_val {
-            vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+            vec![Microcode::Inc16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 2,
-            ))]
+            )]
         } else {
             vec![]
         }

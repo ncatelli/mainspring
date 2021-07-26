@@ -315,7 +315,8 @@ where
             .into_iter()
             .chain(vec![microcode::Microcode::Inc16bitRegister(
                 // increment the PC by instruction size.
-                microcode::Inc16bitRegister::new(register::WordRegisters::ProgramCounter, 2),
+                register::WordRegisters::ProgramCounter,
+                2,
             )])
             .collect();
 
@@ -350,11 +351,21 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             Microcode::Write8bitRegister(reg, value) => {
                 self.execute_mut(&Write8bitRegister::new(*reg, *value))
             }
-            Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
-            Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),
-            Microcode::Write16bitRegister(mc) => self.execute_mut(mc),
-            Microcode::Inc16bitRegister(mc) => self.execute_mut(mc),
-            Microcode::Dec16bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Inc8bitRegister(reg, value) => {
+                self.execute_mut(&Inc8bitRegister::new(*reg, *value))
+            }
+            Microcode::Dec8bitRegister(reg, value) => {
+                self.execute_mut(&Dec8bitRegister::new(*reg, *value))
+            }
+            Microcode::Write16bitRegister(reg, value) => {
+                self.execute_mut(&Write16bitRegister::new(*reg, *value))
+            }
+            Microcode::Inc16bitRegister(reg, value) => {
+                self.execute_mut(&Inc16bitRegister::new(*reg, *value))
+            }
+            Microcode::Dec16bitRegister(reg, value) => {
+                self.execute_mut(&Dec16bitRegister::new(*reg, *value))
+            }
             Microcode::PushStack(mc) => self.execute_mut(mc),
             Microcode::PopStack(mc) => self.execute_mut(mc),
             Microcode::KeyPress(mc) => self.execute_mut(mc),

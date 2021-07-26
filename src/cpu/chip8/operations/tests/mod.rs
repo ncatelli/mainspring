@@ -91,10 +91,7 @@ fn should_generate_ret_instruction() {
             // save initial value
             Microcode::PopStack(PopStack::new(0x200)),
             // jump to absolute value - 2.
-            Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                0x1fe
-            ))
+            Microcode::Write16bitRegister(register::WordRegisters::ProgramCounter, 0x1fe)
         ],
         Ret.generate(&cpu)
     );
@@ -143,10 +140,10 @@ fn should_generate_drw_instruction() {
 fn should_generate_jump_absolute_with_pc_incrementer() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::ProgramCounter,
             0x1fe
-        ))],
+        )],
         Jp::<NonV0Indexed>::new(u12::new(0x200)).generate(&cpu)
     );
 }
@@ -155,10 +152,10 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
 fn should_generate_load_absolute_into_i_incrementer() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::I,
             0xfff
-        ))],
+        )],
         Ld::new(addressing_mode::Absolute::new(u12::new(0xfff))).generate(&cpu)
     );
 }
@@ -291,10 +288,10 @@ fn should_generate_load_sprite_location_into_i_from_vx_operation() {
     let expected_sprite_offset = 0xAu16 * 5;
 
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::I,
             expected_sprite_offset
-        ))],
+        )],
         LdSpriteLocation::new(register::GpRegisters::V8).generate(&cpu)
     );
 }
@@ -324,10 +321,10 @@ fn should_generate_load_keypress_into_register_operation() {
         .with_interrupt(|| None);
 
     assert_eq!(
-        vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+        vec![Microcode::Dec16bitRegister(
             register::WordRegisters::ProgramCounter,
             2,
-        ))],
+        )],
         LdK::new(register::GpRegisters::V8).generate(&cpu_without_input_interrupt)
     );
 }
@@ -401,10 +398,10 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
         register::GeneralPurpose::with_value(0x05),
     );
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::ProgramCounter,
             0x203
-        ))],
+        )],
         Jp::<V0Indexed>::new(u12::new(0x200)).generate(&cpu)
     );
 }
@@ -420,10 +417,7 @@ fn should_generate_call_absolute_instruction() {
             // save initial value
             Microcode::PushStack(PushStack::new(0x200)),
             // jump to absolute value - 2.
-            Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                0x3fe
-            ))
+            Microcode::Write16bitRegister(register::WordRegisters::ProgramCounter, 0x3fe)
         ],
         Call::new(u12::new(0x400)).generate(&cpu)
     );
@@ -433,10 +427,10 @@ fn should_generate_call_absolute_instruction() {
 fn should_generate_add_immediate() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
+        vec![Microcode::Inc8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
             0xff
-        ))],
+        )],
         Add::new(addressing_mode::Immediate::new(
             register::GpRegisters::V5,
             0xff
@@ -452,10 +446,10 @@ fn should_generate_add_i_register_indexed() {
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::I,
             0xff
-        ))],
+        )],
         Add::new(addressing_mode::IRegisterIndexed::new(
             register::GpRegisters::V5
         ))
@@ -804,10 +798,10 @@ fn should_generate_se_immediate_operation() {
     );
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Se::new(addressing_mode::Immediate::new(
             register::GpRegisters::V0,
             0xff
@@ -843,10 +837,10 @@ fn should_generate_se_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x0f),
         );
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Se::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -882,10 +876,10 @@ fn should_generate_sne_immediate_operation() {
     );
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sne::new(addressing_mode::Immediate::new(
             register::GpRegisters::V0,
             0x00
@@ -921,10 +915,10 @@ fn should_generate_sne_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x00),
         );
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sne::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -1015,10 +1009,10 @@ fn should_generate_skp_operation() {
         .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::KeyF)));
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Skp::new(register::GpRegisters::V0).generate(&cpu_some_eq)
     );
 
@@ -1062,10 +1056,10 @@ fn should_generate_sknp_operation() {
         .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::Key0)));
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sknp::new(register::GpRegisters::V0).generate(&cpu_some_ne)
     );
 
@@ -1073,10 +1067,10 @@ fn should_generate_sknp_operation() {
     let cpu_none = cpu_some_eq.clone().with_interrupt(|| None);
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sknp::new(register::GpRegisters::V0).generate(&cpu_none)
     );
 }

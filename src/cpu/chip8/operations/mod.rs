@@ -580,9 +580,9 @@ impl<R> Generate<Chip8<R>> for LdBcd {
         let ones = extract_ones_place(src_val);
 
         vec![
-            Microcode::WriteMemory(WriteMemory::new(cpu.i.read(), hundreds)),
-            Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 1, tens)),
-            Microcode::WriteMemory(WriteMemory::new(cpu.i.read() + 2, ones)),
+            Microcode::WriteMemory(cpu.i.read(), hundreds),
+            Microcode::WriteMemory(cpu.i.read() + 1, tens),
+            Microcode::WriteMemory(cpu.i.read() + 2, ones),
         ]
     }
 }
@@ -690,7 +690,7 @@ impl<R> Generate<Chip8<R>> for StoreRegistersToMemory {
             .map(|reg| {
                 let src_val = cpu.read_gp_register(reg);
                 let i_idx = cpu.i.read() as u16 + reg as u16;
-                Microcode::WriteMemory(WriteMemory::new(i_idx, src_val))
+                Microcode::WriteMemory(i_idx, src_val)
             })
             .collect()
     }

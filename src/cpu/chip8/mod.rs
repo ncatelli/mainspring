@@ -342,20 +342,23 @@ where
 
 impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
     fn execute_mut(&mut self, mc: &microcode::Microcode) {
+        use microcode::*;
         match mc {
-            microcode::Microcode::WriteMemory(mc) => self.execute_mut(mc),
-            microcode::Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Write16bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Inc16bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Dec16bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::PushStack(mc) => self.execute_mut(mc),
-            microcode::Microcode::PopStack(mc) => self.execute_mut(mc),
-            microcode::Microcode::KeyPress(mc) => self.execute_mut(mc),
-            microcode::Microcode::KeyRelease => self.execute_mut(&microcode::KeyRelease),
-            microcode::Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),
-            microcode::Microcode::SetDisplayRange(mc) => self.execute_mut(mc),
+            Microcode::WriteMemory(addr, value) => {
+                self.execute_mut(&WriteMemory::new(*addr, *value))
+            }
+            Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Write16bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Inc16bitRegister(mc) => self.execute_mut(mc),
+            Microcode::Dec16bitRegister(mc) => self.execute_mut(mc),
+            Microcode::PushStack(mc) => self.execute_mut(mc),
+            Microcode::PopStack(mc) => self.execute_mut(mc),
+            Microcode::KeyPress(mc) => self.execute_mut(mc),
+            Microcode::KeyRelease => self.execute_mut(&KeyRelease),
+            Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),
+            Microcode::SetDisplayRange(mc) => self.execute_mut(mc),
         }
     }
 }

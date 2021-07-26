@@ -270,9 +270,9 @@ fn should_generate_load_bcd_from_vx_i_indirect_operation() {
 
     assert_eq!(
         vec![
-            Microcode::WriteMemory(WriteMemory::new(0x0100, 2)),
-            Microcode::WriteMemory(WriteMemory::new(0x0101, 5)),
-            Microcode::WriteMemory(WriteMemory::new(0x0102, 4)),
+            Microcode::WriteMemory(0x0100, 2),
+            Microcode::WriteMemory(0x0101, 5),
+            Microcode::WriteMemory(0x0102, 4),
         ],
         LdBcd::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V0,)).generate(&cpu)
     );
@@ -385,9 +385,9 @@ fn should_generate_store_registers_to_memory_operation() {
 
     assert_eq!(
         vec![
-            Microcode::WriteMemory(WriteMemory::new(0x0100, 0x01)),
-            Microcode::WriteMemory(WriteMemory::new(0x0101, 0x02)),
-            Microcode::WriteMemory(WriteMemory::new(0x0102, 0x03)),
+            Microcode::WriteMemory(0x0100, 0x01),
+            Microcode::WriteMemory(0x0101, 0x02),
+            Microcode::WriteMemory(0x0102, 0x03),
         ],
         StoreRegistersToMemory::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V2))
             .generate(&cpu)

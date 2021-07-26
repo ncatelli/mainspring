@@ -7,7 +7,7 @@ use crate::cpu::chip8::{
 /// CHIP-8 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
-    WriteMemory(WriteMemory),
+    WriteMemory(u16, u8),
     Write8bitRegister(Write8bitRegister),
     Inc8bitRegister(Inc8bitRegister),
     Dec8bitRegister(Dec8bitRegister),

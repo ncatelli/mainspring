@@ -278,7 +278,7 @@ impl<R> Generate<Chip8<R>> for Ret {
         let inc_adjusted_addr = ret_pc.wrapping_sub(2);
 
         vec![
-            Microcode::PopStack(PopStack::new(ret_pc)),
+            Microcode::PopStack(ret_pc),
             Microcode::Write16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 inc_adjusted_addr,
@@ -718,7 +718,7 @@ impl<R> Generate<Chip8<R>> for Call {
         let inc_adjusted_addr = u16::from(addr).wrapping_sub(2);
 
         vec![
-            Microcode::PushStack(PushStack::new(current_pc)),
+            Microcode::PushStack(current_pc),
             Microcode::Write16bitRegister(
                 register::WordRegisters::ProgramCounter,
                 inc_adjusted_addr,

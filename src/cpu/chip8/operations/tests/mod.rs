@@ -89,7 +89,7 @@ fn should_generate_ret_instruction() {
     assert_eq!(
         vec![
             // save initial value
-            Microcode::PopStack(PopStack::new(0x200)),
+            Microcode::PopStack(0x200),
             // jump to absolute value - 2.
             Microcode::Write16bitRegister(register::WordRegisters::ProgramCounter, 0x1fe)
         ],
@@ -415,7 +415,7 @@ fn should_generate_call_absolute_instruction() {
     assert_eq!(
         vec![
             // save initial value
-            Microcode::PushStack(PushStack::new(0x200)),
+            Microcode::PushStack(0x200),
             // jump to absolute value - 2.
             Microcode::Write16bitRegister(register::WordRegisters::ProgramCounter, 0x3fe)
         ],

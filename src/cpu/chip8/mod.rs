@@ -366,8 +366,8 @@ impl<R> crate::cpu::ExecuteMut<microcode::Microcode> for Chip8<R> {
             Microcode::Dec16bitRegister(reg, value) => {
                 self.execute_mut(&Dec16bitRegister::new(*reg, *value))
             }
-            Microcode::PushStack(mc) => self.execute_mut(mc),
-            Microcode::PopStack(mc) => self.execute_mut(mc),
+            Microcode::PushStack(value) => self.execute_mut(&PushStack::new(*value)),
+            Microcode::PopStack(value) => self.execute_mut(&PopStack::new(*value)),
             Microcode::KeyPress(mc) => self.execute_mut(mc),
             Microcode::KeyRelease => self.execute_mut(&KeyRelease),
             Microcode::SetDisplayPixel(mc) => self.execute_mut(mc),

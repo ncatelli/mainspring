@@ -3,22 +3,46 @@ use crate::cpu::chip8::{
     register::{ByteRegisters, WordRegisters},
 };
 
-/// An Enumerable type to store each microcode operation possible on the
+/// An enumerable type to store each microcode operation possible on the
 /// CHIP-8 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
+    /// Represents a write of the value to the memory location specified by the
+    /// address field.
     WriteMemory(u16, u8),
+    /// Represents a write of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
     Write8bitRegister(ByteRegisters, u8),
+    /// Represents an increment of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value
     Inc8bitRegister(ByteRegisters, u8),
+    /// Represents an decrement of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
     Dec8bitRegister(ByteRegisters, u8),
+    /// Represents a write of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
     Write16bitRegister(WordRegisters, u16),
+    /// Represents an increment of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
     Inc16bitRegister(WordRegisters, u16),
+    /// Represents an decrement of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
     Dec16bitRegister(WordRegisters, u16),
+    /// Represents an operation that pushes a value onto the stack, incrementing the
+    /// stack pointer.
     PushStack(u16),
+    /// Represents an operation that pops a value from the stack, decrementing the
+    /// stack pointer.
     PopStack(u16),
+    /// Represents a keypress coming in from an external keyboard.
     KeyPress(chip8::KeyInputValue),
+    /// Represents the inverse of KeyPress, a key being released.
     KeyRelease,
+    /// SetDisplayPixel takes a cartesian coordinate representing a pixel and the
+    /// value to set that pixel to.
     SetDisplayPixel(CartesianCoordinate, bool),
+    /// SetDisplayRange takes a value representing what to set all pixels that fall
+    /// within the bounds of the enclosed start and end cartesian coordinates.
     SetDisplayRange(CartesianCoordinate, CartesianCoordinate, bool),
 }
 

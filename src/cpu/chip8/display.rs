@@ -1,4 +1,4 @@
-fn is_within_display_boundary(origin: (usize, usize)) -> bool {
+const fn is_within_display_boundary(origin: (usize, usize)) -> bool {
     let x = origin.0;
     let y = origin.1;
 
@@ -97,9 +97,10 @@ impl Display {
         // sprite starts in display boundary
         is_within_display_boundary((x, y)).then(|| {
             (0..8u8)
-                .zip(0..5usize)
+                .map(|x| (0..5usize).map(|y| (x, y)).collect::<Vec<_>>())
+                .flatten()
                 .fold(false, |collision, (x_offset, y_offset)| {
-                    let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
+                    let bit = (font_bytes[y_offset] >> (7 - x_offset)) & 0x1;
                     let bit_is_set = bit != 0;
                     let adjusted_y = y + y_offset;
                     let adjusted_x = x + x_offset as usize;

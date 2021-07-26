@@ -30,6 +30,7 @@ macro_rules! generate_parse_test {
 generate_parse_test!(
     should_parse_cls_opcode, 0x00e0u16 to Opcode::Cls,
     should_parse_ret_opcode, 0x00eeu16 to Opcode::Ret,
+    should_parse_drw_opcode, 0xd015u16 to Opcode::Drw(GpRegisters::V0, GpRegisters::V1, 5),
     should_parse_jump_absolute_opcode, 0x1fffu16 to Opcode::JpNonV0Indexed(u12::new(0xfff)),
     should_parse_jump_absolute_indexed_by_v0_opcode, 0xbfffu16 to Opcode::JpV0Indexed(u12::new(0xfff)),
     should_parse_load_absolute_into_i_opcode, 0xafffu16 to Opcode::LdAbsolute(u12::new(0xfff)),
@@ -96,6 +97,45 @@ fn should_generate_ret_instruction() {
             ))
         ],
         Ret.generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_drw_instruction() {
+    use crate::address_map::Addressable;
+
+    let mut cpu = Chip8::<()>::default()
+        .with_gp_register(
+            register::GpRegisters::V0,
+            register::GeneralPurpose::with_value(0),
+        )
+        .with_gp_register(
+            register::GpRegisters::V1,
+            register::GeneralPurpose::with_value(0),
+        )
+        .with_i_register(register::GeneralPurpose::with_value(0));
+
+    // Make a dummy font
+    cpu.address_space.write(0x00, 0xf0).unwrap();
+
+    let mut expected = (0..8)
+        .into_iter()
+        // 0xf0
+        .map(|x| {
+            let bit_is_set = (0xf0u8 >> (7 - x)) & 1;
+            (x, bit_is_set != 0)
+        })
+        .map(|(x, pixel)| Microcode::SetDisplayPixel(SetDisplayPixel::new((x as usize, 0), pixel)))
+        .collect::<Vec<_>>();
+
+    expected.push(Microcode::Write8bitRegister(Write8bitRegister::new(
+        register::ByteRegisters::GpRegisters(register::GpRegisters::Vf),
+        0,
+    )));
+
+    assert_eq!(
+        expected,
+        Drw::new(GpRegisters::V0, GpRegisters::V1, 1).generate(&cpu)
     );
 }
 

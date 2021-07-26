@@ -79,6 +79,7 @@ impl ToNibbleBytes for u8 {
 pub enum Opcode {
     Cls,
     Ret,
+    Drw(GpRegisters, GpRegisters, u8),
     Call(u12),
     JpNonV0Indexed(u12),
     JpV0Indexed(u12),
@@ -123,6 +124,9 @@ where
         match self {
             Opcode::Cls => Cls.generate(cpu),
             Opcode::Ret => Ret.generate(cpu),
+            Opcode::Drw(x_reg, y_reg, sprite_size) => {
+                Drw::new(*x_reg, *y_reg, *sprite_size).generate(cpu)
+            }
             Opcode::Call(abs) => Call::new(*abs).generate(cpu),
             Opcode::JpNonV0Indexed(abs) => Jp::<NonV0Indexed>::new(*abs).generate(cpu),
             Opcode::JpV0Indexed(abs) => Jp::<V0Indexed>::new(*abs).generate(cpu),
@@ -208,6 +212,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0xa, _, _, _] => Some(Opcode::LdAbsolute(absolute)),
                 [0xb, _, _, _] => Some(Opcode::JpV0Indexed(absolute)),
                 [0xc, _, _, _] => Some(Opcode::Rnd(dest_reg, immediate)),
+                [0xd, _, _, _] => Some(Opcode::Drw(dest_reg, src_reg, fourth)),
                 [0xe, _, 0x9, 0xe] => Some(Opcode::Skp(dest_reg)),
                 [0xe, _, 0xa, 0x1] => Some(Opcode::Sknp(dest_reg)),
                 [0xf, _, 0x0, 0x7] => Some(Opcode::LdDelayTimerSrcTx(dest_reg)),
@@ -279,6 +284,90 @@ impl<R> Generate<Chip8<R>> for Ret {
                 inc_adjusted_addr,
             )),
         ]
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Drw {
+    x_register: GpRegisters,
+    y_register: GpRegisters,
+    sprite_byte_size: u8,
+}
+
+impl Drw {
+    pub fn new(x_register: GpRegisters, y_register: GpRegisters, sprite_byte_size: u8) -> Self {
+        Self {
+            x_register,
+            y_register,
+            sprite_byte_size,
+        }
+    }
+}
+
+impl<R> Generate<Chip8<R>> for Drw {
+    type Item = Vec<Microcode>;
+
+    fn generate(&self, cpu: &Chip8<R>) -> Vec<Microcode> {
+        use crate::address_map::Addressable;
+
+        // setup and load sprite
+        let font_offset = cpu.i.read();
+        let sprite_size = self.sprite_byte_size;
+        let sprite_addr_space = font_offset..(font_offset + sprite_size as u16);
+        let sprite = sprite_addr_space
+            .into_iter()
+            .map(|addr| cpu.address_space.read(addr))
+            .collect::<Vec<_>>();
+
+        // setup sprite offset
+        let start_pos = (
+            cpu.read_gp_register(self.x_register),
+            cpu.read_gp_register(self.y_register),
+        );
+
+        // check for collisions.
+        let (collision, pixels) = (0..8u8)
+            .map(|x| {
+                (0..sprite_size as usize)
+                    .map(|y| (x, y))
+                    .collect::<Vec<_>>()
+            })
+            .flatten()
+            .fold(
+                (false, vec![]),
+                |(collision, mut pixel_writes), (x_offset, y_offset)| {
+                    let bit = (sprite[y_offset] >> (7 - x_offset)) & 0x1;
+                    let bit_is_set = bit != 0;
+                    let adjusted_x = (start_pos.0 as usize) + x_offset as usize;
+                    let adjusted_y = (start_pos.1 as usize) + y_offset;
+
+                    let collision = match cpu.display.pixel(adjusted_x, adjusted_y) {
+                        // if the pixel is already set and is reset to true, mark a collision,
+                        Some(true) if bit_is_set => true,
+                        // else persist the state of collision.
+                        _ => collision,
+                    };
+
+                    pixel_writes.push(Microcode::SetDisplayPixel(SetDisplayPixel::new(
+                        (adjusted_x, adjusted_y),
+                        bit_is_set,
+                    )));
+
+                    (collision, pixel_writes)
+                },
+            );
+
+        // join the pixel and collision opcodes.
+        pixels
+            .into_iter()
+            .chain(
+                vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+                    register::ByteRegisters::GpRegisters(register::GpRegisters::Vf),
+                    collision as u8,
+                ))]
+                .into_iter(),
+            )
+            .collect()
     }
 }
 

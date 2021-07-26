@@ -216,15 +216,13 @@ where
     R: Default,
 {
     fn default() -> Self {
-        type Rom =
-            crate::address_map::memory::Memory<crate::address_map::memory::ReadOnly, u16, u8>;
         type Ram =
             crate::address_map::memory::Memory<crate::address_map::memory::ReadWrite, u16, u8>;
 
         Self {
             stack: memory::Ring::new(16),
             address_space: AddressMap::default()
-                .register(0..=0x1ff, Box::new(Rom::new(0, 0x1ff)))
+                .register(0..=0x1ff, Box::new(Ram::new(0, 0x1ff)))
                 .unwrap()
                 .register(0x200..=0xfff, Box::new(Ram::new(0x200, 0xfff)))
                 .unwrap(),

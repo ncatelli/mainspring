@@ -326,29 +326,36 @@ impl<R> Generate<Chip8<R>> for Drw {
         );
 
         // check for collisions.
-        let (collision, pixels) = (0..8u8).zip(0..sprite_size as usize).fold(
-            (false, vec![]),
-            |(collision, mut pixel_writes), (x_offset, y_offset)| {
-                let bit = (sprite[y_offset] >> x_offset) & 0x1;
-                let bit_is_set = bit != 0;
-                let adjusted_y = (start_pos.1 as usize) + y_offset;
-                let adjusted_x = (start_pos.0 as usize) + x_offset as usize;
+        let (collision, pixels) = (0..8u8)
+            .map(|x| {
+                (0..sprite_size as usize)
+                    .map(|y| (x, y))
+                    .collect::<Vec<_>>()
+            })
+            .flatten()
+            .fold(
+                (false, vec![]),
+                |(collision, mut pixel_writes), (x_offset, y_offset)| {
+                    let bit = (sprite[y_offset] >> (7 - x_offset)) & 0x1;
+                    let bit_is_set = bit != 0;
+                    let adjusted_x = (start_pos.0 as usize) + x_offset as usize;
+                    let adjusted_y = (start_pos.1 as usize) + y_offset;
 
-                let collision = match cpu.display.pixel(adjusted_x, adjusted_y) {
-                    // if the pixel is already set and is reset to true, mark a collision,
-                    Some(true) if bit_is_set == true => true,
-                    // else persist the state of collision.
-                    _ => collision,
-                };
+                    let collision = match cpu.display.pixel(adjusted_x, adjusted_y) {
+                        // if the pixel is already set and is reset to true, mark a collision,
+                        Some(true) if bit_is_set == true => true,
+                        // else persist the state of collision.
+                        _ => collision,
+                    };
 
-                pixel_writes.push(Microcode::SetDisplayPixel(SetDisplayPixel::new(
-                    (adjusted_x, adjusted_y),
-                    bit_is_set,
-                )));
+                    pixel_writes.push(Microcode::SetDisplayPixel(SetDisplayPixel::new(
+                        (adjusted_x, adjusted_y),
+                        bit_is_set,
+                    )));
 
-                (collision, pixel_writes)
-            },
-        );
+                    (collision, pixel_writes)
+                },
+            );
 
         // join the pixel and collision opcodes.
         pixels

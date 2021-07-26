@@ -3,29 +3,53 @@ use crate::cpu::chip8::{
     register::{ByteRegisters, WordRegisters},
 };
 
-/// An Enumerable type to store each microcode operation possible on the
+/// An enumerable type to store each microcode operation possible on the
 /// CHIP-8 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
-    WriteMemory(WriteMemory),
-    Write8bitRegister(Write8bitRegister),
-    Inc8bitRegister(Inc8bitRegister),
-    Dec8bitRegister(Dec8bitRegister),
-    Write16bitRegister(Write16bitRegister),
-    Inc16bitRegister(Inc16bitRegister),
-    Dec16bitRegister(Dec16bitRegister),
-    PushStack(PushStack),
-    PopStack(PopStack),
-    KeyPress(KeyPress),
+    /// Represents a write of the value to the memory location specified by the
+    /// address field.
+    WriteMemory(u16, u8),
+    /// Represents a write of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
+    Write8bitRegister(ByteRegisters, u8),
+    /// Represents an increment of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value
+    Inc8bitRegister(ByteRegisters, u8),
+    /// Represents an decrement of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
+    Dec8bitRegister(ByteRegisters, u8),
+    /// Represents a write of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
+    Write16bitRegister(WordRegisters, u16),
+    /// Represents an increment of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
+    Inc16bitRegister(WordRegisters, u16),
+    /// Represents an decrement of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
+    Dec16bitRegister(WordRegisters, u16),
+    /// Represents an operation that pushes a value onto the stack, incrementing the
+    /// stack pointer.
+    PushStack(u16),
+    /// Represents an operation that pops a value from the stack, decrementing the
+    /// stack pointer.
+    PopStack(u16),
+    /// Represents a keypress coming in from an external keyboard.
+    KeyPress(chip8::KeyInputValue),
+    /// Represents the inverse of KeyPress, a key being released.
     KeyRelease,
-    SetDisplayPixel(SetDisplayPixel),
-    SetDisplayRange(SetDisplayRange),
+    /// SetDisplayPixel takes a cartesian coordinate representing a pixel and the
+    /// value to set that pixel to.
+    SetDisplayPixel(CartesianCoordinate, bool),
+    /// SetDisplayRange takes a value representing what to set all pixels that fall
+    /// within the bounds of the enclosed start and end cartesian coordinates.
+    SetDisplayRange(CartesianCoordinate, CartesianCoordinate, bool),
 }
 
 /// Represents a write of the value to the memory location specified by the
 /// address field.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteMemory {
+pub(crate) struct WriteMemory {
     pub address: u16,
     pub value: u8,
 }
@@ -41,7 +65,7 @@ impl WriteMemory {
 /// Represents a write of the specified 8-bit value to one of the 8-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Write8bitRegister {
+pub(crate) struct Write8bitRegister {
     pub register: ByteRegisters,
     pub value: u8,
 }
@@ -55,7 +79,7 @@ impl Write8bitRegister {
 /// Represents an increment of the specified 8-bit value to one of the 8-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Inc8bitRegister {
+pub(crate) struct Inc8bitRegister {
     pub register: ByteRegisters,
     pub value: u8,
 }
@@ -69,7 +93,7 @@ impl Inc8bitRegister {
 /// Represents an decrement of the specified 8-bit value to one of the 8-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Dec8bitRegister {
+pub(crate) struct Dec8bitRegister {
     pub register: ByteRegisters,
     pub value: u8,
 }
@@ -85,7 +109,7 @@ impl Dec8bitRegister {
 /// Represents a write of the specified 16-bit value to one of the 16-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Write16bitRegister {
+pub(crate) struct Write16bitRegister {
     pub register: WordRegisters,
     pub value: u16,
 }
@@ -99,7 +123,7 @@ impl Write16bitRegister {
 /// Represents an increment of the specified 16-bit value to one of the 16-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Inc16bitRegister {
+pub(crate) struct Inc16bitRegister {
     pub register: WordRegisters,
     pub value: u16,
 }
@@ -113,7 +137,7 @@ impl Inc16bitRegister {
 /// Represents an decrement of the specified 16-bit value to one of the 16-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Dec16bitRegister {
+pub(crate) struct Dec16bitRegister {
     pub register: WordRegisters,
     pub value: u16,
 }
@@ -127,7 +151,7 @@ impl Dec16bitRegister {
 /// Represents an operation that pushes a value onto the stack, incrementing the
 /// stack pointer.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct PushStack {
+pub(crate) struct PushStack {
     pub value: u16,
 }
 
@@ -140,7 +164,7 @@ impl PushStack {
 /// Represents an operation that pops a value from the stack, decrementing the
 /// stack pointer.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct PopStack {
+pub(crate) struct PopStack {
     pub value: u16,
 }
 
@@ -152,7 +176,7 @@ impl PopStack {
 
 /// Represents a keypress coming in from an external keyboard.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct KeyPress {
+pub(crate) struct KeyPress {
     pub value: chip8::KeyInputValue,
 }
 
@@ -164,13 +188,7 @@ impl KeyPress {
 
 /// Represents the inverse of KeyPress, a key being released.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct KeyRelease;
-
-impl KeyRelease {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
+pub(crate) struct KeyRelease;
 
 /// Represents an (x, y) cartesian coordinate.
 type CartesianCoordinate = (usize, usize);
@@ -178,7 +196,7 @@ type CartesianCoordinate = (usize, usize);
 /// SetDisplayPixel takes a cartesian coordinate representing a pixel and the
 /// value to set that pixel to.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct SetDisplayPixel(pub CartesianCoordinate, pub bool);
+pub(crate) struct SetDisplayPixel(pub CartesianCoordinate, pub bool);
 
 impl SetDisplayPixel {
     pub fn new(coord: CartesianCoordinate, value: bool) -> Self {
@@ -189,7 +207,7 @@ impl SetDisplayPixel {
 /// SetDisplayRange takes a value representing what to set all pixels that fall
 /// within the bounds of the enclosed start and end cartesian coordinates.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct SetDisplayRange {
+pub(crate) struct SetDisplayRange {
     pub start: CartesianCoordinate,
     pub end: CartesianCoordinate,
     pub value: bool,

@@ -69,11 +69,7 @@ fn should_generate_cls_instruction() {
     let cpu = Chip8::<()>::default();
 
     assert_eq!(
-        vec![Microcode::SetDisplayRange(SetDisplayRange::new(
-            (0, 0),
-            (64, 32),
-            false
-        )),],
+        vec![Microcode::SetDisplayRange((0, 0), (64, 32), false)],
         Cls::default().generate(&cpu)
     );
 }
@@ -89,12 +85,9 @@ fn should_generate_ret_instruction() {
     assert_eq!(
         vec![
             // save initial value
-            Microcode::PopStack(PopStack::new(0x200)),
+            Microcode::PopStack(0x200),
             // jump to absolute value - 2.
-            Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                0x1fe
-            ))
+            Microcode::Write16bitRegister(register::WordRegisters::ProgramCounter, 0x1fe)
         ],
         Ret.generate(&cpu)
     );
@@ -125,13 +118,13 @@ fn should_generate_drw_instruction() {
             let bit_is_set = (0xf0u8 >> (7 - x)) & 1;
             (x, bit_is_set != 0)
         })
-        .map(|(x, pixel)| Microcode::SetDisplayPixel(SetDisplayPixel::new((x as usize, 0), pixel)))
+        .map(|(x, pixel)| Microcode::SetDisplayPixel((x as usize, 0), pixel))
         .collect::<Vec<_>>();
 
-    expected.push(Microcode::Write8bitRegister(Write8bitRegister::new(
+    expected.push(Microcode::Write8bitRegister(
         register::ByteRegisters::GpRegisters(register::GpRegisters::Vf),
         0,
-    )));
+    ));
 
     assert_eq!(
         expected,
@@ -143,10 +136,10 @@ fn should_generate_drw_instruction() {
 fn should_generate_jump_absolute_with_pc_incrementer() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::ProgramCounter,
             0x1fe
-        ))],
+        )],
         Jp::<NonV0Indexed>::new(u12::new(0x200)).generate(&cpu)
     );
 }
@@ -155,10 +148,10 @@ fn should_generate_jump_absolute_with_pc_incrementer() {
 fn should_generate_load_absolute_into_i_incrementer() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::I,
             0xfff
-        ))],
+        )],
         Ld::new(addressing_mode::Absolute::new(u12::new(0xfff))).generate(&cpu)
     );
 }
@@ -167,10 +160,10 @@ fn should_generate_load_absolute_into_i_incrementer() {
 fn should_generate_load_immediate_into_i_incrementer() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V8),
             0xff
-        ))],
+        )],
         Ld::new(addressing_mode::Immediate::new(
             register::GpRegisters::V8,
             0xff
@@ -192,10 +185,10 @@ fn should_generate_load_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x0f),
         );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0x0f
-        ))],
+        )],
         Ld::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -211,10 +204,10 @@ fn should_generate_load_byte_into_sound_timer_operation() {
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::TimerRegisters(register::TimerRegisters::Sound),
             0xff
-        ))],
+        )],
         Ld::new(addressing_mode::SoundTimerDestTx::new(
             register::GpRegisters::V0,
         ))
@@ -229,10 +222,10 @@ fn should_generate_load_byte_into_delay_timer_operation() {
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::TimerRegisters(register::TimerRegisters::Delay),
             0xff
-        ))],
+        )],
         Ld::new(addressing_mode::DelayTimerDestTx::new(
             register::GpRegisters::V0,
         ))
@@ -247,10 +240,10 @@ fn should_generate_load_byte_into_register_from_delay_timer_operation() {
         register::ClockDecrementing::with_value(0xff),
     );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0xff
-        ))],
+        )],
         Ld::new(addressing_mode::DelayTimerSrcTx::new(
             register::GpRegisters::V0,
         ))
@@ -270,9 +263,9 @@ fn should_generate_load_bcd_from_vx_i_indirect_operation() {
 
     assert_eq!(
         vec![
-            Microcode::WriteMemory(WriteMemory::new(0x0100, 2)),
-            Microcode::WriteMemory(WriteMemory::new(0x0101, 5)),
-            Microcode::WriteMemory(WriteMemory::new(0x0102, 4)),
+            Microcode::WriteMemory(0x0100, 2),
+            Microcode::WriteMemory(0x0101, 5),
+            Microcode::WriteMemory(0x0102, 4),
         ],
         LdBcd::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V0,)).generate(&cpu)
     );
@@ -291,10 +284,10 @@ fn should_generate_load_sprite_location_into_i_from_vx_operation() {
     let expected_sprite_offset = 0xAu16 * 5;
 
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::I,
             expected_sprite_offset
-        ))],
+        )],
         LdSpriteLocation::new(register::GpRegisters::V8).generate(&cpu)
     );
 }
@@ -309,10 +302,10 @@ fn should_generate_load_keypress_into_register_operation() {
         .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::Key4)));
 
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(GpRegisters::V8),
             0x04
-        ))],
+        )],
         LdK::new(register::GpRegisters::V8).generate(&cpu_with_input_interrupt)
     );
 
@@ -324,10 +317,10 @@ fn should_generate_load_keypress_into_register_operation() {
         .with_interrupt(|| None);
 
     assert_eq!(
-        vec![Microcode::Dec16bitRegister(Dec16bitRegister::new(
+        vec![Microcode::Dec16bitRegister(
             register::WordRegisters::ProgramCounter,
             2,
-        ))],
+        )],
         LdK::new(register::GpRegisters::V8).generate(&cpu_without_input_interrupt)
     );
 }
@@ -347,18 +340,18 @@ fn should_generate_read_registers_from_memory_operation() {
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x01
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V1),
                 0x02
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V2),
                 0x03
-            )),
+            ),
         ],
         ReadRegistersFromMemory::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V2))
             .generate(&cpu)
@@ -385,9 +378,9 @@ fn should_generate_store_registers_to_memory_operation() {
 
     assert_eq!(
         vec![
-            Microcode::WriteMemory(WriteMemory::new(0x0100, 0x01)),
-            Microcode::WriteMemory(WriteMemory::new(0x0101, 0x02)),
-            Microcode::WriteMemory(WriteMemory::new(0x0102, 0x03)),
+            Microcode::WriteMemory(0x0100, 0x01),
+            Microcode::WriteMemory(0x0101, 0x02),
+            Microcode::WriteMemory(0x0102, 0x03),
         ],
         StoreRegistersToMemory::new(addressing_mode::VxIIndirect::new(register::GpRegisters::V2))
             .generate(&cpu)
@@ -401,10 +394,10 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
         register::GeneralPurpose::with_value(0x05),
     );
     assert_eq!(
-        vec![Microcode::Write16bitRegister(Write16bitRegister::new(
+        vec![Microcode::Write16bitRegister(
             register::WordRegisters::ProgramCounter,
             0x203
-        ))],
+        )],
         Jp::<V0Indexed>::new(u12::new(0x200)).generate(&cpu)
     );
 }
@@ -418,12 +411,9 @@ fn should_generate_call_absolute_instruction() {
     assert_eq!(
         vec![
             // save initial value
-            Microcode::PushStack(PushStack::new(0x200)),
+            Microcode::PushStack(0x200),
             // jump to absolute value - 2.
-            Microcode::Write16bitRegister(Write16bitRegister::new(
-                register::WordRegisters::ProgramCounter,
-                0x3fe
-            ))
+            Microcode::Write16bitRegister(register::WordRegisters::ProgramCounter, 0x3fe)
         ],
         Call::new(u12::new(0x400)).generate(&cpu)
     );
@@ -433,10 +423,10 @@ fn should_generate_call_absolute_instruction() {
 fn should_generate_add_immediate() {
     let cpu = Chip8::<()>::default().with_rng(|| 0u8);
     assert_eq!(
-        vec![Microcode::Inc8bitRegister(Inc8bitRegister::new(
+        vec![Microcode::Inc8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V5),
             0xff
-        ))],
+        )],
         Add::new(addressing_mode::Immediate::new(
             register::GpRegisters::V5,
             0xff
@@ -452,10 +442,10 @@ fn should_generate_add_i_register_indexed() {
         register::GeneralPurpose::<u8>::with_value(0xff),
     );
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::I,
             0xff
-        ))],
+        )],
         Add::new(addressing_mode::IRegisterIndexed::new(
             register::GpRegisters::V5
         ))
@@ -478,14 +468,14 @@ fn should_generate_add_vxvy_with_carry_operation_that_overflows_when_sum_overflo
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x03
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x01
-            ))
+            )
         ],
         Add::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -506,14 +496,14 @@ fn should_generate_add_vxvy_with_carry_operation_that_does_not_set_overflow_when
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0xff
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x00
-            ))
+            )
         ],
         Add::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -534,14 +524,14 @@ fn should_generate_set_borrow_for_sub_vxvy_if_vx_value_is_larger_than_vy_value()
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0xfa
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x01
-            ))
+            )
         ],
         Sub::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -562,14 +552,14 @@ fn should_generate_not_set_borrow_for_sub_vxvy_if_vx_value_is_larger_than_vy_val
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x02
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x00
-            ))
+            )
         ],
         Sub::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -591,14 +581,14 @@ fn should_generate_subn_vxvy_without_borrow_operation_that_doesnt_set_underflow_
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x06
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x00
-            ))
+            )
         ],
         Subn::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -620,14 +610,14 @@ fn should_generate_subn_vxvy_without_underflow_operation_that_does_set_underflow
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0xfe
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x01
-            ))
+            )
         ],
         Subn::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -646,10 +636,10 @@ fn should_generate_and_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x0f),
         );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0x0f
-        ))],
+        )],
         And::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -671,10 +661,10 @@ fn should_generate_or_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x0f),
         );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0xff
-        ))],
+        )],
         Or::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -692,14 +682,14 @@ fn should_generate_shl_vxvy_with_flag_operation_that_overflows_byte_capacity() {
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x01
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x02
-            ))
+            )
         ],
         Shl::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -714,14 +704,14 @@ fn should_generate_shl_vxvy_with_flag_operation_that_does_not_overflow_byte_capa
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x0
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x2
-            ))
+            )
         ],
         Shl::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -736,14 +726,14 @@ fn should_generate_shr_vxvy_with_flag_operation_that_overflows_byte_capacity() {
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x01
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x01
-            ))
+            )
         ],
         Shr::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -758,14 +748,14 @@ fn should_generate_shr_vxvy_with_flag_operation_that_does_not_overflow_byte_capa
 
     assert_eq!(
         vec![
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::Vf),
                 0x0
-            )),
-            Microcode::Write8bitRegister(Write8bitRegister::new(
+            ),
+            Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(GpRegisters::V0),
                 0x4
-            ))
+            )
         ],
         Shr::new(addressing_mode::VxVy::new(GpRegisters::V1, GpRegisters::V0)).generate(&cpu)
     );
@@ -784,10 +774,10 @@ fn should_generate_xor_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x0f),
         );
     assert_eq!(
-        vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+        vec![Microcode::Write8bitRegister(
             register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
             0xf0
-        ))],
+        )],
         Xor::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -804,10 +794,10 @@ fn should_generate_se_immediate_operation() {
     );
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Se::new(addressing_mode::Immediate::new(
             register::GpRegisters::V0,
             0xff
@@ -843,10 +833,10 @@ fn should_generate_se_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x0f),
         );
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Se::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -882,10 +872,10 @@ fn should_generate_sne_immediate_operation() {
     );
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sne::new(addressing_mode::Immediate::new(
             register::GpRegisters::V0,
             0x00
@@ -921,10 +911,10 @@ fn should_generate_sne_byte_register_operation() {
             register::GeneralPurpose::<u8>::with_value(0x00),
         );
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sne::new(addressing_mode::VxVy::new(
             register::GpRegisters::V1,
             register::GpRegisters::V0
@@ -963,10 +953,10 @@ fn should_generate_rnd_immediate_operation() {
     for _ in 0..256 {
         // Assert 0x00 mask returns 0x00
         assert_eq!(
-            vec![Microcode::Write8bitRegister(Write8bitRegister::new(
+            vec![Microcode::Write8bitRegister(
                 register::ByteRegisters::GpRegisters(register::GpRegisters::V0),
                 0
-            ))],
+            )],
             Rnd::new(addressing_mode::Immediate::new(
                 register::GpRegisters::V0,
                 0x00
@@ -982,7 +972,7 @@ fn should_generate_rnd_immediate_operation() {
         .generate(&cpu.clone())
         .get(0)
         {
-            Some(Microcode::Write8bitRegister(op)) => op.value,
+            Some(Microcode::Write8bitRegister(_, value)) => *value,
             _ => panic!("should container Write8BitRegister operation"),
         };
 
@@ -996,7 +986,7 @@ fn should_generate_rnd_immediate_operation() {
         .generate(&cpu.clone())
         .get(0)
         {
-            Some(Microcode::Write8bitRegister(op)) => op.value,
+            Some(Microcode::Write8bitRegister(_, value)) => *value,
             _ => panic!("should container Write8BitRegister operation"),
         };
 
@@ -1015,10 +1005,10 @@ fn should_generate_skp_operation() {
         .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::KeyF)));
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Skp::new(register::GpRegisters::V0).generate(&cpu_some_eq)
     );
 
@@ -1062,10 +1052,10 @@ fn should_generate_sknp_operation() {
         .with_interrupt(|| Some(chip8::Interrupt::KeyPress(chip8::KeyInputValue::Key0)));
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sknp::new(register::GpRegisters::V0).generate(&cpu_some_ne)
     );
 
@@ -1073,10 +1063,10 @@ fn should_generate_sknp_operation() {
     let cpu_none = cpu_some_eq.clone().with_interrupt(|| None);
 
     assert_eq!(
-        vec![Microcode::Inc16bitRegister(Inc16bitRegister::new(
+        vec![Microcode::Inc16bitRegister(
             register::WordRegisters::ProgramCounter,
             2
-        ))],
+        )],
         Sknp::new(register::GpRegisters::V0).generate(&cpu_none)
     );
 }

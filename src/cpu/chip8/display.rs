@@ -100,7 +100,7 @@ impl Display {
                 .map(|x| (0..5usize).map(|y| (x, y)).collect::<Vec<_>>())
                 .flatten()
                 .fold(false, |collision, (x_offset, y_offset)| {
-                    let bit = (font_bytes[y_offset] >> x_offset) & 0x1;
+                    let bit = (font_bytes[y_offset] >> (7 - x_offset)) & 0x1;
                     let bit_is_set = bit != 0;
                     let adjusted_y = y + y_offset;
                     let adjusted_x = x + x_offset as usize;

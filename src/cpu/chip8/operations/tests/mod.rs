@@ -69,11 +69,7 @@ fn should_generate_cls_instruction() {
     let cpu = Chip8::<()>::default();
 
     assert_eq!(
-        vec![Microcode::SetDisplayRange(SetDisplayRange::new(
-            (0, 0),
-            (64, 32),
-            false
-        )),],
+        vec![Microcode::SetDisplayRange((0, 0), (64, 32), false)],
         Cls::default().generate(&cpu)
     );
 }
@@ -122,7 +118,7 @@ fn should_generate_drw_instruction() {
             let bit_is_set = (0xf0u8 >> (7 - x)) & 1;
             (x, bit_is_set != 0)
         })
-        .map(|(x, pixel)| Microcode::SetDisplayPixel(SetDisplayPixel::new((x as usize, 0), pixel)))
+        .map(|(x, pixel)| Microcode::SetDisplayPixel((x as usize, 0), pixel))
         .collect::<Vec<_>>();
 
     expected.push(Microcode::Write8bitRegister(

@@ -16,10 +16,10 @@ pub enum Microcode {
     Dec16bitRegister(WordRegisters, u16),
     PushStack(u16),
     PopStack(u16),
-    KeyPress(KeyPress),
+    KeyPress(chip8::KeyInputValue),
     KeyRelease,
-    SetDisplayPixel(SetDisplayPixel),
-    SetDisplayRange(SetDisplayRange),
+    SetDisplayPixel(CartesianCoordinate, bool),
+    SetDisplayRange(CartesianCoordinate, CartesianCoordinate, bool),
 }
 
 /// Represents a write of the value to the memory location specified by the

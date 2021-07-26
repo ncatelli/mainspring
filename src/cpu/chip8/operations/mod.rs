@@ -257,11 +257,11 @@ impl<R> Generate<Chip8<R>> for Cls {
     type Item = Vec<Microcode>;
 
     fn generate(&self, _: &Chip8<R>) -> Vec<Microcode> {
-        vec![Microcode::SetDisplayRange(SetDisplayRange::new(
+        vec![Microcode::SetDisplayRange(
             (0, 0),
             (Display::x_max(), Display::y_max()),
             false,
-        ))]
+        )]
     }
 }
 
@@ -348,10 +348,10 @@ impl<R> Generate<Chip8<R>> for Drw {
                         _ => collision,
                     };
 
-                    pixel_writes.push(Microcode::SetDisplayPixel(SetDisplayPixel::new(
+                    pixel_writes.push(Microcode::SetDisplayPixel(
                         (adjusted_x, adjusted_y),
                         bit_is_set,
-                    )));
+                    ));
 
                     (collision, pixel_writes)
                 },

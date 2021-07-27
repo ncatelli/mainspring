@@ -29,6 +29,7 @@ where
     }
 }
 
+#[cfg(target_family = "unix")]
 /// Generates a random byte using `/dev/random` as the seed for data.
 #[derive(Default, Debug, Clone, Copy)]
 pub struct UnixRandomNumberGenerator;

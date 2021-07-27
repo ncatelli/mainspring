@@ -47,6 +47,55 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
+/// A buffered implementation of the RandomNumberGenerator, consuming and
+/// filling the buffer in asynchronously whenever possible.
+#[derive(Debug)]
+pub struct BufferedRandomNumberGenerator {
+    buffer: std::sync::mpsc::Receiver<u8>,
+    closer: std::sync::mpsc::SyncSender<()>,
+}
+
+impl BufferedRandomNumberGenerator {
+    pub fn new<RNG>(rng: RNG) -> Self
+    where
+        RNG: GenerateRandom<u8> + Send + 'static,
+    {
+        let (close_sender, close_receiver) = std::sync::mpsc::sync_channel::<()>(1);
+        let (sender, receiver) = std::sync::mpsc::sync_channel(1024);
+
+        // keep the buffer full
+        std::thread::spawn(move || loop {
+            // if not closed
+            if close_receiver.try_recv().is_err() {
+                let _ = sender.send(rng.random());
+            } else {
+                // break out of the loop if send is sent.
+                return;
+            }
+        });
+
+        Self {
+            buffer: receiver,
+            closer: close_sender,
+        }
+    }
+}
+
+impl std::ops::Drop for BufferedRandomNumberGenerator {
+    fn drop(&mut self) {
+        // kill buffer filling thread
+        let _ = self.closer.send(());
+    }
+}
+
+impl GenerateRandom<u8> for BufferedRandomNumberGenerator {
+    fn random(&self) -> u8 {
+        self.buffer
+            .recv()
+            .expect("cannot read exactly one byte from buffer.")
+    }
+}
+
 /// Represents an interrupt, example being a keypress.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Interrupt {

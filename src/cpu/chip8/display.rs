@@ -49,6 +49,17 @@ impl Display {
         }
     }
 
+    /// Provides a function handler for making changes to the inner display
+    /// representation.
+    pub fn with_inner<F>(mut self, f: F) -> Self
+    where
+        F: Fn([[bool; 64]; 32]) -> [[bool; 64]; 32],
+    {
+        let inner = self.inner;
+        self.inner = (f)(inner);
+        self
+    }
+
     /// Provides a function handler for making mutable changes to the inner display
     /// representation.
     pub fn with_inner_mut<F, B>(&mut self, f: F) -> B

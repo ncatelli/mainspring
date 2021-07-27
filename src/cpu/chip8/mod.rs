@@ -76,7 +76,7 @@ impl BufferedRandomNumberGenerator {
         // fork a thread off that will continuously try to fill the buffer. If
         // the buffer is full, the thread will block.
         std::thread::spawn(move || loop {
-            // when parent receiver is dropped, the send returns an err and
+            // When parent receiver is dropped, the send returns an Err and
             // the thread returns.
             if let Err(_) = sender.send(rng.random()) {
                 return;

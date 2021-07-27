@@ -78,7 +78,7 @@ impl BufferedRandomNumberGenerator {
         std::thread::spawn(move || {
             // When parent receiver is dropped, the send returns an Err and
             // the thread returns.
-            while let Ok(_) = tx.send(rng.random()) {}
+            while tx.send(rng.random()).is_ok() {}
         });
 
         Self { buffer: rx }

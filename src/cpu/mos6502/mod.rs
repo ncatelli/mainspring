@@ -280,7 +280,9 @@ impl ExecuteMut<microcode::Microcode> for Mos6502 {
             microcode::Microcode::WriteMemory(addr, value) => {
                 self.execute_mut(&WriteMemory::new(*addr, *value))
             }
-            microcode::Microcode::SetProgramStatusFlagState(mc) => self.execute_mut(mc),
+            microcode::Microcode::SetProgramStatusFlagState(flag, value) => {
+                self.execute_mut(&SetProgramStatusFlagState::new(*flag, *value))
+            }
             microcode::Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
             microcode::Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
             microcode::Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),

@@ -9,7 +9,7 @@ use crate::cpu::mos6502::register::{ByteRegisters, ProgramStatusFlags, WordRegis
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
     WriteMemory(u16, u8),
-    SetProgramStatusFlagState(SetProgramStatusFlagState),
+    SetProgramStatusFlagState(ProgramStatusFlags, bool),
     Write8bitRegister(Write8bitRegister),
     Inc8bitRegister(Inc8bitRegister),
     Dec8bitRegister(Dec8bitRegister),
@@ -35,7 +35,7 @@ impl WriteMemory {
 /// Represents a write of the value to the memory location specified by the
 /// address field.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct SetProgramStatusFlagState {
+pub(crate) struct SetProgramStatusFlagState {
     pub flag: ProgramStatusFlags,
     pub value: bool,
 }
@@ -132,15 +132,6 @@ impl Dec16bitRegister {
     pub fn new(register: WordRegisters, value: u16) -> Self {
         Self { register, value }
     }
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_flag_set_microcode {
-    ($flag:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::SetProgramStatusFlagState(
-            $crate::cpu::mos6502::microcode::SetProgramStatusFlagState::new($flag, $value),
-        )
-    };
 }
 
 #[allow(unused_macros)]

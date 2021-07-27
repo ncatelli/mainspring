@@ -57,7 +57,6 @@ const DEFAULT_BUFFERED_RNG_BUFFER_LEN: usize = 1024;
 #[derive(Debug)]
 pub struct BufferedRandomNumberGenerator {
     buffer: std::sync::mpsc::Receiver<u8>,
-    closer: std::sync::mpsc::SyncSender<()>,
 }
 
 impl BufferedRandomNumberGenerator {
@@ -72,31 +71,19 @@ impl BufferedRandomNumberGenerator {
     where
         RNG: GenerateRandom<u8> + Send + 'static,
     {
-        let (close_sender, close_receiver) = std::sync::mpsc::sync_channel::<()>(1);
         let (sender, receiver) = std::sync::mpsc::sync_channel(bound);
 
-        // keep the buffer full
+        // fork a thread off that will continuously try to fill the buffer. If
+        // the buffer is full, the thread will block.
         std::thread::spawn(move || loop {
-            // if not closed
-            if close_receiver.try_recv().is_err() {
-                let _ = sender.send(rng.random());
-            } else {
-                // break out of the loop if send is sent.
+            // when parent receiver is dropped, the send returns an err and
+            // the thread returns.
+            if let Err(_) = sender.send(rng.random()) {
                 return;
             }
         });
 
-        Self {
-            buffer: receiver,
-            closer: close_sender,
-        }
-    }
-}
-
-impl std::ops::Drop for BufferedRandomNumberGenerator {
-    fn drop(&mut self) {
-        // kill buffer filling thread
-        let _ = self.closer.send(());
+        Self { buffer: receiver }
     }
 }
 

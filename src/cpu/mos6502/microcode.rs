@@ -8,7 +8,7 @@ use crate::cpu::mos6502::register::{ByteRegisters, ProgramStatusFlags, WordRegis
 /// 6502 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
-    WriteMemory(WriteMemory),
+    WriteMemory(u16, u8),
     SetProgramStatusFlagState(SetProgramStatusFlagState),
     Write8bitRegister(Write8bitRegister),
     Inc8bitRegister(Inc8bitRegister),
@@ -21,7 +21,7 @@ pub enum Microcode {
 /// Represents a write of the value to the memory location specified by the
 /// address field.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteMemory {
+pub(crate) struct WriteMemory {
     pub address: u16,
     pub value: u8,
 }
@@ -132,15 +132,6 @@ impl Dec16bitRegister {
     pub fn new(register: WordRegisters, value: u16) -> Self {
         Self { register, value }
     }
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_write_memory_microcode {
-    ($addr:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::WriteMemory(
-            $crate::cpu::mos6502::microcode::WriteMemory::new($addr, $value),
-        )
-    };
 }
 
 #[allow(unused_macros)]

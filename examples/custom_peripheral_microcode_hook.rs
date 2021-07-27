@@ -1,7 +1,7 @@
 //! A small demonstration example of mainspring showing a basic custom execution-time hook implementation.
 
 use mainspring::address_map::memory::{Memory, ReadOnly, ReadWrite};
-use mainspring::cpu::mos6502::microcode::{Microcode, WriteMemory};
+use mainspring::cpu::mos6502::microcode::Microcode;
 use mainspring::cpu::mos6502::Mos6502;
 use mainspring::cpu::Execute;
 
@@ -74,9 +74,7 @@ fn main() {
     states
         .iter()
         .map(|mc| match mc {
-            Microcode::WriteMemory(WriteMemory { address, value })
-                if (0x8000..=0x8003).contains(address) =>
-            {
+            Microcode::WriteMemory(address, value) if (0x8000..=0x8003).contains(address) => {
                 if *address == via.port_a_addr {
                     via.port_a = *value;
                     println!("{:08b}", value);

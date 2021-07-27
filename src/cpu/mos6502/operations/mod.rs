@@ -1879,7 +1879,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::Absolute>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -1901,7 +1901,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::AbsoluteI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -1940,7 +1940,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::ZeroPage>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -1961,7 +1961,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::ZeroPageI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2226,7 +2226,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::Absolute>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2248,7 +2248,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::AbsoluteI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2287,7 +2287,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::ZeroPage>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2308,7 +2308,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::ZeroPageI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2527,7 +2527,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::Absolute>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2550,7 +2550,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::AbsoluteI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2590,7 +2590,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::ZeroPage>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2612,7 +2612,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::ZeroPageI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2635,7 +2635,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::Absolute>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2658,7 +2658,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::AbsoluteI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2698,7 +2698,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::ZeroPage>
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2720,7 +2720,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::ZeroPageI
                 gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3268,7 +3268,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::Absolute>
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3289,7 +3289,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::AbsoluteI
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3308,7 +3308,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::ZeroPage>
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3329,7 +3329,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::ZeroPageI
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3390,7 +3390,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::Absolute>
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3411,7 +3411,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::AbsoluteI
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3430,7 +3430,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::ZeroPage>
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3451,7 +3451,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::ZeroPageI
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
                 gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3549,9 +3549,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Jsr, addressing_mode::Absolute>
             0,
             self.cycles(),
             vec![
-                gen_write_memory_microcode!(sph, pch),
+                Microcode::WriteMemory(sph, pch),
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_memory_microcode!(spl, pcl),
+                Microcode::WriteMemory(spl, pcl),
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
                 gen_write_16bit_register_microcode!(WordRegisters::Pc, addr),
             ],
@@ -3962,7 +3962,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Pha, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_write_memory_microcode!(stack_pointer_from_byte_value(sp), value),
+                Microcode::WriteMemory(stack_pointer_from_byte_value(sp), value),
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
             ],
         )
@@ -3982,7 +3982,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Php, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_write_memory_microcode!(stack_pointer_from_byte_value(sp), value),
+                Microcode::WriteMemory(stack_pointer_from_byte_value(sp), value),
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
             ],
         )
@@ -4138,7 +4138,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::Absolute>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, acc_val)],
+            vec![Microcode::WriteMemory(addr, acc_val)],
         )
     }
 }
@@ -4153,7 +4153,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::AbsoluteI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+            vec![Microcode::WriteMemory(indexed_addr, acc_val)],
         )
     }
 }
@@ -4169,7 +4169,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::AbsoluteI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+            vec![Microcode::WriteMemory(indexed_addr, acc_val)],
         )
     }
 }
@@ -4184,7 +4184,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::IndirectY
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indirect_addr, acc_val)],
+            vec![Microcode::WriteMemory(indirect_addr, acc_val)],
         )
     }
 }
@@ -4199,7 +4199,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::XIndexedI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indirect_addr, acc_val)],
+            vec![Microcode::WriteMemory(indirect_addr, acc_val)],
         )
     }
 }
@@ -4214,7 +4214,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::ZeroPage>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, acc_val)],
+            vec![Microcode::WriteMemory(addr, acc_val)],
         )
     }
 }
@@ -4230,7 +4230,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::ZeroPageI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+            vec![Microcode::WriteMemory(indexed_addr, acc_val)],
         )
     }
 }
@@ -4246,7 +4246,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Stx, addressing_mode::Absolute>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4261,7 +4261,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Stx, addressing_mode::ZeroPage>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4277,7 +4277,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Stx, addressing_mode::ZeroPageI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, value)],
+            vec![Microcode::WriteMemory(indexed_addr, value)],
         )
     }
 }
@@ -4293,7 +4293,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sty, addressing_mode::Absolute>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4308,7 +4308,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sty, addressing_mode::ZeroPage>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4324,7 +4324,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sty, addressing_mode::ZeroPageI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, value)],
+            vec![Microcode::WriteMemory(indexed_addr, value)],
         )
     }
 }
@@ -4477,11 +4477,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Brk, addressing_mode::Implied> 
             vec![
                 gen_flag_set_microcode!(ProgramStatusFlags::Break, true),
                 gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),
-                gen_write_memory_microcode!(sp_pcl, pcl),
+                Microcode::WriteMemory(sp_pcl, pcl),
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_memory_microcode!(sp_pch, pch),
+                Microcode::WriteMemory(sp_pch, pch),
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_memory_microcode!(sp_ps, ps), // PS Register
+                Microcode::WriteMemory(sp_ps, ps), // PS Register
                 gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
                 gen_write_16bit_register_microcode!(WordRegisters::Pc, irq_vector),
             ],

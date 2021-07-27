@@ -274,8 +274,12 @@ where
 
 impl ExecuteMut<microcode::Microcode> for Mos6502 {
     fn execute_mut(&mut self, mc: &microcode::Microcode) {
+        use microcode::*;
+
         match mc {
-            microcode::Microcode::WriteMemory(mc) => self.execute_mut(mc),
+            microcode::Microcode::WriteMemory(addr, value) => {
+                self.execute_mut(&WriteMemory::new(*addr, *value))
+            }
             microcode::Microcode::SetProgramStatusFlagState(mc) => self.execute_mut(mc),
             microcode::Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
             microcode::Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),

@@ -80,6 +80,7 @@ pub enum Opcode {
     Cls,
     Ret,
     Drw(GpRegisters, GpRegisters, u8),
+    Sys(u12),
     Call(u12),
     JpNonV0Indexed(u12),
     JpV0Indexed(u12),
@@ -127,6 +128,8 @@ where
             Opcode::Drw(x_reg, y_reg, sprite_size) => {
                 Drw::new(*x_reg, *y_reg, *sprite_size).generate(cpu)
             }
+            // Sys is not supported anymore so this will function as a no-op.
+            Opcode::Sys(_) => vec![],
             Opcode::Call(abs) => Call::new(*abs).generate(cpu),
             Opcode::JpNonV0Indexed(abs) => Jp::<NonV0Indexed>::new(*abs).generate(cpu),
             Opcode::JpV0Indexed(abs) => Jp::<V0Indexed>::new(*abs).generate(cpu),
@@ -192,6 +195,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
             match [first, second, third, fourth] {
                 [0x0, 0x0, 0xe, 0x0] => Some(Opcode::Cls),
                 [0x0, 0x0, 0xe, 0xe] => Some(Opcode::Ret),
+                [0x0, _, _, _] => Some(Opcode::Sys(absolute)),
                 [0x1, _, _, _] => Some(Opcode::JpNonV0Indexed(absolute)),
                 [0x2, _, _, _] => Some(Opcode::Call(absolute)),
                 [0x3, _, _, _] => Some(Opcode::SeImmediate(dest_reg, immediate)),

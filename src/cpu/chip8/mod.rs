@@ -29,6 +29,7 @@ where
     }
 }
 
+#[cfg(target_family = "unix")]
 /// Generates a random byte using `/dev/random` as the seed for data.
 #[derive(Default, Debug, Clone, Copy)]
 pub struct UnixRandomNumberGenerator;
@@ -44,6 +45,52 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
             .expect("cannot read exactly one byte from /dev/random.");
 
         buf[0]
+    }
+}
+
+/// Defines the default buffer size for the BufferedRandomNumberGenerator at
+/// 1024 bytes.
+const DEFAULT_BUFFERED_RNG_BUFFER_LEN: usize = 1024;
+
+/// A buffered implementation of the RandomNumberGenerator, consuming and
+/// filling the buffer in asynchronously whenever possible.
+#[derive(Debug)]
+pub struct BufferedRandomNumberGenerator {
+    buffer: std::sync::mpsc::Receiver<u8>,
+}
+
+impl BufferedRandomNumberGenerator {
+    pub fn new<RNG>(rng: RNG) -> Self
+    where
+        RNG: GenerateRandom<u8> + Send + 'static,
+    {
+        Self::with_capacity(DEFAULT_BUFFERED_RNG_BUFFER_LEN, rng)
+    }
+
+    pub fn with_capacity<RNG>(bound: usize, rng: RNG) -> Self
+    where
+        RNG: GenerateRandom<u8> + Send + 'static,
+    {
+        let (tx, rx) = std::sync::mpsc::sync_channel(bound);
+
+        // fork a thread off that will continuously try to fill the buffer. If
+        // the buffer is full, the thread will block.
+        std::thread::spawn(move || {
+            // When parent receiver is dropped, the send returns an Err and
+            // the thread returns.
+            while tx.send(rng.random()).is_ok() {}
+        });
+
+        Self { buffer: rx }
+    }
+}
+
+impl GenerateRandom<u8> for BufferedRandomNumberGenerator {
+    fn random(&self) -> u8 {
+        self.buffer
+            .recv()
+            // this should never fail as long as self is still alive.
+            .expect("cannot read exactly one byte from buffer.")
     }
 }
 

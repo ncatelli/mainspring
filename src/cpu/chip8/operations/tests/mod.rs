@@ -44,6 +44,7 @@ generate_parse_test!(
     should_parse_load_keypress_into_register_operation, 0xf80au16 to Opcode::LdK(GpRegisters::V8),
     should_parse_read_registers_from_memory_operation, 0xf265u16 to Opcode::ReadRegistersFromMemory(GpRegisters::V2),
     should_parse_store_registers_to_memory_operation, 0xf255u16 to Opcode::StoreRegistersToMemory(GpRegisters::V2),
+    should_parse_sys_opcode, 0x0fffu16 to Opcode::Sys(u12::new(0xfff)),
     should_parse_call_opcode, 0x2fffu16 to Opcode::Call(u12::new(0xfff)),
     should_parse_add_immediate_opcode, 0x70ffu16 to Opcode::AddImmediate(GpRegisters::V0, 0xff),
     should_parse_add_i_register_indexed_opcode, 0xf01eu16 to Opcode::AddIRegisterIndexed(GpRegisters::V0),
@@ -399,6 +400,16 @@ fn should_generate_jump_absolute_indexed_by_v0_with_pc_incrementer() {
             0x203
         )],
         Jp::<V0Indexed>::new(u12::new(0x200)).generate(&cpu)
+    );
+}
+
+#[test]
+fn should_generate_sys_absolute_instruction() {
+    let cpu = Chip8::<()>::default().with_rng(|| 0u8);
+
+    assert_eq!(
+        Vec::<Microcode>::new(),
+        Opcode::Sys(u12::new(0x200)).generate(&cpu)
     );
 }
 

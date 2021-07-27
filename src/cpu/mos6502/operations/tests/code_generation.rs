@@ -37,7 +37,7 @@ fn should_generate_absolute_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -64,7 +64,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -91,7 +91,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -120,7 +120,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -144,7 +144,7 @@ fn should_generate_immediate_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -173,7 +173,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -199,7 +199,7 @@ fn should_generate_zeropage_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -226,7 +226,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_adc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x7f)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x7f)
             ]
         ),
         mc
@@ -251,7 +251,7 @@ fn should_generate_absolute_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -275,7 +275,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -299,7 +299,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -326,7 +326,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -348,7 +348,7 @@ fn should_generate_immediate_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -375,7 +375,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -398,7 +398,7 @@ fn should_generate_zeropage_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -422,7 +422,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_and_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -494,7 +494,7 @@ fn should_generate_accumulator_addressing_mode_asl_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x54)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x54)
             ]
         ),
         mc
@@ -566,7 +566,7 @@ fn should_generate_bcc_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -588,7 +588,7 @@ fn should_generate_bcc_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -609,7 +609,7 @@ fn should_generate_bcc_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -633,7 +633,7 @@ fn should_generate_bcs_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -655,7 +655,7 @@ fn should_generate_bcs_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -676,7 +676,7 @@ fn should_generate_bcs_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -700,7 +700,7 @@ fn should_generate_beq_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -722,7 +722,7 @@ fn should_generate_beq_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -743,7 +743,7 @@ fn should_generate_beq_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -767,7 +767,7 @@ fn should_generate_bmi_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -789,7 +789,7 @@ fn should_generate_bmi_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -810,7 +810,7 @@ fn should_generate_bmi_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -882,7 +882,7 @@ fn should_generate_bne_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -904,7 +904,7 @@ fn should_generate_bne_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -925,7 +925,7 @@ fn should_generate_bne_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -949,7 +949,7 @@ fn should_generate_bpl_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -971,7 +971,7 @@ fn should_generate_bpl_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -992,7 +992,7 @@ fn should_generate_bpl_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1031,12 +1031,12 @@ fn should_generate_implied_addressing_mode_brk_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Break, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Interrupt, true),
                 Microcode::WriteMemory(0x01ff, 0x35), // PC (LL + 1)
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
                 Microcode::WriteMemory(0x01fe, 0x12), // PC (HH)
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
                 Microcode::WriteMemory(0x01fd, u8::from(expected_ps_on_stack)), // PS Register
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, 0x5678),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write16bitRegister(WordRegisters::Pc, 0x5678),
             ]
         ),
         mc
@@ -1061,7 +1061,7 @@ fn should_generate_bvc_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1083,7 +1083,7 @@ fn should_generate_bvc_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1104,7 +1104,7 @@ fn should_generate_bvc_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1128,7 +1128,7 @@ fn should_generate_bvs_machine_code_with_branch_penalty() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1150,7 +1150,7 @@ fn should_generate_bvs_machine_code_with_branch_and_page_penalty() {
         Operations::new(
             0,
             4,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1171,7 +1171,7 @@ fn should_generate_bvs_machine_code_with_no_jump() {
         Operations::new(
             0,
             2,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, pc)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, pc)]
         ),
         mc
     );
@@ -1674,7 +1674,7 @@ fn should_generate_implied_addressing_mode_dex_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_dec_8bit_register_microcode!(ByteRegisters::X, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::X, 1),
             ]
         ),
         mc
@@ -1696,7 +1696,7 @@ fn should_generate_implied_addressing_mode_dey_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Y, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::Y, 1),
             ]
         ),
         mc
@@ -1721,7 +1721,7 @@ fn should_generate_absolute_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1745,7 +1745,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1769,7 +1769,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1796,7 +1796,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1818,7 +1818,7 @@ fn should_generate_immediate_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1845,7 +1845,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1868,7 +1868,7 @@ fn should_generate_zeropage_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -1892,7 +1892,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_eor_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xaa)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xaa)
             ]
         ),
         mc
@@ -2006,7 +2006,7 @@ fn should_generate_implied_addressing_mode_inx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, 0x13)
+                Microcode::Write8bitRegister(ByteRegisters::X, 0x13)
             ]
         ),
         mc
@@ -2028,7 +2028,7 @@ fn should_generate_implied_addressing_mode_iny_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, 0x13)
+                Microcode::Write8bitRegister(ByteRegisters::Y, 0x13)
             ]
         ),
         mc
@@ -2049,7 +2049,7 @@ fn should_generate_absolute_addressing_mode_jmp_machine_code() {
         Operations::new(
             0,
             3,
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, addr)]
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, addr)]
         ),
         mc
     );
@@ -2070,7 +2070,7 @@ fn should_generate_indirect_addressing_mode_jmp_machine_code() {
         Operations::new(
             0, // offset modified directly by operation
             5,
-            vec![gen_write_16bit_register_microcode!(
+            vec![Microcode::Write16bitRegister(
                 WordRegisters::Pc,
                 indirect_addr
             )]
@@ -2099,10 +2099,10 @@ fn should_generate_absolute_addressing_mode_jsr_machine_code() {
             6,
             vec![
                 Microcode::WriteMemory(sph, pch),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
                 Microcode::WriteMemory(spl, pcl),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, addr)
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write16bitRegister(WordRegisters::Pc, addr)
             ]
         ),
         mc
@@ -2125,7 +2125,7 @@ fn should_generate_immediate_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2146,7 +2146,7 @@ fn should_generate_zeropage_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(
+                Microcode::Write8bitRegister(
                     ByteRegisters::Acc,
                     0x00 // memory defaults to null
                 )
@@ -2163,8 +2163,8 @@ fn should_generate_zeropage_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 2)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 2)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -2187,7 +2187,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(
+                Microcode::Write8bitRegister(
                     ByteRegisters::Acc,
                     0xff // value at 0x05 in memory should be 0xff
                 )
@@ -2205,8 +2205,8 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 2)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 2)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -2227,7 +2227,7 @@ fn should_generate_absolute_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00)
             ]
         ),
         mc
@@ -2241,8 +2241,8 @@ fn should_generate_absolute_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 3)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -2263,7 +2263,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00)
             ]
         ),
         mc
@@ -2277,8 +2277,8 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 3)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -2299,7 +2299,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00)
             ]
         ),
         mc
@@ -2313,8 +2313,8 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x00),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 3)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x00),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -2340,7 +2340,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xea)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xea)
             ]
         ),
         mc
@@ -2366,7 +2366,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_lda_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xea)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xea)
             ]
         ),
         mc
@@ -2389,7 +2389,7 @@ fn should_generate_absolute_addressing_mode_ldx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::X, 0x00)
             ]
         ),
         mc
@@ -2410,7 +2410,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_ldx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::X, 0x00)
             ]
         ),
         mc
@@ -2431,7 +2431,7 @@ fn should_generate_immediate_addressing_mode_ldx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::X, 0xff)
             ]
         ),
         mc
@@ -2452,7 +2452,7 @@ fn should_generate_zeropage_addressing_mode_ldx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(
+                Microcode::Write8bitRegister(
                     ByteRegisters::X,
                     0x00 // memory defaults to null
                 )
@@ -2478,7 +2478,7 @@ fn should_generate_zeropage_indexed_with_y_addressing_mode_ldx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(
+                Microcode::Write8bitRegister(
                     ByteRegisters::X,
                     0xff // value at 0x05 in memory should be 0xff
                 )
@@ -2504,7 +2504,7 @@ fn should_generate_absolute_addressing_mode_ldy_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::Y, 0x00)
             ]
         ),
         mc
@@ -2525,7 +2525,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ldy_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, 0x00)
+                Microcode::Write8bitRegister(ByteRegisters::Y, 0x00)
             ]
         ),
         mc
@@ -2546,7 +2546,7 @@ fn should_generate_immediate_addressing_mode_ldy_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Y, 0xff)
             ]
         ),
         mc
@@ -2567,7 +2567,7 @@ fn should_generate_zeropage_addressing_mode_ldy_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
-                gen_write_8bit_register_microcode!(
+                Microcode::Write8bitRegister(
                     ByteRegisters::Y,
                     0x00 // memory defaults to null
                 )
@@ -2593,7 +2593,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ldy_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(
+                Microcode::Write8bitRegister(
                     ByteRegisters::Y,
                     0xff // value at 0x05 in memory should be 0xff
                 )
@@ -2668,7 +2668,7 @@ fn should_generate_accumulator_addressing_mode_lsr_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x2a)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x2a)
             ]
         ),
         mc
@@ -2751,7 +2751,7 @@ fn should_generate_absolute_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2775,7 +2775,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2799,7 +2799,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2826,7 +2826,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2848,7 +2848,7 @@ fn should_generate_immediate_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2875,7 +2875,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2898,7 +2898,7 @@ fn should_generate_zeropage_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2922,7 +2922,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_ora_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -2947,7 +2947,7 @@ fn should_generate_implied_addressing_mode_pha_machine_code() {
             vec![
                 // should write to the top of the stack
                 Microcode::WriteMemory(0x01ff, 0xff),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
             ]
         ),
         mc
@@ -2972,7 +2972,7 @@ fn should_generate_implied_addressing_mode_php_machine_code() {
             vec![
                 // should write to the top of the stack
                 Microcode::WriteMemory(0x01ff, 0x55),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
             ]
         ),
         mc
@@ -2999,11 +2999,11 @@ fn should_generate_implied_addressing_mode_pla_machine_code() {
             vec![],
             vec![],
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 1),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 1)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 1)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -3030,9 +3030,9 @@ fn should_generate_implied_addressing_mode_plp_machine_code() {
             vec![],
             vec![],
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_8bit_register_microcode!(ByteRegisters::Ps, 0x55),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 1)
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write8bitRegister(ByteRegisters::Ps, 0x55),
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 1)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -3118,7 +3118,7 @@ fn should_generate_accumulator_addressing_mode_rol_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0x55)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0x55)
             ]
         ),
         mc
@@ -3260,7 +3260,7 @@ fn should_generate_accumulator_addressing_mode_ror_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, false),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xd5)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xd5)
             ]
         ),
         mc
@@ -3347,10 +3347,10 @@ fn should_generate_implied_addressing_mode_rti_machine_code() {
             1,
             6,
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_8bit_register_microcode!(ByteRegisters::Ps, 0x20),
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 2),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, 0x1234)
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write8bitRegister(ByteRegisters::Ps, 0x20),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 2),
+                Microcode::Write16bitRegister(WordRegisters::Pc, 0x1234)
             ]
         ),
         mc
@@ -3373,8 +3373,8 @@ fn should_generate_implied_addressing_mode_rts_machine_code() {
             1,
             6,
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 2),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, 0x6002)
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 2),
+                Microcode::Write16bitRegister(WordRegisters::Pc, 0x6002)
             ]
         ),
         mc
@@ -3407,7 +3407,7 @@ fn should_generate_absolute_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3439,7 +3439,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3471,7 +3471,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3505,7 +3505,7 @@ fn should_generate_indirect_y_indexed_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3535,7 +3535,7 @@ fn should_generate_immediate_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3569,7 +3569,7 @@ fn should_generate_x_indexed_indirect_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3600,7 +3600,7 @@ fn should_generate_zeropage_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3632,7 +3632,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_sbc_machine_code() {
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xa0)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xa0)
             ]
         ),
         mc
@@ -3745,7 +3745,7 @@ fn should_generate_absolute_with_x_index_addressing_mode_sta_machine_code() {
             vec![],
             vec![
                 Microcode::WriteMemory(0x05, 0xff),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 3)
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -3774,7 +3774,7 @@ fn should_generate_absolute_with_y_index_addressing_mode_sta_machine_code() {
             vec![],
             vec![
                 Microcode::WriteMemory(0x05, 0xff),
-                gen_inc_16bit_register_microcode!(WordRegisters::Pc, 3)
+                Microcode::Inc16bitRegister(WordRegisters::Pc, 3)
             ]
         ],
         Into::<Vec<Vec<Microcode>>>::into(mc)
@@ -3941,7 +3941,7 @@ fn should_generate_implied_addressing_mode_tax_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::X, 0xff)
             ]
         ),
         mc
@@ -3962,7 +3962,7 @@ fn should_generate_implied_addressing_mode_tay_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Y, 0xff)
             ]
         ),
         mc
@@ -3982,7 +3982,7 @@ fn should_generate_implied_addressing_mode_tsx_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::X, 0xff)
             ]
         ),
         mc
@@ -4002,7 +4002,7 @@ fn should_generate_implied_addressing_mode_txa_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc
@@ -4019,7 +4019,7 @@ fn should_generate_implied_addressing_mode_txs_machine_code() {
         Operations::new(
             1,
             2,
-            vec![gen_write_8bit_register_microcode!(ByteRegisters::Sp, 0x00)]
+            vec![Microcode::Write8bitRegister(ByteRegisters::Sp, 0x00)]
         ),
         mc
     );
@@ -4038,7 +4038,7 @@ fn should_generate_implied_addressing_mode_tya_machine_code() {
             vec![
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, true),
                 Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, false),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, 0xff)
+                Microcode::Write8bitRegister(ByteRegisters::Acc, 0xff)
             ]
         ),
         mc

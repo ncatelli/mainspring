@@ -115,6 +115,8 @@ impl Mos6502 {
 
     /// Simulates the reset process of the CPU, exporting the options as a Operations type
     pub fn reset_as_mops(&self) -> operations::Operations {
+        use microcode::Microcode;
+
         let lsb: u8 = self.address_map.read(RESET_VECTOR_LL);
         let msb: u8 = self.address_map.read(RESET_VECTOR_HH);
         let pc = ProgramCounter::default().write(u16::from_le_bytes([lsb, msb]));
@@ -123,15 +125,9 @@ impl Mos6502 {
             0,
             6,
             vec![
-                gen_write_8bit_register_microcode!(
-                    ByteRegisters::Ps,
-                    ProcessorStatus::default().read()
-                ),
-                gen_write_8bit_register_microcode!(
-                    ByteRegisters::Sp,
-                    StackPointer::default().read()
-                ),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, pc.read()),
+                Microcode::Write8bitRegister(ByteRegisters::Ps, ProcessorStatus::default().read()),
+                Microcode::Write8bitRegister(ByteRegisters::Sp, StackPointer::default().read()),
+                Microcode::Write16bitRegister(WordRegisters::Pc, pc.read()),
             ],
         )
     }
@@ -283,12 +279,24 @@ impl ExecuteMut<microcode::Microcode> for Mos6502 {
             microcode::Microcode::SetProgramStatusFlagState(flag, value) => {
                 self.execute_mut(&SetProgramStatusFlagState::new(*flag, *value))
             }
-            microcode::Microcode::Write8bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Inc8bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Dec8bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Write16bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Inc16bitRegister(mc) => self.execute_mut(mc),
-            microcode::Microcode::Dec16bitRegister(mc) => self.execute_mut(mc),
+            microcode::Microcode::Write8bitRegister(register, value) => {
+                self.execute_mut(&Write8bitRegister::new(*register, *value))
+            }
+            microcode::Microcode::Inc8bitRegister(register, value) => {
+                self.execute_mut(&Inc8bitRegister::new(*register, *value))
+            }
+            microcode::Microcode::Dec8bitRegister(register, value) => {
+                self.execute_mut(&Dec8bitRegister::new(*register, *value))
+            }
+            microcode::Microcode::Write16bitRegister(register, value) => {
+                self.execute_mut(&Write16bitRegister::new(*register, *value))
+            }
+            microcode::Microcode::Inc16bitRegister(register, value) => {
+                self.execute_mut(&Inc16bitRegister::new(*register, *value))
+            }
+            microcode::Microcode::Dec16bitRegister(register, value) => {
+                self.execute_mut(&Dec16bitRegister::new(*register, *value))
+            }
         }
     }
 }

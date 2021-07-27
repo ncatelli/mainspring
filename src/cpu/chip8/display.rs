@@ -86,8 +86,10 @@ impl Display {
     pub fn write_pixel_mut(&mut self, x: usize, y: usize, pixel_on: bool) -> Option<bool> {
         self.pixel(x, y).map(|previous_value| {
             // if we can get the previous value, it's safe to write a new one.
-            self.inner[y][x] = pixel_on;
-            previous_value
+            self.with_inner_mut(|display| {
+                display[y][x] = pixel_on;
+                previous_value
+            })
         })
     }
 

@@ -332,9 +332,7 @@ impl From<Operations> for Vec<Vec<Microcode>> {
         mcs.push(
             src.microcode
                 .into_iter()
-                .chain(
-                    vec![gen_inc_16bit_register_microcode!(WordRegisters::Pc, offset)].into_iter(),
-                )
+                .chain(vec![Microcode::Inc16bitRegister(WordRegisters::Pc, offset)].into_iter())
                 .collect(),
         );
         mcs
@@ -1227,11 +1225,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1260,11 +1258,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1293,11 +1291,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1327,11 +1325,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1351,11 +1349,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1377,11 +1375,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1402,11 +1400,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1428,11 +1426,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1454,11 +1452,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1487,11 +1485,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1520,11 +1518,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1554,11 +1552,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1578,11 +1576,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1604,11 +1602,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1629,11 +1627,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1655,11 +1653,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1681,9 +1679,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1711,9 +1709,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1741,9 +1739,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1771,9 +1769,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1791,9 +1789,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1813,9 +1811,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1833,9 +1831,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1855,9 +1853,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1876,10 +1874,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -1898,10 +1896,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -1917,10 +1915,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::Accumulat
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -1937,10 +1935,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -1958,10 +1956,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Asl, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -1983,9 +1981,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Bit, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
             ],
         )
     }
@@ -2006,9 +2004,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Bit, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Overflow, overflow),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Overflow, overflow),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
             ],
         )
     }
@@ -2028,9 +2026,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2058,9 +2056,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2088,9 +2086,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2118,9 +2116,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2138,9 +2136,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2160,9 +2158,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2180,9 +2178,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2202,9 +2200,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2223,10 +2221,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2245,10 +2243,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2264,10 +2262,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::Accumulat
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2284,10 +2282,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2305,10 +2303,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lsr, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2328,9 +2326,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2358,9 +2356,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2388,9 +2386,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2418,9 +2416,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2438,9 +2436,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2460,9 +2458,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2480,9 +2478,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2502,9 +2500,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2524,10 +2522,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2547,10 +2545,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2566,10 +2564,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::Accumulat
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2587,10 +2585,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2609,10 +2607,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rol, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2632,10 +2630,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2655,10 +2653,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2674,10 +2672,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::Accumulat
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -2695,10 +2693,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -2717,10 +2715,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ror, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, value.carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, value.carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -2737,16 +2735,16 @@ fn branch_on_case(
 ) -> Operations {
     let jmp_on_eq = (Wrapping(cpu.pc.read()) + Wrapping(branch_offset as u16)).0;
     let mc = if cond {
-        vec![gen_write_16bit_register_microcode!(
+        vec![Microcode::Write16bitRegister(
             WordRegisters::Pc,
             // handle for underflow
-            jmp_on_eq
+            jmp_on_eq,
         )]
     } else {
-        vec![gen_write_16bit_register_microcode!(
+        vec![Microcode::Write16bitRegister(
             WordRegisters::Pc,
             // handle for underflow
-            cpu.pc.read().overflowing_add(inst_offset as u16).0
+            cpu.pc.read().overflowing_add(inst_offset as u16).0,
         )]
     };
 
@@ -2865,7 +2863,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Clc, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, false)],
+            vec![Microcode::SetProgramStatusFlagState(
+                ProgramStatusFlags::Carry,
+                false,
+            )],
         )
     }
 }
@@ -2879,7 +2880,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cld, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, false)],
+            vec![Microcode::SetProgramStatusFlagState(
+                ProgramStatusFlags::Decimal,
+                false,
+            )],
         )
     }
 }
@@ -2893,9 +2897,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cli, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(
+            vec![Microcode::SetProgramStatusFlagState(
                 ProgramStatusFlags::Interrupt,
-                false
+                false,
             )],
         )
     }
@@ -2910,7 +2914,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Clv, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(ProgramStatusFlags::Overflow, false)],
+            vec![Microcode::SetProgramStatusFlagState(
+                ProgramStatusFlags::Overflow,
+                false,
+            )],
         )
     }
 }
@@ -2930,9 +2937,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -2961,9 +2968,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -2992,9 +2999,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3023,9 +3030,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3045,9 +3052,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3069,9 +3076,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3090,9 +3097,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3113,9 +3120,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3136,9 +3143,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cpx, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3158,9 +3165,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cpx, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3179,9 +3186,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cpx, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3202,9 +3209,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cpy, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3224,9 +3231,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cpy, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3245,9 +3252,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cpy, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Carry, carry),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, diff.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, diff.zero),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Carry, carry),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, diff.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, diff.zero),
             ],
         )
     }
@@ -3266,9 +3273,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3287,9 +3294,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3306,9 +3313,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3327,9 +3334,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dec, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3347,9 +3354,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dex, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_dec_8bit_register_microcode!(ByteRegisters::X, 1),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Dec8bitRegister(ByteRegisters::X, 1),
             ],
         )
     }
@@ -3367,9 +3374,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Dey, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Y, 1),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Dec8bitRegister(ByteRegisters::Y, 1),
             ],
         )
     }
@@ -3388,9 +3395,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3409,9 +3416,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3428,9 +3435,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(addr, value.unwrap()),
             ],
         )
     }
@@ -3449,9 +3456,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inc, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_memory_microcode!(indexed_addr, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::WriteMemory(indexed_addr, value.unwrap()),
             ],
         )
     }
@@ -3469,9 +3476,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Inx, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -3489,9 +3496,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Iny, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -3508,7 +3515,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Jmp, addressing_mode::Absolute>
         Operations::new(
             0,
             self.cycles(),
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, addr)],
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, addr)],
         )
     }
 }
@@ -3525,7 +3532,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Jmp, addressing_mode::Indirect>
         Operations::new(
             0,
             self.cycles(),
-            vec![gen_write_16bit_register_microcode!(WordRegisters::Pc, addr)],
+            vec![Microcode::Write16bitRegister(WordRegisters::Pc, addr)],
         )
     }
 }
@@ -3549,11 +3556,11 @@ impl Generate<Mos6502> for Instruction<mnemonic::Jsr, addressing_mode::Absolute>
             0,
             self.cycles(),
             vec![
-                gen_write_memory_microcode!(sph, pch),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_memory_microcode!(spl, pcl),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, addr),
+                Microcode::WriteMemory(sph, pch),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::WriteMemory(spl, pcl),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write16bitRegister(WordRegisters::Pc, addr),
             ],
         )
     }
@@ -3571,9 +3578,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3589,9 +3596,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3609,9 +3616,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3627,9 +3634,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3655,9 +3662,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3683,9 +3690,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3711,9 +3718,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::IndirectY
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3731,9 +3738,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::XIndexedI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -3752,9 +3759,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -3780,9 +3787,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -3798,9 +3805,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -3816,9 +3823,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -3836,9 +3843,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -3857,9 +3864,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::Absolute>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -3885,9 +3892,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::AbsoluteI
             self.offset(),
             self.cycles() + branch_penalty,
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -3903,9 +3910,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::Immediate
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -3921,9 +3928,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::ZeroPage>
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -3941,9 +3948,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::ZeroPageI
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -3962,8 +3969,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Pha, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_write_memory_microcode!(stack_pointer_from_byte_value(sp), value),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::WriteMemory(stack_pointer_from_byte_value(sp), value),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
             ],
         )
     }
@@ -3982,8 +3989,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Php, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_write_memory_microcode!(stack_pointer_from_byte_value(sp), value),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
+                Microcode::WriteMemory(stack_pointer_from_byte_value(sp), value),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
             ],
         )
     }
@@ -4002,10 +4009,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Pla, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -4024,8 +4031,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Plp, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_8bit_register_microcode!(ByteRegisters::Ps, value.unwrap()),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write8bitRegister(ByteRegisters::Ps, value.unwrap()),
             ],
         )
     }
@@ -4052,10 +4059,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rti, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_8bit_register_microcode!(ByteRegisters::Ps, sp),
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 2),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, ret_addr),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write8bitRegister(ByteRegisters::Ps, sp),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 2),
+                Microcode::Write16bitRegister(WordRegisters::Pc, ret_addr),
             ],
         )
     }
@@ -4078,8 +4085,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Rts, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_inc_8bit_register_microcode!(ByteRegisters::Sp, 2),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, ret_addr),
+                Microcode::Inc8bitRegister(ByteRegisters::Sp, 2),
+                Microcode::Write16bitRegister(WordRegisters::Pc, ret_addr),
             ],
         )
     }
@@ -4094,7 +4101,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sec, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(ProgramStatusFlags::Carry, true)],
+            vec![Microcode::SetProgramStatusFlagState(
+                ProgramStatusFlags::Carry,
+                true,
+            )],
         )
     }
 }
@@ -4108,7 +4118,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sed, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(ProgramStatusFlags::Decimal, true)],
+            vec![Microcode::SetProgramStatusFlagState(
+                ProgramStatusFlags::Decimal,
+                true,
+            )],
         )
     }
 }
@@ -4122,7 +4135,10 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sei, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true)],
+            vec![Microcode::SetProgramStatusFlagState(
+                ProgramStatusFlags::Interrupt,
+                true,
+            )],
         )
     }
 }
@@ -4138,7 +4154,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::Absolute>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, acc_val)],
+            vec![Microcode::WriteMemory(addr, acc_val)],
         )
     }
 }
@@ -4153,7 +4169,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::AbsoluteI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+            vec![Microcode::WriteMemory(indexed_addr, acc_val)],
         )
     }
 }
@@ -4169,7 +4185,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::AbsoluteI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+            vec![Microcode::WriteMemory(indexed_addr, acc_val)],
         )
     }
 }
@@ -4184,7 +4200,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::IndirectY
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indirect_addr, acc_val)],
+            vec![Microcode::WriteMemory(indirect_addr, acc_val)],
         )
     }
 }
@@ -4199,7 +4215,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::XIndexedI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indirect_addr, acc_val)],
+            vec![Microcode::WriteMemory(indirect_addr, acc_val)],
         )
     }
 }
@@ -4214,7 +4230,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::ZeroPage>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, acc_val)],
+            vec![Microcode::WriteMemory(addr, acc_val)],
         )
     }
 }
@@ -4230,7 +4246,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sta, addressing_mode::ZeroPageI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, acc_val)],
+            vec![Microcode::WriteMemory(indexed_addr, acc_val)],
         )
     }
 }
@@ -4246,7 +4262,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Stx, addressing_mode::Absolute>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4261,7 +4277,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Stx, addressing_mode::ZeroPage>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4277,7 +4293,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Stx, addressing_mode::ZeroPageI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, value)],
+            vec![Microcode::WriteMemory(indexed_addr, value)],
         )
     }
 }
@@ -4293,7 +4309,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sty, addressing_mode::Absolute>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4308,7 +4324,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sty, addressing_mode::ZeroPage>
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(addr, value)],
+            vec![Microcode::WriteMemory(addr, value)],
         )
     }
 }
@@ -4324,7 +4340,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sty, addressing_mode::ZeroPageI
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_memory_microcode!(indexed_addr, value)],
+            vec![Microcode::WriteMemory(indexed_addr, value)],
         )
     }
 }
@@ -4341,9 +4357,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Tax, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -4361,9 +4377,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Tay, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Y, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Y, value.unwrap()),
             ],
         )
     }
@@ -4381,9 +4397,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Tsx, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::X, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::X, value.unwrap()),
             ],
         )
     }
@@ -4401,9 +4417,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Txa, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -4420,9 +4436,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Txs, addressing_mode::Implied> 
         Operations::new(
             self.offset(),
             self.cycles(),
-            vec![gen_write_8bit_register_microcode!(
+            vec![Microcode::Write8bitRegister(
                 ByteRegisters::Sp,
-                value.unwrap()
+                value.unwrap(),
             )],
         )
     }
@@ -4440,9 +4456,9 @@ impl Generate<Mos6502> for Instruction<mnemonic::Tya, addressing_mode::Implied> 
             self.offset(),
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Negative, value.negative),
-                gen_flag_set_microcode!(ProgramStatusFlags::Zero, value.zero),
-                gen_write_8bit_register_microcode!(ByteRegisters::Acc, value.unwrap()),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Negative, value.negative),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, value.zero),
+                Microcode::Write8bitRegister(ByteRegisters::Acc, value.unwrap()),
             ],
         )
     }
@@ -4475,15 +4491,15 @@ impl Generate<Mos6502> for Instruction<mnemonic::Brk, addressing_mode::Implied> 
             0, // manually modified in the instruction
             self.cycles(),
             vec![
-                gen_flag_set_microcode!(ProgramStatusFlags::Break, true),
-                gen_flag_set_microcode!(ProgramStatusFlags::Interrupt, true),
-                gen_write_memory_microcode!(sp_pcl, pcl),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_memory_microcode!(sp_pch, pch),
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_memory_microcode!(sp_ps, ps), // PS Register
-                gen_dec_8bit_register_microcode!(ByteRegisters::Sp, 1),
-                gen_write_16bit_register_microcode!(WordRegisters::Pc, irq_vector),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Break, true),
+                Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Interrupt, true),
+                Microcode::WriteMemory(sp_pcl, pcl),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::WriteMemory(sp_pch, pch),
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::WriteMemory(sp_ps, ps), // PS Register
+                Microcode::Dec8bitRegister(ByteRegisters::Sp, 1),
+                Microcode::Write16bitRegister(WordRegisters::Pc, irq_vector),
             ],
         )
     }

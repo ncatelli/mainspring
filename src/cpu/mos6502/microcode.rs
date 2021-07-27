@@ -8,20 +8,36 @@ use crate::cpu::mos6502::register::{ByteRegisters, ProgramStatusFlags, WordRegis
 /// 6502 simulator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Microcode {
-    WriteMemory(WriteMemory),
-    SetProgramStatusFlagState(SetProgramStatusFlagState),
-    Write8bitRegister(Write8bitRegister),
-    Inc8bitRegister(Inc8bitRegister),
-    Dec8bitRegister(Dec8bitRegister),
-    Write16bitRegister(Write16bitRegister),
-    Inc16bitRegister(Inc16bitRegister),
-    Dec16bitRegister(Dec16bitRegister),
+    /// Represents a write of the value to the memory location specified by the
+    /// address field.
+    WriteMemory(u16, u8),
+    /// Represents a write of the value to the memory location specified by the
+    /// address field.
+    SetProgramStatusFlagState(ProgramStatusFlags, bool),
+    /// Represents a write of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
+    Write8bitRegister(ByteRegisters, u8),
+    /// Represents an increment of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
+    Inc8bitRegister(ByteRegisters, u8),
+    /// Represents an decrement of the specified 8-bit value to one of the 8-bit
+    /// registers as defined by the ByteRegisters value.
+    Dec8bitRegister(ByteRegisters, u8),
+    /// Represents a write of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
+    Write16bitRegister(WordRegisters, u16),
+    /// Represents an increment of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
+    Inc16bitRegister(WordRegisters, u16),
+    /// Represents an decrement of the specified 16-bit value to one of the 16-bit
+    /// registers as defined by the ByteRegisters value.
+    Dec16bitRegister(WordRegisters, u16),
 }
 
 /// Represents a write of the value to the memory location specified by the
 /// address field.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct WriteMemory {
+pub(crate) struct WriteMemory {
     pub address: u16,
     pub value: u8,
 }
@@ -35,7 +51,7 @@ impl WriteMemory {
 /// Represents a write of the value to the memory location specified by the
 /// address field.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct SetProgramStatusFlagState {
+pub(crate) struct SetProgramStatusFlagState {
     pub flag: ProgramStatusFlags,
     pub value: bool,
 }
@@ -51,7 +67,7 @@ impl SetProgramStatusFlagState {
 /// Represents a write of the specified 8-bit value to one of the 8-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Write8bitRegister {
+pub(crate) struct Write8bitRegister {
     pub register: ByteRegisters,
     pub value: u8,
 }
@@ -65,7 +81,7 @@ impl Write8bitRegister {
 /// Represents an increment of the specified 8-bit value to one of the 8-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Inc8bitRegister {
+pub(crate) struct Inc8bitRegister {
     pub register: ByteRegisters,
     pub value: u8,
 }
@@ -79,7 +95,7 @@ impl Inc8bitRegister {
 /// Represents an decrement of the specified 8-bit value to one of the 8-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Dec8bitRegister {
+pub(crate) struct Dec8bitRegister {
     pub register: ByteRegisters,
     pub value: u8,
 }
@@ -95,7 +111,7 @@ impl Dec8bitRegister {
 /// Represents a write of the specified 16-bit value to one of the 16-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Write16bitRegister {
+pub(crate) struct Write16bitRegister {
     pub register: WordRegisters,
     pub value: u16,
 }
@@ -109,7 +125,7 @@ impl Write16bitRegister {
 /// Represents an increment of the specified 16-bit value to one of the 16-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Inc16bitRegister {
+pub(crate) struct Inc16bitRegister {
     pub register: WordRegisters,
     pub value: u16,
 }
@@ -123,7 +139,7 @@ impl Inc16bitRegister {
 /// Represents an decrement of the specified 16-bit value to one of the 16-bit
 /// registers as defined by the ByteRegisters value.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Dec16bitRegister {
+pub(crate) struct Dec16bitRegister {
     pub register: WordRegisters,
     pub value: u16,
 }
@@ -132,76 +148,4 @@ impl Dec16bitRegister {
     pub fn new(register: WordRegisters, value: u16) -> Self {
         Self { register, value }
     }
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_write_memory_microcode {
-    ($addr:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::WriteMemory(
-            $crate::cpu::mos6502::microcode::WriteMemory::new($addr, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_flag_set_microcode {
-    ($flag:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::SetProgramStatusFlagState(
-            $crate::cpu::mos6502::microcode::SetProgramStatusFlagState::new($flag, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_write_8bit_register_microcode {
-    ($reg:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::Write8bitRegister(
-            $crate::cpu::mos6502::microcode::Write8bitRegister::new($reg, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_inc_8bit_register_microcode {
-    ($reg:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::Inc8bitRegister(
-            $crate::cpu::mos6502::microcode::Inc8bitRegister::new($reg, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_dec_8bit_register_microcode {
-    ($reg:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::Dec8bitRegister(
-            $crate::cpu::mos6502::microcode::Dec8bitRegister::new($reg, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_write_16bit_register_microcode {
-    ($reg:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::Write16bitRegister(
-            $crate::cpu::mos6502::microcode::Write16bitRegister::new($reg, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_inc_16bit_register_microcode {
-    ($reg:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::Inc16bitRegister(
-            $crate::cpu::mos6502::microcode::Inc16bitRegister::new($reg, $value),
-        )
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! gen_dec_16bit_register_microcode {
-    ($reg:expr, $value:expr) => {
-        $crate::cpu::mos6502::microcode::Microcode::Dec16bitRegister(
-            $crate::cpu::mos6502::microcode::Dec16bitRegister::new($reg, $value),
-        )
-    };
 }

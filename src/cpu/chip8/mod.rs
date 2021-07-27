@@ -47,6 +47,10 @@ impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     }
 }
 
+/// Defines the default buffer size for the BufferedRandomNumberGenerator at
+/// 1024 bytes.
+const DEFAULT_BUFFERED_RNG_BUFFER_LEN: usize = 1024;
+
 /// A buffered implementation of the RandomNumberGenerator, consuming and
 /// filling the buffer in asynchronously whenever possible.
 #[derive(Debug)]
@@ -60,8 +64,15 @@ impl BufferedRandomNumberGenerator {
     where
         RNG: GenerateRandom<u8> + Send + 'static,
     {
+        Self::with_capacity(DEFAULT_BUFFERED_RNG_BUFFER_LEN, rng)
+    }
+
+    pub fn with_capacity<RNG>(bound: usize, rng: RNG) -> Self
+    where
+        RNG: GenerateRandom<u8> + Send + 'static,
+    {
         let (close_sender, close_receiver) = std::sync::mpsc::sync_channel::<()>(1);
-        let (sender, receiver) = std::sync::mpsc::sync_channel(1024);
+        let (sender, receiver) = std::sync::mpsc::sync_channel(bound);
 
         // keep the buffer full
         std::thread::spawn(move || loop {

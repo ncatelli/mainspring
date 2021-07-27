@@ -71,19 +71,19 @@ impl BufferedRandomNumberGenerator {
     where
         RNG: GenerateRandom<u8> + Send + 'static,
     {
-        let (sender, receiver) = std::sync::mpsc::sync_channel(bound);
+        let (tx, rx) = std::sync::mpsc::sync_channel(bound);
 
         // fork a thread off that will continuously try to fill the buffer. If
         // the buffer is full, the thread will block.
         std::thread::spawn(move || loop {
             // When parent receiver is dropped, the send returns an Err and
             // the thread returns.
-            if let Err(_) = sender.send(rng.random()) {
+            if let Err(_) = tx.send(rng.random()) {
                 return;
             }
         });
 
-        Self { buffer: receiver }
+        Self { buffer: rx }
     }
 }
 

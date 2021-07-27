@@ -91,6 +91,7 @@ impl GenerateRandom<u8> for BufferedRandomNumberGenerator {
     fn random(&self) -> u8 {
         self.buffer
             .recv()
+            // this should never fail as long as self is still alive.
             .expect("cannot read exactly one byte from buffer.")
     }
 }

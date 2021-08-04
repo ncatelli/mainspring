@@ -34,6 +34,7 @@ where
 #[derive(Default, Debug, Clone, Copy)]
 pub struct UnixRandomNumberGenerator;
 
+#[cfg(target_family = "unix")]
 impl GenerateRandom<u8> for UnixRandomNumberGenerator {
     fn random(&self) -> u8 {
         use std::fs;

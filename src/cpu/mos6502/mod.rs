@@ -43,7 +43,7 @@ pub type Rom = Memory<ReadOnly, u16, u8>;
 /// Mos6502 represents the 6502 CPU
 #[derive(Debug, Clone)]
 pub struct Mos6502 {
-    address_map: AddressMap<u16, u8>,
+    pub address_map: AddressMap<u16, u8>,
     pub acc: GeneralPurpose,
     pub x: GeneralPurpose,
     pub y: GeneralPurpose,

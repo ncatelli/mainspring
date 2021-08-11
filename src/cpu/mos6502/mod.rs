@@ -136,9 +136,12 @@ impl Mos6502 {
     /// an owned CPU returning the modified instance representation.
     pub fn with_owned_address_map<F>(mut self, f: F) -> Self
     where
-        F: Fn(&mut AddressMap<u16, u8>),
+        F: Fn(AddressMap<u16, u8>) -> AddressMap<u16, u8>,
     {
-        (f)(&mut self.address_map);
+        let src_address_map =
+            std::mem::replace(&mut self.address_map, AddressMap::<u16, u8>::new());
+        let modified_address_map = (f)(src_address_map);
+        let _ = std::mem::replace(&mut self.address_map, modified_address_map);
         self
     }
 

@@ -39,8 +39,9 @@ fn should_access_address_map_through_wrapper_methods() {
         cpu.with_address_map_mut(|am| { am.write(0xff, 0xff) })
     );
 
-    let cpu = cpu.with_owned_address_map(|am| {
+    let cpu = cpu.with_owned_address_map(|mut am| {
         let _ = am.write(0xff, 0xea);
+        am
     });
     assert_eq!(0xea, cpu.address_map.read(0xff));
 }

@@ -81,8 +81,8 @@ impl Addressable<u16, u8> for Memory<ReadWrite, u16, u8> {
         self.inner[usize::from(addr_offset)]
     }
 
-    /// Assigns a single value to an address in memory returning a result if the
-    /// write was in range.
+    /// Assigns a single value to an address in memory returning a result
+    /// wrapping the written value if the write was in range.
     fn write(&mut self, addr: u16, value: u8) -> Result<u8, String> {
         let addr_offset = addr - self.start_address;
         self.inner[usize::from(addr_offset)] = value;

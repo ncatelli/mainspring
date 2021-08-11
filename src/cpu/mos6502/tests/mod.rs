@@ -29,6 +29,23 @@ fn generate_test_cpu_with_instructions(opcodes: Vec<u8>) -> Mos6502 {
 }
 
 #[test]
+fn should_access_address_map_through_wrapper_methods() {
+    let mut cpu = generate_test_cpu_with_instructions(vec![]);
+    cpu.address_map.write(0x00ff, 0xea).unwrap();
+
+    assert_eq!(0xea, cpu.with_address_map(|am| am.read(0xff)));
+    assert_eq!(
+        Ok(0xff),
+        cpu.with_address_map_mut(|am| { am.write(0xff, 0xff) })
+    );
+
+    let cpu = cpu.with_owned_address_map(|am| {
+        let _ = am.write(0xff, 0xea);
+    });
+    assert_eq!(0xea, cpu.address_map.read(0xff));
+}
+
+#[test]
 fn should_cycle_on_adc_absolute_operation_with_overflow() {
     let mut cpu = generate_test_cpu_with_instructions(vec![0x6d, 0xff, 0x00])
         .with_gp_register(GpRegister::Acc, register::GeneralPurpose::with_value(0x80));

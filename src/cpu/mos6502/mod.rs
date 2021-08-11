@@ -138,11 +138,12 @@ impl Mos6502 {
     where
         F: Fn(AddressMap<u16, u8>) -> AddressMap<u16, u8>,
     {
-        use std::mem::replace;
+        use std::mem;
 
-        let am = replace(&mut self.address_map, AddressMap::<u16, u8>::new());
-        let am = (f)(am);
-        let _ = replace(&mut self.address_map, am);
+        // replace with a temporary placeholder AddressMap.
+        let src_am = mem::take(&mut self.address_map);
+        let modified_am = (f)(src_am);
+        let _ = mem::replace(&mut self.address_map, modified_am);
         self
     }
 

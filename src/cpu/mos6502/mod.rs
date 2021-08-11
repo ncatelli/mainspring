@@ -132,6 +132,38 @@ impl Mos6502 {
         )
     }
 
+    /// Provides a function handler for making changes to the address_map of
+    /// an owned CPU returning the modified instance representation.
+    pub fn with_owned_address_map<F>(mut self, f: F) -> Self
+    where
+        F: Fn(AddressMap<u16, u8>) -> AddressMap<u16, u8>,
+    {
+        use std::mem;
+
+        // replace with a temporary placeholder AddressMap.
+        let src_am = mem::take(&mut self.address_map);
+        let modified_am = (f)(src_am);
+        let _ = mem::replace(&mut self.address_map, modified_am);
+        self
+    }
+
+    /// Provides a function handler for accessing a borrowed address map..
+    pub fn with_address_map<F, B>(&self, f: F) -> B
+    where
+        F: Fn(&AddressMap<u16, u8>) -> B,
+    {
+        (f)(&self.address_map)
+    }
+
+    /// Provides a function handler for making mutable changes to the address_map
+    /// representation.
+    pub fn with_address_map_mut<F, B>(&mut self, f: F) -> B
+    where
+        F: Fn(&mut AddressMap<u16, u8>) -> B,
+    {
+        (f)(&mut self.address_map)
+    }
+
     /// Provides a wrapper to update a general-purpose register in a way that
     /// returns the entire cpu after modification.
     pub fn with_gp_register(mut self, reg_type: GpRegister, reg: GeneralPurpose) -> Self {

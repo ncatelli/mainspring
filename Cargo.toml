@@ -1,6 +1,6 @@
 [package]
 name = "mainspring"
-version = "0.2.1"
+version = "1.0.0"
 authors = ["Nate Catelli <ncatelli@packetfire.org>"]
 edition = "2018"
 

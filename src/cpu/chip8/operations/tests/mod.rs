@@ -1034,7 +1034,7 @@ fn should_generate_skp_operation() {
     );
 
     // a cpu without a key pressed.
-    let cpu_none = cpu_some_eq.clone().with_interrupt(|| None);
+    let cpu_none = cpu_some_eq.with_interrupt(|| None);
 
     assert_eq!(
         Vec::<Microcode>::new(),
@@ -1071,7 +1071,7 @@ fn should_generate_sknp_operation() {
     );
 
     // a cpu without a key pressed.
-    let cpu_none = cpu_some_eq.clone().with_interrupt(|| None);
+    let cpu_none = cpu_some_eq.with_interrupt(|| None);
 
     assert_eq!(
         vec![Microcode::Inc16bitRegister(

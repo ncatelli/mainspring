@@ -1284,7 +1284,7 @@ fn should_generate_absolute_addressing_mode_cmp_machine_code() {
         Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops), mc);
 }
 
 #[test]
@@ -1304,7 +1304,7 @@ fn should_generate_absolute_indexed_with_x_addressing_mode_cmp_machine_code() {
         Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops), mc);
 }
 
 #[test]
@@ -1324,7 +1324,7 @@ fn should_generate_absolute_indexed_with_y_addressing_mode_cmp_machine_code() {
         Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(Operations::new(3, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(3, 4, expected_mops), mc);
 }
 
 #[test]
@@ -1367,7 +1367,7 @@ fn should_generate_immediate_addressing_mode_cmp_machine_code() {
         Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(Operations::new(2, 2, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 2, expected_mops), mc);
 }
 
 #[test]
@@ -1410,7 +1410,7 @@ fn should_generate_zeropage_addressing_mode_cmp_machine_code() {
         Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(Operations::new(2, 3, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 3, expected_mops), mc);
 }
 
 #[test]
@@ -1430,7 +1430,7 @@ fn should_generate_zeropage_indexed_with_x_addressing_mode_cmp_machine_code() {
         Microcode::SetProgramStatusFlagState(ProgramStatusFlags::Zero, true),
     ];
 
-    assert_eq!(Operations::new(2, 4, expected_mops.clone()), mc);
+    assert_eq!(Operations::new(2, 4, expected_mops), mc);
 }
 
 // Cpx

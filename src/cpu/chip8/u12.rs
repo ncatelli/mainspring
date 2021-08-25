@@ -213,6 +213,7 @@ mod tests {
     #[test]
     #[should_panic]
     #[allow(unused_must_use)]
+    #[allow(clippy::unnecessary_operation)]
     fn should_panic_on_overflowing_add() {
         u12::new(0xFFFF) + u12::new(1);
     }

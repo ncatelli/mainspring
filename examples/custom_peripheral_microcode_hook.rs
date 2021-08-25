@@ -85,6 +85,6 @@ fn main() {
             }
             _ => Some(mc),
         })
-        .filter_map(|v| v)
-        .fold(cpu.clone(), |c, mc| mc.execute(c));
+        .flatten()
+        .fold(cpu, |c, mc| mc.execute(c));
 }

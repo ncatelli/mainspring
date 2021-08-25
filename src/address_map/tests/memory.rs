@@ -31,7 +31,7 @@ fn should_throw_error_when_write_is_attempted_on_readonly_memory() {
 fn should_dump_entire_state_of_memory() {
     let mut expected: Vec<u8> = Vec::new();
     expected.resize(std::u16::MAX as usize + 1, 0);
-    expected[0x8000 as usize] = 0xff;
+    expected[0x8000] = 0xff;
 
     let mut mem: Memory<ReadWrite, u16, u8> = Memory::new(0, std::u16::MAX);
     mem.write(0x8000, 0xff).unwrap();
@@ -44,7 +44,7 @@ fn should_dump_entire_state_of_memory() {
 fn should_load_memory_of_correct_size() {
     let mut expected: Vec<u8> = Vec::new();
     expected.resize(std::u16::MAX as usize, 0);
-    expected[0x8000 as usize] = 0xff;
+    expected[0x8000] = 0xff;
     let rom = expected.clone();
 
     let mem: Memory<ReadWrite, u16, u8> = Memory::new(0, std::u16::MAX).load(rom);

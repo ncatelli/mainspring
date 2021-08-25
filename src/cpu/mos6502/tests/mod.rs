@@ -844,7 +844,7 @@ fn should_cycle_on_clc_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(false, state.ps.carry);
+    assert!(!state.ps.carry);
 }
 
 #[test]
@@ -853,7 +853,7 @@ fn should_cycle_on_cld_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(false, state.ps.decimal);
+    assert!(!state.ps.decimal);
 }
 
 #[test]
@@ -863,7 +863,7 @@ fn should_cycle_on_cli_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(false, state.ps.interrupt_disable);
+    assert!(!state.ps.interrupt_disable);
 }
 
 #[test]
@@ -873,7 +873,7 @@ fn should_cycle_on_clv_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(false, state.ps.overflow);
+    assert!(!state.ps.overflow);
 }
 
 #[test]
@@ -1590,7 +1590,7 @@ fn should_cycle_on_inc_zeropage_indexed_with_x_operation() {
 fn should_cycle_on_inx_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xe8])
         .with_gp_register(GpRegister::X, register::GeneralPurpose::with_value(127));
-    assert_eq!(false, cpu.ps.negative);
+    assert!(!cpu.ps.negative);
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -1602,7 +1602,7 @@ fn should_cycle_on_inx_implied_operation() {
 fn should_cycle_on_iny_implied_operation() {
     let cpu = generate_test_cpu_with_instructions(vec![0xc8])
         .with_gp_register(GpRegister::Y, register::GeneralPurpose::with_value(127));
-    assert_eq!(false, cpu.ps.negative);
+    assert!(!cpu.ps.negative);
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
@@ -2713,7 +2713,7 @@ fn should_cycle_on_sec_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(true, state.ps.carry);
+    assert!(state.ps.carry);
 }
 
 #[test]
@@ -2722,7 +2722,7 @@ fn should_cycle_on_sed_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(true, state.ps.decimal);
+    assert!(state.ps.decimal);
 }
 
 #[test]
@@ -2731,7 +2731,7 @@ fn should_cycle_on_sei_implied_operation() {
 
     let state = cpu.run(2).unwrap();
     assert_eq!(0x6001, state.pc.read());
-    assert_eq!(true, state.ps.interrupt_disable);
+    assert!(state.ps.interrupt_disable);
 }
 
 #[test]

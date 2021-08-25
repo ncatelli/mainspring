@@ -643,7 +643,7 @@ mod tests {
         );
 
         for (pos, &v) in cpu.display.unwrap().iter().flatten().enumerate() {
-            assert_eq!(true, v, "no match for position: {}, {}", pos, v);
+            assert!(v, "no match for position: {}, {}", pos, v);
         }
     }
 }

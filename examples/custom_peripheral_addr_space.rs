@@ -84,8 +84,7 @@ fn main() {
         .unwrap();
 
     // Runs the program for 80 cycles.
-    cpu.clone()
-        .into_iter()
+    cpu.into_iter()
         .map(Into::<Vec<Vec<Microcode>>>::into)
         .flatten()
         .take(80)

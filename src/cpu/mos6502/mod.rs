@@ -58,11 +58,11 @@ impl Mos6502 {
     }
 
     /// instantiates a new Mos6502 with a provided address_map.
-    #[allow(clippy::field_reassign_with_default)]
     pub fn with_addressmap(am: AddressMap<u16, u8>) -> Self {
-        let mut cpu = Self::default();
-        cpu.address_map = am;
-        cpu
+        Self {
+            address_map: am,
+            ..Default::default()
+        }
     }
 
     /// Functions as a wrapper around the `with_addressmap` and `register`

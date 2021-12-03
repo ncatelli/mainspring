@@ -122,7 +122,6 @@ impl std::ops::Add for Operand<u8> {
 impl AddTwosComplement for Operand<u8> {
     type Output = Self;
 
-    #[allow(clippy::nonminimal_bool)]
     fn twos_complement_add(self, other: Self, carry: bool) -> (Self::Output, bool) {
         let sum = self + other;
         let (lhs, rhs) = (self.unwrap(), other.unwrap());

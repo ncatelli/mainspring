@@ -888,9 +888,7 @@ impl<'a> Parser<'a, &'a [u8], InstructionVariant> for VariantParser {
                     inner,
                 })
             }
-            Ok(parcel::MatchStatus::NoMatch(_)) => {
-                Ok(parcel::MatchStatus::NoMatch(&preparse_input))
-            }
+            Ok(parcel::MatchStatus::NoMatch(_)) => Ok(parcel::MatchStatus::NoMatch(preparse_input)),
 
             Err(e) => Err(e),
         }

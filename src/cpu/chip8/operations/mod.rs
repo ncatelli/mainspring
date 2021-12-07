@@ -180,7 +180,6 @@ where
 pub struct OpcodeVariantParser;
 
 impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
-    #[allow(clippy::type_complexity)]
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Opcode> {
         let ms = input.get(0..2).map(|v| [v[0].1, v[1].1]).and_then(|bytes| {
             let [[first, second], [third, fourth]] =

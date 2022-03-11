@@ -1,15 +1,21 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.191.1/containers/rust
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.224.2/containers/rust
 {
 	"name": "Rust",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Use the VARIANT arg to pick a Debian OS version: buster, bullseye
+			// Use bullseye when on local on arm64/Apple Silicon.
+			"VARIANT": "bullseye"
+		}
 	},
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
 		"--security-opt",
 		"seccomp=unconfined"
 	],
+
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"lldb.executable": "/usr/bin/lldb",
@@ -19,6 +25,7 @@
 		},
 		"rust-analyzer.checkOnSave.command": "clippy"
 	},
+
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"vadimcn.vscode-lldb",
@@ -27,10 +34,13 @@
 		"tamasfe.even-better-toml",
 		"serayuzgur.crates"
 	],
+
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
+
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "rustc --version",
-	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }

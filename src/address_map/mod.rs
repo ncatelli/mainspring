@@ -135,8 +135,7 @@ where
         self.inner
             .keys()
             .filter(|key| key.contains(&addr))
-            .map(|r| self.inner.get(r))
-            .flatten()
+            .flat_map(|r| self.inner.get(r))
             .next()
             .map_or(<V>::default(), |a| a.read(addr))
     }

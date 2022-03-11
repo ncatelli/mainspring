@@ -110,8 +110,7 @@ impl Display {
         // sprite starts in display boundary
         is_within_display_boundary((x, y)).then(|| {
             (0..8u8)
-                .map(|x| (0..5usize).map(|y| (x, y)).collect::<Vec<_>>())
-                .flatten()
+                .flat_map(|x| (0..5usize).map(|y| (x, y)).collect::<Vec<_>>())
                 .fold(false, |collision, (x_offset, y_offset)| {
                     let bit = (font_bytes[y_offset] >> (7 - x_offset)) & 0x1;
                     let bit_is_set = bit != 0;

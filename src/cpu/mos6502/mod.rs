@@ -220,8 +220,7 @@ impl Cpu<Mos6502> for Mos6502 {
         let state = self
             .clone()
             .into_iter()
-            .map(Into::<Vec<Vec<microcode::Microcode>>>::into)
-            .flatten() // flatten instructions to cycles
+            .flat_map(Into::<Vec<Vec<microcode::Microcode>>>::into)
             .take(cycles)
             .flatten()
             .fold(self, |c, mc| Execute::execute(mc, c));

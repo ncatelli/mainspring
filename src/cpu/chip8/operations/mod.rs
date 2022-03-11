@@ -330,12 +330,11 @@ impl<R> Generate<Chip8<R>> for Drw {
 
         // check for collisions.
         let (collision, pixels) = (0..8u8)
-            .map(|x| {
+            .flat_map(|x| {
                 (0..sprite_size as usize)
                     .map(|y| (x, y))
                     .collect::<Vec<_>>()
             })
-            .flatten()
             .fold(
                 (false, vec![]),
                 |(collision, mut pixel_writes), (x_offset, y_offset)| {

@@ -17,8 +17,6 @@ type Ram = Memory<ReadWrite, u16, u8>;
 pub struct Via {
     port_a_addr: u16, // address connected to enable port a CS
     port_b_addr: u16, // address connected to enable port a CS
-    port_a_mask: u16,
-    port_b_mask: u16,
     port_a: u8,
     port_b: u8,
 }
@@ -28,8 +26,6 @@ impl Via {
         Via {
             port_a_addr: base_addr,
             port_b_addr: base_addr + 1,
-            port_a_mask: base_addr + 2,
-            port_b_mask: base_addr + 3,
             port_a: 0,
             port_b: 0,
         }

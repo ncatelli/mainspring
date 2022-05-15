@@ -85,8 +85,7 @@ fn main() {
 
     // Runs the program for 80 cycles.
     cpu.into_iter()
-        .map(Into::<Vec<Vec<Microcode>>>::into)
-        .flatten()
+        .flat_map(Into::<Vec<Vec<Microcode>>>::into)
         .take(80)
         .flatten()
         .for_each(drop)

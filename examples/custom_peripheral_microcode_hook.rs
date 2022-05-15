@@ -60,8 +60,7 @@ fn main() {
     let states: Vec<Microcode> = cpu
         .clone()
         .into_iter()
-        .map(Into::<Vec<Vec<Microcode>>>::into)
-        .flatten()
+        .flat_map(Into::<Vec<Vec<Microcode>>>::into)
         .take(80)
         .flatten()
         .collect();
@@ -69,7 +68,7 @@ fn main() {
     // Microcode can then be folded onto a cpu to replay its state onto a fresh cpu.
     states
         .iter()
-        .map(|mc| match mc {
+        .filter(|mc| match mc {
             Microcode::WriteMemory(address, value) if (0x8000..=0x8003).contains(address) => {
                 if *address == via.port_a_addr {
                     via.port_a = *value;
@@ -77,10 +76,9 @@ fn main() {
                 } else if *address == via.port_b_addr {
                     via.port_b = *value;
                 }
-                None
+                false
             }
-            _ => Some(mc),
+            _ => true,
         })
-        .flatten()
         .fold(cpu, |c, mc| mc.execute(c));
 }

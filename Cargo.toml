@@ -2,7 +2,7 @@
 name = "mainspring"
 version = "1.0.0"
 authors = ["Nate Catelli <ncatelli@packetfire.org>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 parcel = { git = "https://github.com/ncatelli/parcel", tag = "v2.0.0" }

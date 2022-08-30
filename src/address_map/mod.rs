@@ -117,7 +117,6 @@ where
                 }
             })
             .collect::<Result<Vec<()>, RegistrationError>>()
-            .map_err(|e| e)
             .map(|_| {
                 self.inner.insert(range, addr_space);
                 self

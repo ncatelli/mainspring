@@ -1,12 +1,12 @@
 use crate::cpu::register::Register;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ByteRegisters {
     GpRegisters(GpRegisters),
     TimerRegisters(TimerRegisters),
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WordRegisters {
     I,
     ProgramCounter,
@@ -14,7 +14,7 @@ pub enum WordRegisters {
 
 /// GpRegisters represents each type of general purpose registers,
 /// representable as a usize for indexing purposes.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GpRegisters {
     V0,
     V1,
@@ -69,13 +69,13 @@ impl std::convert::TryFrom<u8> for GpRegisters {
 
 /// Represents the special Timer registers that decrement at a pre-selected
 /// 60hz (1 second), clock-rate.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TimerRegisters {
     Sound,
     Delay,
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct GeneralPurpose<T> {
     inner: T,
 }
@@ -98,7 +98,7 @@ where
 
 /// Represents a one of the Special Timer registers that decrements at a set
 /// clockrate of 60Hz (1 second).
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ClockDecrementing {
     written_at: std::time::Instant,
     inner: GeneralPurpose<u8>,
@@ -142,7 +142,7 @@ impl Default for ClockDecrementing {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct ProgramCounter {
     inner: u16,
 }
@@ -160,7 +160,7 @@ impl Register<u16, u16> for ProgramCounter {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct StackPointer {
     inner: u8,
 }

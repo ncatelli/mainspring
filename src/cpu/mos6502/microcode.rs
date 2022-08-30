@@ -6,7 +6,7 @@ use crate::cpu::mos6502::register::{ByteRegisters, ProgramStatusFlags, WordRegis
 
 /// An Enumerable type to store each microcode operation possible on the
 /// 6502 simulator.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Microcode {
     /// Represents a write of the value to the memory location specified by the
     /// address field.

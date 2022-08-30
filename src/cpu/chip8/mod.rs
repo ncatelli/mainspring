@@ -96,14 +96,14 @@ impl GenerateRandom<u8> for BufferedRandomNumberGenerator {
 }
 
 /// Represents an interrupt, example being a keypress.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Interrupt {
     KeyPress(KeyInputValue),
 }
 
 /// KeyInputValue represents all valid input keys that may be input from the
 /// keyboard.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyInputValue {
     Key0,
     Key1,

@@ -133,7 +133,7 @@ impl Display {
 }
 
 /// Represents each valid Sprite in the default font.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Font {
     One,
     Two,

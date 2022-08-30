@@ -5,7 +5,7 @@ use crate::cpu::chip8::{
 
 /// An enumerable type to store each microcode operation possible on the
 /// CHIP-8 simulator.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Microcode {
     /// Represents a write of the value to the memory location specified by the
     /// address field.

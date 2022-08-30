@@ -293,7 +293,7 @@ const fn stack_pointer_from_byte_value(value: u8) -> u16 {
 /// Operations functions as a concrete wrapper around a microcode operation with
 /// metadata around sizing and cycles. This trait does NOT represent a cycle
 /// but rather the microcode equivalent of a CPU instruction.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operations {
     offset: usize,
     cycles: usize,

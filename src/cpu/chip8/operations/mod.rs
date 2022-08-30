@@ -75,7 +75,7 @@ impl ToNibbleBytes for u8 {
 
 /// OpcodeVariant represents all valid instructions with a mapping to their
 /// corresponding concrete type.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Opcode {
     Cls,
     Ret,
@@ -245,7 +245,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
 }
 
 /// Clear the display.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Cls;
 
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
@@ -269,7 +269,7 @@ impl<R> Generate<Chip8<R>> for Cls {
 }
 
 /// Return from a subroutine.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Ret;
 
 impl<R> Generate<Chip8<R>> for Ret {
@@ -290,7 +290,7 @@ impl<R> Generate<Chip8<R>> for Ret {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Drw {
     x_register: GpRegisters,
     y_register: GpRegisters,
@@ -374,16 +374,16 @@ impl<R> Generate<Chip8<R>> for Drw {
 }
 
 /// Reprents a Jp command that is v0 indexed.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct V0Indexed;
 
 /// Reprents an absolute Jp command that is not v0 indexed.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NonV0Indexed;
 
 /// Jp the associated value to the value of the specified register. Setting
 /// the register to the sum.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Jp<T> {
     r#type: std::marker::PhantomData<T>,
     pub address: u12,
@@ -427,7 +427,7 @@ impl<R> Generate<Chip8<R>> for Jp<V0Indexed> {
 }
 
 /// Load the absolute value specified into the I register
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ld<A> {
     pub addressing_mode: A,
 }
@@ -514,7 +514,7 @@ impl<R> Generate<Chip8<R>> for Ld<addressing_mode::DelayTimerSrcTx> {
 
 /// The I register is set to the location for the hexadecimal sprite
 /// corresponding to the value of Vx.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LdSpriteLocation {
     source_register: GpRegisters,
 }
@@ -561,7 +561,7 @@ const fn extract_ones_place(x: u8) -> u8 {
 
 /// Loads a Binary-Coded Decimal value into the location specified by the
 /// addressing mode.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LdBcd {
     pub addressing_mode: addressing_mode::VxIIndirect,
 }
@@ -591,7 +591,7 @@ impl<R> Generate<Chip8<R>> for LdBcd {
 
 /// Wait for a keypress store the corresponding value in the value specified by
 /// Vx.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LdK {
     pub dest: register::GpRegisters,
 }
@@ -631,7 +631,7 @@ impl<R> Generate<Chip8<R>> for LdK {
 
 /// Represents the Load Indirect instruction to store a subset of registers at
 /// a memory offset defined by the contents of the I register.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ReadRegistersFromMemory {
     pub addressing_mode: addressing_mode::VxIIndirect,
 }
@@ -668,7 +668,7 @@ impl<R> Generate<Chip8<R>> for ReadRegistersFromMemory {
 
 /// Represents the Load Indirect instruction to store a subset of registers at
 /// a memory offset defined by the contents of the I register.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StoreRegistersToMemory {
     pub addressing_mode: addressing_mode::VxIIndirect,
 }
@@ -699,7 +699,7 @@ impl<R> Generate<Chip8<R>> for StoreRegistersToMemory {
 }
 
 /// Call subroutine at nnn.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Call {
     pub address: u12,
 }
@@ -731,7 +731,7 @@ impl<R> Generate<Chip8<R>> for Call {
 
 /// Adds the associated value to the value of the specified register. Setting
 /// the register to the sum.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Add<A> {
     pub addressing_mode: A,
 }
@@ -790,7 +790,7 @@ impl<R> Generate<Chip8<R>> for Add<addressing_mode::VxVy> {
 /// Subtracts the associated value from the value of the specified register.
 /// Setting the register to the difference. Sets the borrow flag if the
 /// difference does not underflow
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Sub {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -826,7 +826,7 @@ impl<R> Generate<Chip8<R>> for Sub {
 /// Subtracts the associated value from the value of the specified register.
 /// Setting the register to the difference. Sets the borrow flag if the
 /// difference does not underflow
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Subn {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -860,7 +860,7 @@ impl<R> Generate<Chip8<R>> for Subn {
 }
 
 /// And represents a binary & operation.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct And {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -887,7 +887,7 @@ impl<R> Generate<Chip8<R>> for And {
 }
 
 /// Or represents a binary | operation.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Or {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -915,7 +915,7 @@ impl<R> Generate<Chip8<R>> for Or {
 
 /// Represents the `SKP Vx` instruction. This instruction skips the next
 /// instruction if the value in register `Vx` matches the pressed, if any, key.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Skp {
     register: GpRegisters,
 }
@@ -953,7 +953,7 @@ impl Default for Skp {
 /// Represents the `SKNP Vx` instruction. This instruction skips the next
 /// instruction if value in register `Vx` does not match the key, if any,
 /// pressed.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Sknp {
     register: GpRegisters,
 }
@@ -987,7 +987,7 @@ impl Default for Sknp {
 }
 
 /// Xor represents a binary ^ operation.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Xor {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -1014,7 +1014,7 @@ impl<R> Generate<Chip8<R>> for Xor {
 }
 
 /// Shl represents a binary << operation.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Shl {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -1049,7 +1049,7 @@ impl<R> Generate<Chip8<R>> for Shl {
 }
 
 /// Shr represents a binary >> operation.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Shr {
     pub addressing_mode: addressing_mode::VxVy,
 }
@@ -1084,7 +1084,7 @@ impl<R> Generate<Chip8<R>> for Shr {
 }
 
 /// Se skips the next instruction if the operands are equivalent.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Se<A> {
     pub addressing_mode: A,
 }
@@ -1132,7 +1132,7 @@ impl<R> Generate<Chip8<R>> for Se<addressing_mode::VxVy> {
 }
 
 /// Sne skips the next instruction if the operands are not equivalent.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Sne<A> {
     pub addressing_mode: A,
 }
@@ -1180,7 +1180,7 @@ impl<R> Generate<Chip8<R>> for Sne<addressing_mode::VxVy> {
 }
 
 /// Rnd generates a random 8-bit value to be applied against a mask.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Rnd {
     pub addressing_mode: addressing_mode::Immediate,
 }

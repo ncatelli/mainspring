@@ -1,7 +1,7 @@
 use crate::cpu::register::Register;
 
 /// Represets each type of register available in the mos6502.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Registers {
     Pc,
     Acc,
@@ -12,13 +12,13 @@ pub enum Registers {
 }
 
 /// Represets each type of word-sized register available in the mos6502.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WordRegisters {
     Pc,
 }
 
 /// Represets each type of byte-sized register available in the mos6502.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ByteRegisters {
     Acc,
     X,
@@ -28,7 +28,7 @@ pub enum ByteRegisters {
 }
 
 /// Represets each flag represented in the ProgramStatus Register.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProgramStatusFlags {
     Negative,
     Overflow,
@@ -40,14 +40,14 @@ pub enum ProgramStatusFlags {
 }
 
 /// Represets each type of general purpose register available in the mos6502.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GpRegister {
     Acc,
     X,
     Y,
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct GeneralPurpose {
     inner: u8,
 }
@@ -65,7 +65,7 @@ impl Register<u8, u8> for GeneralPurpose {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct ProgramCounter {
     inner: u16,
 }
@@ -83,7 +83,7 @@ impl Register<u16, u16> for ProgramCounter {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StackPointer {
     inner: u8,
 }
@@ -118,7 +118,7 @@ const fn bit_is_set(value: u8, place: u8) -> bool {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ProcessorStatus {
     pub carry: bool,
     pub zero: bool,

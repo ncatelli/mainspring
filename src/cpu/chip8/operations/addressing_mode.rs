@@ -2,7 +2,7 @@ use crate::cpu::chip8::{register, u12::u12};
 
 pub trait AddressingMode {}
 
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Absolute(u12);
 
 impl AddressingMode for Absolute {}
@@ -18,7 +18,7 @@ impl Absolute {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Immediate {
     pub register: register::GpRegisters,
     pub value: u8,
@@ -43,7 +43,7 @@ impl Default for Immediate {
 
 /// Represents an operation on the I register indexed by a General-Purpose
 /// register.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct IRegisterIndexed {
     pub register: register::GpRegisters,
 }
@@ -65,7 +65,7 @@ impl Default for IRegisterIndexed {
 }
 
 /// Represents a register to register general-purpose operation.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VxVy {
     /// Represents the first register defined in this address mode. Often
     /// times this will represent a destination register.
@@ -106,7 +106,7 @@ impl Default for VxVy {
 
 /// Represents a register to register operation transfering a value from a
 /// register to the Sound Timer register.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SoundTimerDestTx {
     pub src: register::GpRegisters,
 }
@@ -129,7 +129,7 @@ impl Default for SoundTimerDestTx {
 
 /// Represents a register to register operation transfering a value from a
 /// register to the Delay Timer register.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DelayTimerDestTx {
     pub src: register::GpRegisters,
 }
@@ -152,7 +152,7 @@ impl Default for DelayTimerDestTx {
 
 /// Represents a register to register operation transfering a value from a
 /// register to the Delay Timer register.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DelayTimerSrcTx {
     pub dest: register::GpRegisters,
 }
@@ -175,7 +175,7 @@ impl Default for DelayTimerSrcTx {
 
 /// Represents a register to memory operation taking a value in Vx and storing
 /// the result in an indirect address stored in register I.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VxIIndirect {
     pub src: register::GpRegisters,
 }

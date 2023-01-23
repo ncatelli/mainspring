@@ -654,7 +654,7 @@ impl<R> Generate<Chip8<R>> for ReadRegistersFromMemory {
             .map(|idx| GpRegisters::try_from(idx).unwrap())
             .map(|reg| {
                 use crate::address_map::Addressable;
-                let i_idx = cpu.i.read() as u16 + reg as u16;
+                let i_idx = cpu.i.read() + reg as u16;
                 let i_indirect_val = cpu.address_space.read(i_idx);
 
                 Microcode::Write8bitRegister(
@@ -691,7 +691,7 @@ impl<R> Generate<Chip8<R>> for StoreRegistersToMemory {
             .map(|idx| GpRegisters::try_from(idx).unwrap())
             .map(|reg| {
                 let src_val = cpu.read_gp_register(reg);
-                let i_idx = cpu.i.read() as u16 + reg as u16;
+                let i_idx = cpu.i.read() + reg as u16;
                 Microcode::WriteMemory(i_idx, src_val)
             })
             .collect()
@@ -772,7 +772,7 @@ impl<R> Generate<Chip8<R>> for Add<addressing_mode::VxVy> {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let (result, overflows) = dest_val.overflowing_add(src_val);
-        let flag_val = if overflows { 1u8 } else { 0u8 };
+        let flag_val = u8::from(overflows);
 
         vec![
             Microcode::Write8bitRegister(
@@ -808,7 +808,7 @@ impl<R> Generate<Chip8<R>> for Sub {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let (result, underflows) = dest_val.overflowing_sub(src_val);
-        let flag_val = if underflows { 0u8 } else { 1u8 };
+        let flag_val = u8::from(!underflows);
 
         vec![
             Microcode::Write8bitRegister(
@@ -844,7 +844,7 @@ impl<R> Generate<Chip8<R>> for Subn {
         let src_val = cpu.read_gp_register(self.addressing_mode.first);
         let dest_val = cpu.read_gp_register(self.addressing_mode.second);
         let (result, underflows) = src_val.overflowing_sub(dest_val);
-        let flag_val = if underflows { 0u8 } else { 1u8 };
+        let flag_val = u8::from(!underflows);
 
         vec![
             Microcode::Write8bitRegister(

@@ -23,6 +23,13 @@ where
     }
 }
 
+impl From<u8> for Page<u16> {
+    // Conversion from a u8 always implies the the page is the zero page.
+    fn from(_: u8) -> Self {
+        Self { inner: 0x00..=0xff }
+    }
+}
+
 impl From<u16> for Page<u16> {
     fn from(addr: u16) -> Self {
         let page_size = 0xff;

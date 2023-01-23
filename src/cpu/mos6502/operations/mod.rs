@@ -277,10 +277,7 @@ fn dereference_indirect_indexed_address(cpu: &Mos6502, base_addr: u8, index: u8)
 /// mode and retrieving the value stored at the specified address from the
 /// address map. This value is then returned in a wrapper Operand.
 fn dereference_address_to_operand(cpu: &Mos6502, addr: u16, index: u8) -> Operand<u8> {
-    Operand::new(
-        cpu.address_map
-            .read(add_index_to_address(addr as u16, index)),
-    )
+    Operand::new(cpu.address_map.read(add_index_to_address(addr, index)))
 }
 
 /// Provides a wrapper around generating a 16-bit address from the stack
@@ -1245,11 +1242,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::AbsoluteI
         let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1278,11 +1272,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::AbsoluteI
         let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1312,11 +1303,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Adc, addressing_mode::IndirectY
         let (value, overflow) = lhs.twos_complement_add(rhs, cpu.ps.carry);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(zpage_base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1472,11 +1460,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::AbsoluteI
         let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1505,11 +1490,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::AbsoluteI
         let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1539,11 +1521,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Sbc, addressing_mode::IndirectY
         let (value, overflow) = lhs.twos_complement_sub(rhs, cpu.ps.carry);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(zpage_base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1696,11 +1675,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::AbsoluteI
         let value = lhs & rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1726,11 +1702,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::AbsoluteI
         let value = lhs & rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -1756,11 +1729,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::And, addressing_mode::IndirectY
         let value = lhs & rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(zpage_base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2043,11 +2013,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::AbsoluteI
         let value = lhs ^ rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2073,11 +2040,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::AbsoluteI
         let value = lhs ^ rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2103,11 +2067,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Eor, addressing_mode::IndirectY
         let value = lhs ^ rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(zpage_base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2343,11 +2304,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::AbsoluteI
         let value = lhs | rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2373,11 +2331,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::AbsoluteI
         let value = lhs | rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2403,11 +2358,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ora, addressing_mode::IndirectY
         let value = lhs | rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(zpage_base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2955,11 +2907,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::AbsoluteI
         let diff = lhs - rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(base_addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(base_addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -2986,11 +2935,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::AbsoluteI
         let diff = lhs - rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(base_addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(base_addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3017,11 +2963,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Cmp, addressing_mode::IndirectY
         let diff = lhs - rhs;
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3607,7 +3550,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::ZeroPageI
     fn generate(&self, cpu: &Mos6502) -> Operations {
         let index = cpu.x.read();
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), index);
-        let value = dereference_address_to_operand(cpu, addr as u16, 0);
+        let value = dereference_address_to_operand(cpu, addr, 0);
 
         Operations::new(
             self.offset(),
@@ -3649,11 +3592,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::AbsoluteI
         let value = dereference_address_to_operand(cpu, addr, index);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3677,11 +3617,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::AbsoluteI
         let value = dereference_address_to_operand(cpu, indexed_addr, 0);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3705,11 +3642,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Lda, addressing_mode::IndirectY
         let value = Operand::new(cpu.address_map.read(indirect_addr));
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(zpage_base_addr as u16).contains(indirect_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(zpage_base_addr).contains(indirect_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3774,11 +3708,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::AbsoluteI
         let value = dereference_address_to_operand(cpu, indexed_addr, 0);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3834,7 +3765,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldx, addressing_mode::ZeroPageI
     fn generate(&self, cpu: &Mos6502) -> Operations {
         let index = cpu.y.read();
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), index);
-        let value = dereference_address_to_operand(cpu, addr as u16, 0);
+        let value = dereference_address_to_operand(cpu, addr, 0);
 
         Operations::new(
             self.offset(),
@@ -3879,11 +3810,8 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::AbsoluteI
         let value = dereference_address_to_operand(cpu, indexed_addr, 0);
 
         // if the branch crosses a page boundary pay a 1 cycle penalty.
-        let branch_penalty = if !Page::from(addr).contains(indexed_addr) {
-            1
-        } else {
-            0
-        };
+        let addr_in_page = Page::from(addr).contains(indexed_addr);
+        let branch_penalty = usize::from(!addr_in_page);
 
         Operations::new(
             self.offset(),
@@ -3939,7 +3867,7 @@ impl Generate<Mos6502> for Instruction<mnemonic::Ldy, addressing_mode::ZeroPageI
     fn generate(&self, cpu: &Mos6502) -> Operations {
         let index = cpu.x.read();
         let addr = add_index_to_zeropage_address(self.addressing_mode.unwrap(), index);
-        let value = dereference_address_to_operand(cpu, addr as u16, 0);
+        let value = dereference_address_to_operand(cpu, addr, 0);
 
         Operations::new(
             self.offset(),

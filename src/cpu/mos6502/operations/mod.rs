@@ -950,7 +950,7 @@ impl<'a> Parser<'a, &'a [(usize, u8)], InstructionVariant> for VariantParser {
             inst_to_variant!(mnemonic::Bit, addressing_mode::ZeroPage::default()),
             inst_to_variant!(mnemonic::Bne, addressing_mode::Relative::default()),
             inst_to_variant!(mnemonic::Bpl, addressing_mode::Relative::default()),
-            inst_to_variant!(mnemonic::Brk, addressing_mode::Implied::default()),
+            inst_to_variant!(mnemonic::Brk, addressing_mode::Implied),
             inst_to_variant!(mnemonic::Bvc, addressing_mode::Relative::default()),
             inst_to_variant!(mnemonic::Bvs, addressing_mode::Relative::default()),
             inst_to_variant!(mnemonic::Clc, addressing_mode::Implied),

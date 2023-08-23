@@ -251,7 +251,7 @@ pub struct Cls;
 impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
     fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
         parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
-            .map(|_| Cls::default())
+            .map(|_| Cls)
             .parse(input)
     }
 }

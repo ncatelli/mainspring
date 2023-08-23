@@ -113,7 +113,6 @@ fn should_generate_drw_instruction() {
     cpu.address_space.write(0x00, 0xf0).unwrap();
 
     let mut expected = (0..8)
-        .into_iter()
         // 0xf0
         .map(|x| {
             let bit_is_set = (0xf0u8 >> (7 - x)) & 1;

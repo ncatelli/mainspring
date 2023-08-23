@@ -1,0 +1,25 @@
+{
+	"branches": [
+		"main"
+	],
+	"plugins": [
+		"@semantic-release/commit-analyzer",
+		"@semantic-release/release-notes-generator",
+		[
+			"@semantic-release/exec",
+			{
+				"prepareCmd": "./scripts/prepare.sh ${nextRelease.version}"
+			}
+		],
+		"@semantic-release/github",
+		[
+			"@semantic-release/git",
+			{
+				"assets": [
+					"Cargo.toml"
+				],
+				"message": "chore(release) ${nextRelease.gitTag}\n\n${nextRelease.notes}"
+			}
+		]
+	]
+}

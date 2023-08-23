@@ -1,0 +1,21 @@
+name: Conventional Commitlint
+on:
+  pull_request:
+
+jobs:
+  conventional_commit_lint:
+    name: conventional commit_lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+      - name: Install dependencies
+        run: npm install --save-dev conventional-changelog-conventionalcommits commitlint@latest @commitlint/{config-conventional,cli}
+      - name: Validate PR compliant with commitlint
+        run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose

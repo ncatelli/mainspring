@@ -11,7 +11,7 @@ where
     T: Default,
 {
     pub fn new(capacity: usize) -> Self {
-        let inner = (0..capacity).into_iter().map(|_| <T>::default()).collect();
+        let inner = (0..capacity).map(|_| <T>::default()).collect();
         Self { capacity, inner }
     }
 }

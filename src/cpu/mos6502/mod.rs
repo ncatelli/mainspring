@@ -23,7 +23,6 @@ pub const IRQ_VECTOR_LL: u16 = 0xfffe;
 pub const IRQ_VECTOR_HH: u16 = 0xffff;
 
 pub mod register;
-use parcel::Parser;
 use register::{
     ByteRegisters, GeneralPurpose, GpRegister, ProcessorStatus, ProgramCounter, ProgramStatusFlags,
     StackPointer, WordRegisters,
@@ -258,22 +257,15 @@ impl Iterator for Mos6502IntoIterator {
 
     fn next(&mut self) -> Option<operations::Operations> {
         let pc = self.state.pc.read();
-        let opcodes: [u8; 3] = [
+        let bin_data: [u8; 3] = [
             self.state.address_map.read(pc),
             self.state.address_map.read(pc + 1),
             self.state.address_map.read(pc + 2),
         ];
 
-        // Parse correct operation
-        let oper = match operations::VariantParser.parse(&opcodes[..]) {
-            Ok(parcel::MatchStatus::Match {
-                span: _,
-                remainder: _,
-                inner: op,
-            }) => Ok(op),
-            _ => Err(format!("No match found for {}", opcodes[0])),
-        }
-        .unwrap();
+        let oper = isa_mos6502::parse_instruction(bin_data)
+            .ok_or_else(|| format!("No match found for {}", bin_data[0]))
+            .unwrap();
 
         let mops = oper.generate(&self.state);
 

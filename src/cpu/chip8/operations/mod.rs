@@ -8,7 +8,6 @@ use crate::cpu::chip8::{
 };
 use crate::cpu::Generate;
 use crate::prelude::v1::Register;
-use parcel::prelude::v1::*;
 use std::convert::TryFrom;
 
 pub mod addressing_mode;
@@ -175,13 +174,13 @@ where
     }
 }
 
-/// Provides a Parser type for the OpcodeVariant enum. Constructing an
-/// OpcodeVariant from a stream of bytes.
-pub struct OpcodeVariantParser;
+pub(crate) fn decode_bytes_to_opcode(bytes: impl AsRef<[u8]>) -> Result<Opcode, String> {
+    let bin_data = bytes.as_ref();
 
-impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Opcode> {
-        let ms = input.get(0..2).map(|v| [v[0].1, v[1].1]).and_then(|bytes| {
+    bin_data
+        .get(0..2)
+        .map(|v| [v[0], v[1]])
+        .and_then(|bytes| {
             let [[first, second], [third, fourth]] =
                 [u8::to_be_nibbles(&bytes[0]), u8::to_be_nibbles(&bytes[1])];
             let dest_reg: GpRegisters =
@@ -229,32 +228,18 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
                 [0xf, _, 0x6, 0x5] => Some(Opcode::ReadRegistersFromMemory(dest_reg)),
                 _ => None,
             }
-        });
-
-        // if we get a match, set the appropiate match status headers.
-        match ms {
-            Some(op) => Ok(MatchStatus::Match {
-                /// increment end span to cover non-inclusivity.
-                span: input[0].0..(input[1].0 + 1),
-                inner: op,
-                remainder: &input[2..],
-            }),
-            None => Ok(MatchStatus::NoMatch(input)),
-        }
-    }
+        })
+        .ok_or_else(|| {
+            format!(
+                "No match found for {:#02x}",
+                u16::from_be_bytes([bin_data[0], bin_data[1]])
+            )
+        })
 }
 
 /// Clear the display.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Cls;
-
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
-        parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
-            .map(|_| Cls)
-            .parse(input)
-    }
-}
 
 impl<R> Generate<Chip8<R>> for Cls {
     type Item = Vec<Microcode>;

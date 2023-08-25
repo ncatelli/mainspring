@@ -248,14 +248,6 @@ impl<'a> Parser<'a, &'a [(usize, u8)], Opcode> for OpcodeVariantParser {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Cls;
 
-impl<'a> parcel::Parser<'a, &'a [(usize, u8)], Cls> for Cls {
-    fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], Cls> {
-        parcel::parsers::byte::expect_bytes(&[0x00, 0xe0])
-            .map(|_| Cls)
-            .parse(input)
-    }
-}
-
 impl<R> Generate<Chip8<R>> for Cls {
     type Item = Vec<Microcode>;
 

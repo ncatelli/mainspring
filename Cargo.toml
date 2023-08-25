@@ -10,4 +10,5 @@ parcel = { git = "https://github.com/ncatelli/parcel", tag = "v2.0.1" }
 [dependencies.isa-mos6502]
 git = "https://github.com/ncatelli/isa-mos6502"
 tag = "v1.1.0"
-feature = ["parcel"]
+default-features = false
+features = []

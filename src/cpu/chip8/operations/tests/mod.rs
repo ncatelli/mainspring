@@ -7,19 +7,14 @@ macro_rules! generate_parse_test {
         $(
         #[test]
         fn $testname() {
-            let input: Vec<(usize, u8)> = $input_bytes
+            let input: Vec<u8> = $input_bytes
                 .to_be_bytes()
                 .iter()
                 .copied()
-                .enumerate()
                 .collect();
             assert_eq!(
-                Ok(MatchStatus::Match {
-                    span: 0..2,
-                    remainder: &input[2..],
-                    inner: $variant,
-                }),
-                OpcodeVariantParser.parse(&input[..])
+                Ok($variant),
+                decode_bytes_to_opcode(&input[..])
             );
         }
         )*

@@ -1,7 +1,6 @@
 use crate::address_map::{AddressMap, Addressable};
 use crate::cpu::Execute;
 use crate::cpu::{register::Register, Cpu, StepState};
-use parcel::Parser;
 
 use super::ExecuteMut;
 
@@ -339,24 +338,13 @@ where
     fn next(&mut self) -> Option<Vec<microcode::Microcode>> {
         use crate::cpu::Generate;
         let pc = self.state.pc.read();
-        let opcodes: [(usize, u8); 2] = [
-            (pc as usize, self.state.address_space.read(pc)),
-            ((pc as usize + 1), self.state.address_space.read(pc + 1)),
+        let opcodes: [u8; 2] = [
+            self.state.address_space.read(pc),
+            self.state.address_space.read(pc + 1),
         ];
 
         // Parse correct operation
-        let ops = match operations::OpcodeVariantParser.parse(&opcodes[..]) {
-            Ok(parcel::MatchStatus::Match {
-                span: _,
-                remainder: _,
-                inner: op,
-            }) => Ok(op),
-            _ => Err(format!(
-                "No match found for {:#02x}",
-                u16::from_be_bytes([opcodes[0].1, opcodes[1].1])
-            )),
-        }
-        .unwrap();
+        let ops = operations::decode_bytes_to_opcode(opcodes).unwrap();
 
         let microcode_steps: Vec<microcode::Microcode> = ops
             .generate(&self.state)

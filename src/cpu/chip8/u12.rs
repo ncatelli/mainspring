@@ -91,7 +91,7 @@ impl Eq for u12 {}
 
 impl core::cmp::PartialOrd for u12 {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.0.mask().partial_cmp(&other.0.mask())
+        Some(self.cmp(other))
     }
 }
 

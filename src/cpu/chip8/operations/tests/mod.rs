@@ -66,7 +66,7 @@ fn should_generate_cls_instruction() {
 
     assert_eq!(
         vec![Microcode::SetDisplayRange((0, 0), (64, 32), false)],
-        Cls::default().generate(&cpu)
+        Cls.generate(&cpu)
     );
 }
 
@@ -975,7 +975,7 @@ fn should_generate_rnd_immediate_operation() {
             0x00,
         ))
         .generate(&cpu.clone())
-        .get(0)
+        .first()
         {
             Some(Microcode::Write8bitRegister(_, value)) => *value,
             _ => panic!("should container Write8BitRegister operation"),
@@ -989,7 +989,7 @@ fn should_generate_rnd_immediate_operation() {
             0xf0,
         ))
         .generate(&cpu.clone())
-        .get(0)
+        .first()
         {
             Some(Microcode::Write8bitRegister(_, value)) => *value,
             _ => panic!("should container Write8BitRegister operation"),

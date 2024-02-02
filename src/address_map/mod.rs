@@ -144,8 +144,8 @@ where
         let range = self
             .inner
             .keys()
+            .find(|&key| key.contains(&addr))
             .cloned()
-            .find(|key| key.contains(&addr))
             .ok_or(format!("address space {:?} unallocated", addr))?;
         let am = self
             .inner

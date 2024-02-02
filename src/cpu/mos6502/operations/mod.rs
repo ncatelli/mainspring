@@ -327,7 +327,7 @@ impl From<Operations> for Vec<Vec<Microcode>> {
         mcs.push(
             src.microcode
                 .into_iter()
-                .chain(vec![Microcode::Inc16bitRegister(WordRegisters::Pc, offset)].into_iter())
+                .chain([Microcode::Inc16bitRegister(WordRegisters::Pc, offset)])
                 .collect(),
         );
         mcs

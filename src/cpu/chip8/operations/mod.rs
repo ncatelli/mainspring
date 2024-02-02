@@ -347,13 +347,10 @@ impl<R> Generate<Chip8<R>> for Drw {
         // join the pixel and collision opcodes.
         pixels
             .into_iter()
-            .chain(
-                vec![Microcode::Write8bitRegister(
-                    register::ByteRegisters::GpRegisters(register::GpRegisters::Vf),
-                    collision as u8,
-                )]
-                .into_iter(),
-            )
+            .chain([Microcode::Write8bitRegister(
+                register::ByteRegisters::GpRegisters(register::GpRegisters::Vf),
+                collision as u8,
+            )])
             .collect()
     }
 }
